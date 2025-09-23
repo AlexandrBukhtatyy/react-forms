@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import './App.css';
 import { Button } from '@/components/ui/button';
 import { signal } from '@preact/signals-react';
@@ -7,84 +6,89 @@ import { Input } from './components/ui/input';
 import { InputPassword } from './components/ui/input-password';
 import { FormField } from './components/ui/form-field';
 import { InputSearch } from './components/ui/input-search';
-import {
-  makeResource,
-  type ResourceRequest,
-  type ResourceResponse,
-} from './forms/resource';
 import { Form } from './components/ui/form';
-import { cn } from '@/lib/utils';
 import { InputFiles } from './components/ui/input-files';
-import { setTimeout } from 'timers/promises';
-// import { InputFiles } from './components/ui/input-files';
+import { Select } from './components/ui/select';
+import { fileUploader } from './forms/file-uploaders/file-uploader';
+import { form } from './forms/forms';
+import { inputSearchResource } from './forms/resouces/input-search';
+import { selectResource } from './forms/resouces/select';
+import { filesResource } from './forms/resouces/files';
 
-const form = {
-  controls: {
-    domain: signal({
-      key: 'domain',
-      value: '',
-      errors: [{ message: 'isRequired' }, { message: 'isRequired 2' }],
-    }),
-    email: signal({
-      key: 'email',
-      value: '',
-      errors: [{ message: 'isRequired' }, { message: 'isRequired 2' }],
-    }),
-    password: signal({
-      key: 'password',
-      value: '',
-      errors: [{ message: 'isRequired' }, { message: 'isRequired 2' }],
-    }),
-    file: signal({
-      key: 'files',
-      value: '',
-      errors: [{ message: 'isRequired' }, { message: 'isRequired 2' }],
-    }),
-  },
-};
+type FormModel = {
+  input: string | null;
+  password: string | null;
+  search: string | null;
+  select: string | null;
+  files: string | null;
+  array: Array<{input1: string; input2: string;}>;
+}
 
-const resetFormHandler = () => {
-  // form.reset();
-};
-
-const domainSearchResource = makeResource(async (params: ResourceRequest) => {
-  const response = await setTimeout(1000, [1, 2, 3]);
-  return {
-    data: response,
-  } as ResourceResponse;
+const formModel = signal<FormModel>({
+  input: null,
+  password: null,
+  search: null,
+  select: null,
+  files: null,
+  array: [
+    { 
+      input1: 'input1', 
+      input2: 'input2' 
+    },
+  ]
 });
 
-const filesResource = makeResource(async (params: ResourceRequest) => {
-  const response = await setTimeout(1000, [1, 2, 3]);
-  return {
-    data: response,
-  } as ResourceResponse;
-});
+// const addressSchema = schema<Address>((addr) => {
+//   required(addr.street);
+//   required(addr.city);
+//   required(addr.zipCode);
+//   validate(addr.street, async ({value}) => await checkStreetExist(value()));
+//   validate(addr.city, cityExistValidator);
+//   validate(addr.zipCode, ({value}) => value() > 0 ? undefined : 'Zip Code должн быть больше 0');
+// });
+
+const formSchema = (f) => {
+  // readonly(f.userId);
+  // apply(f.adress, addressSchema)
+}
+
+const testForm = form(formModel, formSchema);
 
 function App() {
   useSignals();
   return (
     <>
-      <div className="flex w-full gap-8">
-        <Form className="flex flex-col gap-4">
-          <FormField
-            type={InputSearch}
-            control={form.controls.domain}
-            resource={domainSearchResource}
-          />
-          <FormField type={Input} control={form.controls.email} />
-          <FormField type={InputPassword} control={form.controls.password} />
-          <FormField
-            type={InputFiles}
-            control={form.controls.file}
-            resource={filesResource}
-          />
-          {/* TODO: form.controls.subForm form.controls.subForms */}
-          <Button className="font-bold mt-6" onClick={() => resetFormHandler()}>
-            Reset form
-          </Button>
-        </Form>
-        <pre>{JSON.stringify(form.controls.email.value, null, ' ')}</pre>
+      <div className="container mx-auto px-4 pt-6 pb-6 max-w-6xl">
+        <div className="flex w-full gap-8">
+          <div>
+            <Form className="flex flex-col gap-4">
+              <FormField control={testForm.input} type={Input} />
+              <FormField control={testForm.password} type={InputPassword} />
+              <FormField control={testForm.search} type={InputSearch} resource={inputSearchResource}/>
+              <FormField control={testForm.select} type={Select} resource={selectResource}/>
+              <FormField control={testForm.files} type={InputFiles} resource={filesResource} uploader={fileUploader}/>
+              {testForm.array.map((formGroup, index, arr) => {
+                return (
+                <div key={index} className="p-2 border border-gray-300 rounded-md bg-gray-50 space-y-2">
+                  <FormField control={formGroup.input1} type={Input} />
+                  <FormField control={formGroup.input2} type={Input} />
+                </div>
+              )})}
+              {/* TODO: form.subForm form.subForms */}
+              <Button className="font-bold mt-6" onClick={() => testForm.reset()}>
+                Reset form
+              </Button>
+            </Form>
+          </div>
+          <div>
+            <h2>testForm</h2>
+            <pre>{JSON.stringify(testForm.value, null, ' ')}</pre>
+          </div>
+            <div>
+            <h2>formModel</h2>
+            <pre>{JSON.stringify(formModel, null, ' ')}</pre>
+          </div>
+        </div>
       </div>
     </>
   );

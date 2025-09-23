@@ -1,5 +1,23 @@
 import * as React from 'react';
+import { cn } from '@/lib/utils';
 
-export function Form({ className, ...props }: React.ComponentProps<any>) {
-  return <div className={className}>{props.children}</div>;
+export interface FormProps extends React.ComponentProps<'form'> {
+  className?: string;
 }
+
+const Form = React.forwardRef<HTMLFormElement, FormProps>(
+  ({ children, ...props }, ref) => {
+    return (
+      <form
+        ref={ref}
+        {...props}
+      >
+        {children}
+      </form>
+    );
+  }
+);
+
+Form.displayName = 'Form';
+
+export { Form };

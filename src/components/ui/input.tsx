@@ -1,37 +1,61 @@
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+import type { Field } from '@/forms/forms';
 
-function Input({
-  className,
-  control,
-  type,
-  ...props
-}: React.ComponentProps<any>) {
-  const changeHandler = (value) => {
-    debugger;
-    control.value = {
-      ...control.value,
-      value: value.target.value,
-    };
-  };
-  return (
-    <div>
-      Input:
-      <input
-        type="text"
-        data-slot="input"
-        className={cn(
-          'file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
-          'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-          'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
-          className
-        )}
-        onChange={(value) => changeHandler(value)}
-        {...props}
-      />
-    </div>
-  );
+export interface InputProps {
+  className?: string;
+  control: Field<string | number>;
+  type?: 'text' | 'email' | 'number' | 'tel' | 'url';
+  placeholder?: string;
+  disabled?: boolean;
 }
+
+const Input = React.forwardRef<
+  HTMLInputElement,
+  InputProps & Omit<React.InputHTMLAttributes<HTMLInputElement>, keyof InputProps>
+>(({ className, control, type = 'text', placeholder, disabled, ...props }, ref) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+
+    if (type === 'number') {
+      const numValue = value === '' ? '' : Number(value);
+      control.value.value = numValue;
+    } else {
+      control.value.value = value;
+    }
+  };
+
+  const inputValue = React.useMemo(() => {
+    const value = control.value.value;
+    if (type === 'number' && typeof value === 'number') {
+      return value.toString();
+    }
+    return value || '';
+  }, [control.value.value, type]);
+
+  return (
+    <input
+      ref={ref}
+      type={type}
+      value={inputValue}
+      disabled={disabled}
+      placeholder={placeholder}
+      data-slot="input"
+      className={cn(
+        'h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors',
+        'placeholder:text-muted-foreground',
+        'focus-visible:outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+        className
+      )}
+      onChange={handleInputChange}
+      {...props}
+    />
+  );
+});
+
+Input.displayName = 'Input';
 
 export { Input };
