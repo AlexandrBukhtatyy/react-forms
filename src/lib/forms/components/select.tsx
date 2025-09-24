@@ -8,7 +8,7 @@ import type { Resource } from '@/forms/core/make-resource'
 
 export interface SelectProps {
   className?: string;
-  control: Field<string | string[]>;
+  control: Field<any | any[]>;
   resource?: Resource;
   placeholder?: string;
   disabled?: boolean;
@@ -36,20 +36,24 @@ const Select = React.forwardRef<
   }, [resource]);
 
   const handleValueChange = (value: string) => {
+    const selectedOption = options.find(option => option.value === value);
     if (multiple) {
       const currentValues = Array.isArray(control.value.value) ? control.value.value : [];
-      const newValues = currentValues.includes(value)
-        ? currentValues.filter(v => v !== value)
-        : [...currentValues, value];
+      const isAlreadySelected = currentValues.some(v =>
+        (typeof v === 'object' ? v.value : v) === value
+      );
+      const newValues = isAlreadySelected
+        ? currentValues.filter(v => (typeof v === 'object' ? v.value : v) !== value)
+        : [...currentValues, selectedOption];
       control.value.value = newValues;
     } else {
-      control.value.value = value;
+      control.value.value = selectedOption;
     }
   };
 
   const currentValue = multiple
     ? (Array.isArray(control.value.value) ? control.value.value : [])
-    : (control.value.value || "");
+    : (typeof control.value.value === 'object' ? control.value.value?.value || "" : control.value.value || "");
 
   return (
     <SelectPrimitive.Root

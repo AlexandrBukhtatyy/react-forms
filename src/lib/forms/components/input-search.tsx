@@ -7,7 +7,7 @@ import type { Resource } from '@/forms/core/make-resource';
 
 export interface InputSearchProps {
   className?: string;
-  control: Field<string>;
+  control: Field<any>;
   resource?: Resource;
   placeholder?: string;
   disabled?: boolean;
@@ -21,7 +21,11 @@ const InputSearch = React.forwardRef<
   const [suggestions, setSuggestions] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
-  const [inputValue, setInputValue] = React.useState(control.value.value || '');
+  const [inputValue, setInputValue] = React.useState(
+    typeof control.value.value === 'object'
+      ? (control.value.value?.title || control.value.value?.label || '')
+      : (control.value.value || '')
+  );
   const timeoutRef = React.useRef<NodeJS.Timeout>();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,14 +59,14 @@ const InputSearch = React.forwardRef<
 
   const handleSuggestionClick = (suggestion: any) => {
     const selectedValue = suggestion.title || suggestion.label || suggestion.value;
-    control.value.value = selectedValue;
+    control.value.value = suggestion;
     setInputValue(selectedValue);
     setShowSuggestions(false);
     setSuggestions([]);
   };
 
   const handleClear = () => {
-    control.value.value = '';
+    control.value.value = null;
     setInputValue('');
     setSuggestions([]);
     setShowSuggestions(false);
