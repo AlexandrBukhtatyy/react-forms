@@ -1,4 +1,4 @@
-import { makeFileUploader, type FileUploaderRequest, type FileUploaderResponse } from "../make-file-uploader";
+import { makeFileUploader, type FileUploaderRequest, type FileUploaderResponse } from "../core/make-file-uploader";
 
 export const fileUploader = makeFileUploader(async (params: FileUploaderRequest): Promise<FileUploaderResponse> => {
   try {

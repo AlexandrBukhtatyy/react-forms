@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
-import type { Field } from '@/forms/forms';
+import type { Field } from '@/forms/core/forms';
 
 export interface InputProps {
   className?: string;

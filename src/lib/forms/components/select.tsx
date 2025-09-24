@@ -3,8 +3,8 @@ import * as SelectPrimitive from "@radix-ui/react-select"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import type { Field } from '@/forms/forms'
-import type { Resource } from '@/forms/make-resource'
+import type { Field } from '@/forms/core/forms'
+import type { Resource } from '@/forms/core/make-resource'
 
 export interface SelectProps {
   className?: string;

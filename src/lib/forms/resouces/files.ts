@@ -1,4 +1,4 @@
-import { makeResource, type ResourceRequest, type ResourceResponse } from "../make-resource";
+import { makeResource, type ResourceRequest, type ResourceResponse } from "../core/make-resource";
 
 interface FileInfo {
   id: string;
