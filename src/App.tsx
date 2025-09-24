@@ -59,7 +59,7 @@ function App() {
   return (
     <>
       <div className="container mx-auto px-4 pt-6 pb-6 max-w-6xl">
-        <div className="flex w-full gap-8">
+        <div className="flex flex-col md:flex-row w-full gap-8">
           <div>
             <Form className="flex flex-col gap-4">
               <FormField control={testForm.input} type={Input} />
