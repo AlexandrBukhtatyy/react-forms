@@ -1,7 +1,13 @@
+import { mutateSignal } from '@/utils/mutate-signal';
 import { fetchUsers } from '../services/users';
-import { tableStore } from '../signals/tableSignals';
+import { tableStore, type TableStore } from '../signals/tableSignals';
 
 export const loadUsers = async (): Promise<void> => {
+  // TODO
+  // mutateSignal<TableStore>(tableStore, (draft) => {
+  //   draft.data.currentPage = 1;
+  // });
+
   tableStore.value = {
     ...tableStore.value,
     ui: { ...tableStore.value.ui, isLoading: true, error: null }
@@ -37,18 +43,16 @@ export const loadUsers = async (): Promise<void> => {
 };
 
 export const updateFilters = async (): Promise<void> => {
-  tableStore.value = {
-    ...tableStore.value,
-    data: { ...tableStore.value.data, currentPage: 1 }
-  };
+  mutateSignal<TableStore>(tableStore, (draft) => {
+    draft.data.currentPage = 1;
+  });
   await loadUsers();
 };
 
 export const changePage = async (page: number): Promise<void> => {
   if (page < 1 || page > tableStore.value.data.totalPages) return;
-  tableStore.value = {
-    ...tableStore.value,
-    data: { ...tableStore.value.data, currentPage: page }
-  };
+  mutateSignal<TableStore>(tableStore, (draft) => {
+    draft.data.currentPage = page;
+  })
   await loadUsers();
 };

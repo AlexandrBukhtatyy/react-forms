@@ -1,6 +1,6 @@
 import './App.css';
 import { useSignals } from '@preact/signals-react/runtime';
-import TablePage from './pages/table/TablePage';
+import TablePage from './pages/TablePage';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
 
 

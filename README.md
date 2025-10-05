@@ -1,17 +1,18 @@
+# Эксперементалный проект - песочници
+Суть проекта найти серебрянную пулу в организации проекта на React
+Что уже есть
+- DDD
+- Signals
+- Immer
+- Зародышь концепции работы с формами на сигналах
+
 # TODO
+- Сделать компоненты таблицы независимыми
+- Модалка - как сервис или промис - результат работы модалки
+- Поправить возвращаемые значения (Select + dataprovider, Search + dataprovider, Files + fileUploader)
+- Добавить базовые поля форы (DataPicker + period, Segment, Checkbox, Radio)
 
-- Поправить возвращаемые значения
-  - Select + dataprovider
-  - Search + dataprovider
-  - Files + fileUploader
-
-- Добавить базовые поля форы
-  - DataPicker + period
-  - Segment
-  - Checkbox
-  - Radio
-
-# Plan
+# Plan Forms
 - Реализовать конструктор формы
 - Реализовать валидацию
 - Реализовать поведение
