@@ -6,7 +6,7 @@ interface FilterFormProps {
   className?: string;
 }
 
-const FilterForm: React.FC<FilterFormProps> = ({ className }) => {
+const UsersFilterForm: React.FC<FilterFormProps> = ({ className }) => {
   const handleChange = (): void => {
     updateFilters();
   };
@@ -75,4 +75,4 @@ const FilterForm: React.FC<FilterFormProps> = ({ className }) => {
   );
 };
 
-export default FilterForm;
+export default UsersFilterForm;

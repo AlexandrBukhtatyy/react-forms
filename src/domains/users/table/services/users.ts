@@ -1,4 +1,19 @@
-import type { User, Filters } from '../signals/tableSignals';
+export interface Filters {
+  login: string;
+  email: string;
+  status: '' | 'active' | 'inactive';
+  role: '' | 'admin' | 'user' | 'moderator';
+  registrationDate: string; // ISO date string or empty
+}
+
+export interface User {
+  id: number;
+  login: string;
+  email: string;
+  status: 'active' | 'inactive';
+  role: 'admin' | 'user' | 'moderator';
+  registrationDate: string; // ISO date string
+}
 
 const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 

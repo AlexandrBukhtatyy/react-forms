@@ -1,9 +1,19 @@
 import React from 'react';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { currentPage, totalPages } from '../signals/tableSignals';
-import { changePage } from '../logic/tableLogic';
+import { type UsersTableStore } from '../../domains/users/table/signals/tableSignals';
+import { changePage } from '../../domains/users/table/logic/tableLogic';
+import { computed, type Signal } from '@preact/signals-react';
 
-const TablePagination: React.FC = () => {
+interface TablePaginationProps {
+  className?: string;
+  state: Signal<UsersTableStore>;
+  setting?: any;
+}
+
+const TablePagination: React.FC<TablePaginationProps> = ({ className, state }) => {
+  const currentPage = computed(() => state.value.data.currentPage);
+  const totalPages = computed(() => state.value.data.totalPages);
+
   const handlePrevious = (e: React.MouseEvent) => {
     e.preventDefault();
     if (currentPage.value > 1) {

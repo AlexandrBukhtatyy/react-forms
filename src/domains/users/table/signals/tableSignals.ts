@@ -1,23 +1,7 @@
 import { signal, computed } from '@preact/signals-react';
+import type { User, Filters } from '../services/users';
 
-export interface Filters {
-  login: string;
-  email: string;
-  status: '' | 'active' | 'inactive';
-  role: '' | 'admin' | 'user' | 'moderator';
-  registrationDate: string; // ISO date string or empty
-}
-
-export interface User {
-  id: number;
-  login: string;
-  email: string;
-  status: 'active' | 'inactive';
-  role: 'admin' | 'user' | 'moderator';
-  registrationDate: string; // ISO date string
-}
-
-export interface TableStore {
+export interface UsersTableStore {
   filters: Filters;
   data: {
     users: User[];
@@ -32,7 +16,7 @@ export interface TableStore {
   };
 }
 
-export const tableStore = signal<TableStore>({
+export const tableStore = signal<UsersTableStore>({
   filters: {
     login: '',
     email: '',
@@ -54,9 +38,4 @@ export const tableStore = signal<TableStore>({
 });
 
 // Computed сигналы для удобного доступа
-export const currentUsers = computed(() => tableStore.value.data.users);
-export const isLoading = computed(() => tableStore.value.ui.isLoading);
-export const currentPage = computed(() => tableStore.value.data.currentPage);
-export const totalPages = computed(() => tableStore.value.data.totalPages);
 export const filters = computed(() => tableStore.value.filters);
-export const hasError = computed(() => tableStore.value.ui.error !== null);

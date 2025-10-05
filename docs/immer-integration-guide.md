@@ -253,7 +253,6 @@ export const isLoading = computed(() => tableStore.value.ui.isLoading);
 export const currentPage = computed(() => tableStore.value.data.currentPage);
 export const totalPages = computed(() => tableStore.value.data.totalPages);
 export const filters = computed(() => tableStore.value.filters);
-export const hasError = computed(() => tableStore.value.ui.error !== null);
 ```
 
 ### logic/tableLogic.ts
