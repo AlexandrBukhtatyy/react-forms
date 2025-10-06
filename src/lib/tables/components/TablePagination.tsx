@@ -1,36 +1,40 @@
 import React from 'react';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { type UsersTableStore } from '../../../domains/users/table/signals/tableSignals';
-import { changePage } from '../../../domains/users/table/logic/tableLogic';
 import { computed, type Signal } from '@preact/signals-react';
+import type { TableState, TableActions } from '../types';
 
-interface TablePaginationProps {
+interface TablePaginationProps<T = any> {
   className?: string;
-  state: Signal<UsersTableStore>;
-  setting?: any;
+  state: Signal<TableState<T>>;
+  actions: TableActions<T>;
 }
 
-const TablePagination: React.FC<TablePaginationProps> = ({ className, state }) => {
-  const currentPage = computed(() => state.value.data.currentPage);
-  const totalPages = computed(() => state.value.data.totalPages);
+const TablePagination = <T extends Record<string, any>>({ className, state, actions }: TablePaginationProps<T>) => {
+  const currentPage = computed(() => state.value.data.page);
+  const totalCount = computed(() => state.value.data.totalCount);
+  const pageSize = computed(() => state.value.data.pageSize);
+  const totalPages = computed(() => Math.ceil(totalCount.value / pageSize.value));
 
-  const handlePrevious = (e: React.MouseEvent) => {
+  const handlePrevious = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (currentPage.value > 1) {
-      changePage(currentPage.value - 1);
+      actions.prevPage();
+      await actions.loadData();
     }
   };
 
-  const handleNext = (e: React.MouseEvent) => {
+  const handleNext = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (currentPage.value < totalPages.value) {
-      changePage(currentPage.value + 1);
+      actions.nextPage();
+      await actions.loadData();
     }
   };
 
-  const handlePageClick = (e: React.MouseEvent, page: number) => {
+  const handlePageClick = async (e: React.MouseEvent, page: number) => {
     e.preventDefault();
-    changePage(page);
+    actions.setPage(page);
+    await actions.loadData();
   };
 
   const getVisiblePages = (): (number | 'ellipsis')[] => {
@@ -73,10 +77,10 @@ const TablePagination: React.FC<TablePaginationProps> = ({ className, state }) =
   const visiblePages = getVisiblePages();
 
   const isPrevDisabled = currentPage.value === 1;
-  const isNextDisabled = currentPage.value === totalPages.value;
+  const isNextDisabled = currentPage.value === totalPages.value || totalPages.value === 0;
 
   return (
-    <Pagination>
+    <Pagination className={className}>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious

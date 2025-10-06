@@ -1,5 +1,4 @@
 import React from "react";
-import { type UsersTableStore } from "../../../domains/users/table/signals/tableSignals";
 import {
 	Table as TableComponent,
 	TableBody,
@@ -10,71 +9,80 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { computed, type Signal } from "@preact/signals-react";
-
-export interface ColumnConfig<T = any> {
-	key: string;
-	header: string;
-	value: (item: T) => React.ReactNode;
-	skeletonWidth?: string;
-}
+import type { TableState } from "../types";
 
 interface TableProps<T = any> {
 	className?: string;
-	state: Signal<UsersTableStore>;
-	columns: ColumnConfig<T>[];
+	state: Signal<TableState<T>>;
 }
 
-const Table: React.FC<TableProps> = ({ className, state, columns }) => {
-	const currentUsers = computed(() => state.value.data.users);
+const Table = <T extends Record<string, any>>({ className, state }: TableProps<T>) => {
+	const items = computed(() => state.value.data.items);
 	const isLoading = computed(() => state.value.ui.isLoading);
 	const error = computed(() => state.value.ui.error);
-	const pageSize = computed(() => state.value.data.pageSize);
+	const columns = computed(() => state.value.config.columns);
+	const messages = computed(() => state.value.config.messages);
+	const skeletonRows = computed(() => state.value.config.skeleton.rows);
 
 	return (
 		<div className={cn("w-full border-collapse overflow-hidden rounded-md", className)}>
 			<TableComponent>
 				<TableHeader>
 					<TableRow>
-						{columns.map((column) => (
-							<TableHead key={column.key}>{column.header}</TableHead>
+						{columns.value.map((column) => (
+							<TableHead key={column.key} className={column.headerClassName}>
+								{column.header}
+							</TableHead>
 						))}
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-		     {isLoading.value && !error.value && (
-		       Array.from({ length: pageSize.value }).map((_, index) => (
-		         <TableRow key={index}>
-							 {columns.map((column) => (
-								 <TableCell key={column.key}>
-									 <div className={cn("h-4 bg-gray-200 rounded animate-pulse", column.skeletonWidth || "w-20")} />
-								 </TableCell>
-							 ))}
-		         </TableRow>
-		       ))
-		     )}
-         {!isLoading.value && currentUsers.value?.length && !error.value && (
-		       currentUsers.value.map(user => (
-            <TableRow key={user.id}>
-							{columns.map((column) => (
-								<TableCell key={column.key}>{column.value(user)}</TableCell>
-							))}
-					  </TableRow>
-		       ))
-		     )}
-        {!isLoading.value && !currentUsers.value?.length && !error.value && (
-          <TableRow>
-						<TableCell colSpan={columns.length} className="h-24 text-center">
-							Нет данных.
-						</TableCell>
-					</TableRow>
-		     )}
-        {!isLoading.value && !currentUsers.value?.length && error.value && (
-          <TableRow>
-						<TableCell colSpan={columns.length} className="h-24 text-center text-red-500">
-							Ошибка: {error.value}
-						</TableCell>
-					</TableRow>
-		     )}
+					{/* Загрузка - скелетоны */}
+					{isLoading.value && !error.value && (
+						Array.from({ length: skeletonRows.value }).map((_, index) => (
+							<TableRow key={index}>
+								{columns.value.map((column) => (
+									<TableCell key={column.key}>
+										<div className={cn("h-4 bg-gray-200 rounded animate-pulse", column.skeleton?.width || "w-20")} />
+									</TableCell>
+								))}
+							</TableRow>
+						))
+					)}
+
+					{/* Данные загружены */}
+					{!isLoading.value && items.value?.length > 0 && !error.value && (
+						items.value.map((item, index) => (
+							<TableRow key={item.id || index}>
+								{columns.value.map((column) => (
+									<TableCell
+										key={column.key}
+										className={column.cellClassName ? column.cellClassName(item) : column.className}
+									>
+										{column.value(item)}
+									</TableCell>
+								))}
+							</TableRow>
+						))
+					)}
+
+					{/* Пустое состояние */}
+					{!isLoading.value && (!items.value || items.value.length === 0) && !error.value && (
+						<TableRow>
+							<TableCell colSpan={columns.value.length} className="h-24 text-center">
+								{messages.value.empty}
+							</TableCell>
+						</TableRow>
+					)}
+
+					{/* Ошибка */}
+					{!isLoading.value && error.value && (
+						<TableRow>
+							<TableCell colSpan={columns.value.length} className="h-24 text-center text-red-500">
+								{messages.value.error(error.value)}
+							</TableCell>
+						</TableRow>
+					)}
 				</TableBody>
 			</TableComponent>
 		</div>

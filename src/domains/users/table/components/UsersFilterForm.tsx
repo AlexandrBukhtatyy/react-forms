@@ -1,25 +1,36 @@
-import React from 'react';
-import { tableStore } from '../signals/tableSignals';
-import { updateFilters } from '../logic/tableLogic';
+import React, { useState } from 'react';
+import { usersTableActions } from '../store/usersTableStore';
+import type { Filters } from '../services/users';
 
 interface FilterFormProps {
   className?: string;
 }
 
 const UsersFilterForm: React.FC<FilterFormProps> = ({ className }) => {
-  const handleChange = (): void => {
-    updateFilters();
+  const [filters, setFilters] = useState<Filters>({
+    login: '',
+    email: '',
+    status: '',
+    role: '',
+    registrationDate: ''
+  });
+
+  const handleChange = async () => {
+    // Сбрасываем на первую страницу и загружаем с новыми фильтрами
+    usersTableActions.setPage(1);
+    await usersTableActions.loadData(filters);
   };
 
-  const updateFilter = <K extends keyof typeof tableStore.value.filters>(
+  const updateFilter = <K extends keyof Filters>(
     key: K,
-    value: typeof tableStore.value.filters[K]
+    value: Filters[K]
   ) => {
-    tableStore.value = {
-      ...tableStore.value,
-      filters: { ...tableStore.value.filters, [key]: value }
-    };
-    handleChange();
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+
+    // Обновляем фильтры и перезагружаем данные
+    usersTableActions.setPage(1);
+    usersTableActions.loadData(newFilters);
   };
 
   return (
@@ -28,7 +39,7 @@ const UsersFilterForm: React.FC<FilterFormProps> = ({ className }) => {
         Логин:
         <input
           type="text"
-          value={tableStore.value.filters.login}
+          value={filters.login}
           onChange={e => updateFilter('login', e.target.value)}
         />
       </label>{' '}
@@ -36,14 +47,14 @@ const UsersFilterForm: React.FC<FilterFormProps> = ({ className }) => {
         Почта:
         <input
           type="text"
-          value={tableStore.value.filters.email}
+          value={filters.email}
           onChange={e => updateFilter('email', e.target.value)}
         />
       </label>{' '}
       <label>
         Статус:
         <select
-          value={tableStore.value.filters.status}
+          value={filters.status}
           onChange={e => updateFilter('status', e.target.value as '' | 'active' | 'inactive')}
         >
           <option value="">Все</option>
@@ -54,7 +65,7 @@ const UsersFilterForm: React.FC<FilterFormProps> = ({ className }) => {
       <label>
         Роль:
         <select
-          value={tableStore.value.filters.role}
+          value={filters.role}
           onChange={e => updateFilter('role', e.target.value as '' | 'admin' | 'user' | 'moderator')}
         >
           <option value="">Все</option>
@@ -67,7 +78,7 @@ const UsersFilterForm: React.FC<FilterFormProps> = ({ className }) => {
         Дата регистрации:
         <input
           type="date"
-          value={tableStore.value.filters.registrationDate}
+          value={filters.registrationDate}
           onChange={e => updateFilter('registrationDate', e.target.value)}
         />
       </label>

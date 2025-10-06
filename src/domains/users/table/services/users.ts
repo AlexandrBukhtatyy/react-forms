@@ -59,3 +59,29 @@ export const fetchUsers = async (filters: Filters, page: number, pageSize: numbe
 
   return { users: usersForPage, totalCount, totalPages };
 };
+
+// Новая функция для работы с ResourceParams
+export interface ResourceParams {
+  page: number;
+  pageSize: number;
+  sortBy: string | null;
+  sortDirection: 'asc' | 'desc';
+  filters?: Record<string, any>;
+}
+
+export const fetchUsersResource = async (params: ResourceParams): Promise<{ items: User[]; total: number }> => {
+  const filters: Filters = {
+    login: params.filters?.login || '',
+    email: params.filters?.email || '',
+    status: params.filters?.status || '',
+    role: params.filters?.role || '',
+    registrationDate: params.filters?.registrationDate || ''
+  };
+
+  const result = await fetchUsers(filters, params.page, params.pageSize);
+
+  return {
+    items: result.users,
+    total: result.totalCount
+  };
+};
