@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { type UsersTableStore } from '../../domains/users/table/signals/tableSignals';
-import { changePage } from '../../domains/users/table/logic/tableLogic';
+import { type UsersTableStore } from '../../../domains/users/table/signals/tableSignals';
+import { changePage } from '../../../domains/users/table/logic/tableLogic';
 import { computed, type Signal } from '@preact/signals-react';
 
 interface TablePaginationProps {
