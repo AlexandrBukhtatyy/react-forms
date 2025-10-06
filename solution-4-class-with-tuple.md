@@ -58,6 +58,23 @@ interface TableOptions<T> {
     onSort?: (column: string, direction: 'asc' | 'desc') => void;
   };
 
+  // Функция загрузки данных
+  loadData?: (params: LoadDataParams) => Promise<LoadDataResult<T>>;
+}
+
+interface LoadDataParams {
+  page: number;
+  pageSize: number;
+  sortBy: string | null;
+  sortDirection: 'asc' | 'desc';
+  filters?: Record<string, any>;
+}
+
+interface LoadDataResult<T> {
+  items: T[];
+  totalCount: number;
+}
+
   // Скелетон
   skeleton?: {
     rows?: number;
@@ -168,6 +185,7 @@ interface TableActions<T> {
   updateConfig: (config: Partial<TableConfig<T>>) => void;
 
   // Утилиты
+  loadData: (filters?: Record<string, any>) => Promise<void>;
   refresh: () => Promise<void>;
   reset: () => void;
 }
@@ -445,9 +463,44 @@ class TableStore<T extends Record<string, any>> {
       },
 
       // Утилиты
+      loadData: async (filters?: Record<string, any>) => {
+        if (!this.options.loadData) {
+          console.warn('loadData function is not provided');
+          return;
+        }
+
+        mutateSignal<TableState<T>>(this.signal, (draft) => {
+          draft.ui.isLoading = true;
+          draft.ui.error = null;
+        });
+
+        try {
+          const params: LoadDataParams = {
+            page: this.signal.value.data.page,
+            pageSize: this.signal.value.data.pageSize,
+            sortBy: this.signal.value.ui.sortBy,
+            sortDirection: this.signal.value.ui.sortDirection,
+            filters
+          };
+
+          const result = await this.options.loadData(params);
+
+          mutateSignal<TableState<T>>(this.signal, (draft) => {
+            draft.data.items = result.items;
+            draft.data.totalCount = result.totalCount;
+            draft.ui.isLoading = false;
+          });
+        } catch (error) {
+          mutateSignal<TableState<T>>(this.signal, (draft) => {
+            draft.ui.error = error instanceof Error ? error.message : 'Unknown error';
+            draft.ui.isLoading = false;
+          });
+        }
+      },
+
       refresh: async () => {
-        // Placeholder для пользовательской логики загрузки
-        console.log('Refresh table data');
+        // Перезагружаем данные с текущими параметрами
+        await this.createActions().loadData();
       },
 
       reset: () => {
@@ -486,6 +539,30 @@ interface User {
   registrationDate: string;
 }
 
+// Функция загрузки данных
+async function fetchUsers(params: LoadDataParams): Promise<LoadDataResult<User>> {
+  const { page, pageSize, sortBy, sortDirection, filters } = params;
+
+  // Формируем URL с параметрами
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    ...(sortBy && { sortBy, sortDirection }),
+    ...(filters && Object.entries(filters).reduce((acc, [key, value]) => ({
+      ...acc,
+      [key]: value
+    }), {}))
+  });
+
+  const response = await fetch(`/api/users?${queryParams}`);
+  const data = await response.json();
+
+  return {
+    items: data.users,
+    totalCount: data.total
+  };
+}
+
 // Создаем таблицу
 const [usersTableState, usersTableActions] = createTable<User>({
   pageSize: 20,
@@ -514,13 +591,17 @@ const [usersTableState, usersTableActions] = createTable<User>({
     onRowClick: (user) => {
       console.log('Clicked user:', user);
     },
-    onSort: (column, direction) => {
-      console.log('Sort by:', column, direction);
-      // Загрузка данных с сортировкой
-      loadUsers({ sortBy: column, sortDirection: direction });
+    onSort: async (column, direction) => {
+      // Автоматическая перезагрузка данных при сортировке
+      await usersTableActions.loadData();
     }
-  }
+  },
+  // Функция загрузки данных
+  loadData: fetchUsers
 });
+
+// Загружаем данные при инициализации
+usersTableActions.loadData();
 
 // Использование в компоненте
 <Table state={usersTableState} />
@@ -529,22 +610,14 @@ const [usersTableState, usersTableActions] = createTable<User>({
 ### Работа с actions
 
 ```typescript
-// Загрузка данных
-async function loadUsers() {
-  usersTableActions.setLoading(true);
-  usersTableActions.setError(null);
+// Загрузка данных (автоматически управляет loading и error)
+await usersTableActions.loadData();
 
-  try {
-    const response = await fetch('/api/users');
-    const data = await response.json();
-
-    usersTableActions.setData(data.users, data.total);
-  } catch (error) {
-    usersTableActions.setError(error.message);
-  } finally {
-    usersTableActions.setLoading(false);
-  }
-}
+// Загрузка с фильтрами
+await usersTableActions.loadData({
+  status: 'active',
+  role: 'admin'
+});
 
 // Обновление пользователя
 function updateUser(id: number, updates: Partial<User>) {
@@ -552,8 +625,10 @@ function updateUser(id: number, updates: Partial<User>) {
 }
 
 // Удаление пользователя
-function deleteUser(id: number) {
+async function deleteUser(id: number) {
   usersTableActions.removeItem(id);
+  // Перезагружаем данные
+  await usersTableActions.refresh();
 }
 
 // Работа с выбором
@@ -568,23 +643,25 @@ function handleBulkAction() {
   usersTableActions.deselectAll();
 }
 
-// Пагинация
-function goToNextPage() {
+// Пагинация (автоматически перезагружает данные)
+async function goToNextPage() {
   usersTableActions.nextPage();
-  loadUsers();
+  await usersTableActions.loadData();
 }
 
 // Изменение размера страницы
-function changePageSize(size: number) {
+async function changePageSize(size: number) {
   usersTableActions.setPageSize(size);
-  loadUsers();
+  await usersTableActions.loadData();
 }
 
-// Сортировка
+// Сортировка (onSort handler вызовет loadData автоматически)
 function sortByColumn(column: string) {
   usersTableActions.sortBy(column);
-  // onSort handler будет вызван автоматически
 }
+
+// Обновление данных
+await usersTableActions.refresh();
 ```
 
 ### Использование в React компоненте
@@ -594,37 +671,55 @@ const UsersTable: React.FC = () => {
   // Создаем таблицу один раз
   const [state, actions] = React.useMemo(
     () => createTable<User>({
-      columns: [...],
-      features: { selectable: true, sortable: true }
+      columns: [
+        { key: 'id', header: 'ID', value: (user) => user.id },
+        { key: 'login', header: 'Логин', value: (user) => user.login, sortable: true },
+        { key: 'email', header: 'Почта', value: (user) => user.email }
+      ],
+      features: { selectable: true, sortable: true },
+      handlers: {
+        onSort: async () => {
+          await actions.loadData();
+        }
+      },
+      loadData: fetchUsers
     }),
     []
   );
 
   // Загружаем данные при монтировании
   React.useEffect(() => {
-    loadUsers();
+    actions.loadData();
   }, []);
 
-  async function loadUsers() {
-    actions.setLoading(true);
-    try {
-      const data = await fetchUsers();
-      actions.setData(data);
-    } catch (error) {
-      actions.setError(error.message);
-    }
-  }
+  const handlePrevPage = async () => {
+    actions.prevPage();
+    await actions.loadData();
+  };
+
+  const handleNextPage = async () => {
+    actions.nextPage();
+    await actions.loadData();
+  };
+
+  const handleFilterChange = async (filters: Record<string, any>) => {
+    actions.setPage(1); // Сбрасываем на первую страницу
+    await actions.loadData(filters);
+  };
 
   return (
     <div>
-      <button onClick={() => actions.selectAll()}>Выбрать все</button>
-      <button onClick={() => actions.deselectAll()}>Снять выбор</button>
+      <div>
+        <button onClick={() => actions.selectAll()}>Выбрать все</button>
+        <button onClick={() => actions.deselectAll()}>Снять выбор</button>
+        <button onClick={() => actions.refresh()}>Обновить</button>
+      </div>
 
       <Table state={state} />
 
       <div>
-        <button onClick={() => actions.prevPage()}>Назад</button>
-        <button onClick={() => actions.nextPage()}>Вперед</button>
+        <button onClick={handlePrevPage}>Назад</button>
+        <button onClick={handleNextPage}>Вперед</button>
       </div>
     </div>
   );
