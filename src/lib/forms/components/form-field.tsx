@@ -1,30 +1,48 @@
 import * as React from 'react';
+import { useSignals } from '@preact/signals-react/runtime';
+import type { FieldController } from '../core/field-controller';
 
-import { FormFieldError } from './form-field-error';
-import type { Field } from '../core/forms';
-
-export interface FormFieldProps<TComponent extends React.ComponentType<any> = React.ComponentType<any>> {
+export interface FormFieldProps {
+  control: FieldController;
   className?: string;
-  control: Field<any>;
-  type: TComponent;
+  label?: string;
 }
 
-export function FormField<TComponent extends React.ComponentType<any> = React.ComponentType<any>>({
-  className,
+export const FormField: React.FC<FormFieldProps> = ({
   control,
-  type: Component,
-  ...props
-}: FormFieldProps<TComponent> & Omit<React.ComponentProps<TComponent>, 'control' | 'type'>) {
-  const componentProps = {
-    control,
-    type: 'text',
-    ...props
-  } as React.ComponentProps<TComponent>;
+  className,
+  label
+}) => {
+  useSignals();
+
+  const Component = control.component;
 
   return (
     <div className={className}>
-      <Component {...componentProps} />
-      <FormFieldError control={control} />
+      {label && <label className="block mb-1 text-sm font-medium">{label}</label>}
+
+      <Component
+        value={control.value}
+        onChange={(e: any) => {
+          control.value = e.target?.value ?? e;
+        }}
+        onBlur={() => control.markAsTouched()}
+        disabled={control.status === 'disabled'}
+        aria-invalid={control.invalid}
+        {...control.componentProps}
+      />
+
+      {control.shouldShowError && (
+        <span className="text-red-500 text-sm mt-1 block">
+          {control.errors[0]?.message}
+        </span>
+      )}
+
+      {control.pending && (
+        <span className="text-gray-500 text-sm mt-1 block">
+          Проверка...
+        </span>
+      )}
     </div>
   );
-}
+};

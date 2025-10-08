@@ -142,11 +142,23 @@ export interface TableOptions<T> {
 // Table Actions
 // ============================================================================
 
+// ============================================================================
+// Helper Types
+// ============================================================================
+
+// Deep partial для безопасных обновлений вложенных объектов
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+// Типизированный updater для мутаций состояния
+export type StateUpdater<T> = (draft: T) => void;
+
 export interface TableActions<T> {
   // Управление данными
   setData: (items: T[], totalCount?: number) => void;
   appendData: (items: T[]) => void;
-  updateItem: (id: string | number, updates: Partial<T>) => void;
+  updateItem: (id: string | number, updates: DeepPartial<T>) => void;
   removeItem: (id: string | number) => void;
   clearData: () => void;
 

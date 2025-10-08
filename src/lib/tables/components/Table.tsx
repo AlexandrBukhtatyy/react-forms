@@ -8,21 +8,21 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { computed, type Signal } from "@preact/signals-react";
-import type { TableState } from "../types";
+import { computed } from "@preact/signals-react";
+import type { TableStore } from "../store/TableStore";
 
-interface TableProps<T = any> {
+interface TableProps<T extends Record<string, any> = any> {
 	className?: string;
-	state: Signal<TableState<T>>;
+	control: TableStore<T>;
 }
 
-const Table = <T extends Record<string, any>>({ className, state }: TableProps<T>) => {
-	const items = computed(() => state.value.data.items);
-	const isLoading = computed(() => state.value.ui.isLoading);
-	const error = computed(() => state.value.ui.error);
-	const columns = computed(() => state.value.config.columns);
-	const messages = computed(() => state.value.config.messages);
-	const skeletonRows = computed(() => state.value.config.skeleton.rows);
+const Table = <T extends Record<string, any>>({ className, control }: TableProps<T>) => {
+	const items = computed(() => control.signal.value.data.items);
+	const isLoading = computed(() => control.signal.value.ui.isLoading);
+	const error = computed(() => control.signal.value.ui.error);
+	const columns = computed(() => control.signal.value.config.columns);
+	const messages = computed(() => control.signal.value.config.messages);
+	const skeletonRows = computed(() => control.signal.value.config.skeleton.rows);
 
 	return (
 		<div className={cn("w-full border-collapse overflow-hidden rounded-md", className)}>

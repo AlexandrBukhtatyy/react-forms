@@ -1,4 +1,4 @@
-import UsersForm from '@/domains/users/form/UsersForm';
+import UsersForm from '@/domains/users/form/components/UsersForm';
 
 function FormPage() {
   return (

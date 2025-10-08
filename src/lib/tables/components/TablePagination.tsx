@@ -1,40 +1,39 @@
 import React from 'react';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { computed, type Signal } from '@preact/signals-react';
-import type { TableState, TableActions } from '../types';
+import type { TableStore } from '../store/TableStore';
 
-interface TablePaginationProps<T = any> {
+interface TablePaginationProps<T extends Record<string, any> = any> {
   className?: string;
-  state: Signal<TableState<T>>;
-  actions: TableActions<T>;
+  control: TableStore<T>;
 }
 
-const TablePagination = <T extends Record<string, any>>({ className, state, actions }: TablePaginationProps<T>) => {
-  const currentPage = computed(() => state.value.data.page);
-  const totalCount = computed(() => state.value.data.totalCount);
-  const pageSize = computed(() => state.value.data.pageSize);
+const TablePagination = <T extends Record<string, any>>({ className, control }: TablePaginationProps<T>) => {
+  const currentPage = computed(() => control.signal.value.data.page);
+  const totalCount = computed(() => control.signal.value.data.totalCount);
+  const pageSize = computed(() => control.signal.value.data.pageSize);
   const totalPages = computed(() => Math.ceil(totalCount.value / pageSize.value));
 
   const handlePrevious = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (currentPage.value > 1) {
-      actions.prevPage();
-      await actions.loadData();
+      control.prevPage();
+      await control.loadData();
     }
   };
 
   const handleNext = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (currentPage.value < totalPages.value) {
-      actions.nextPage();
-      await actions.loadData();
+      control.nextPage();
+      await control.loadData();
     }
   };
 
   const handlePageClick = async (e: React.MouseEvent, page: number) => {
     e.preventDefault();
-    actions.setPage(page);
-    await actions.loadData();
+    control.setPage(page);
+    await control.loadData();
   };
 
   const getVisiblePages = (): (number | 'ellipsis')[] => {

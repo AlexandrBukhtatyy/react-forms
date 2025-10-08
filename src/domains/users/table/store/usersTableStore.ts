@@ -5,7 +5,7 @@ import { fetchUsersResource, type User } from '../services/users';
 const usersResource = createServerPaginatedResource(fetchUsersResource);
 
 // Создаем table store с полной конфигурацией
-export const [usersTableState, usersTableActions] = createTable<User>({
+export const usersTable = createTable<User>({
   pageSize: 5,
   columns: [
     {
@@ -60,7 +60,7 @@ export const [usersTableState, usersTableActions] = createTable<User>({
   handlers: {
     onSort: async (column, direction) => {
       // При сортировке перезагружаем данные
-      await usersTableActions.loadData();
+      await usersTable.loadData();
     }
   }
 });

@@ -1,88 +1,86 @@
-import React, { useState } from 'react';
-import { usersTableActions } from '../store/usersTableStore';
-import type { Filters } from '../services/users';
+import React from 'react';
+import { Form } from '@/lib/forms/components/form';
+import { cn } from '@/lib/utils';
+import { Input } from '@/lib/forms/components/input';
+import { InputSearch } from '@/lib/forms/components/input-search';
+import { Select } from '@/lib/forms/components/select';
+import { statusResource } from '../resources/status.resource';
+import { roleResource } from '../resources/role.resource';
+import { FormField, FormStore } from '@/lib/forms';
+
+interface UsersFilterModel {
+  login: string | null;
+  email: string | null;
+  status: string | null;
+  role: string | null;
+  registrationDate: string | null;
+}
 
 interface FilterFormProps {
   className?: string;
+  onFilter?: (values: UsersFilterModel) => void;
 }
 
-const UsersFilterForm: React.FC<FilterFormProps> = ({ className }) => {
-  const [filters, setFilters] = useState<Filters>({
-    login: '',
-    email: '',
-    status: '',
-    role: '',
-    registrationDate: ''
-  });
+const makeUsersFilterForm = (): FormStore<UsersFilterModel> => {
+  return new FormStore({
+      login: {
+        value: null,
+        component: InputSearch,
+        componentProps: {
+          placeholder: 'Поиск по логину...',
+          debounce: 300
+        }
+      },
+      email: {
+        value: null,
+        component: InputSearch,
+        componentProps: {
+          placeholder: 'Поиск по email...',
+          debounce: 300
+        }
+      },
+      status: {
+        value: null,
+        component: Select,
+        componentProps: {
+          placeholder: 'Статус',
+          resource: statusResource
+        }
+      },
+      role: {
+        value: null,
+        component: Select,
+        componentProps: {
+          placeholder: 'Роль',
+          resource: roleResource
+        }
+      },
+      registrationDate: {
+        value: null,
+        component: Input, // TODO: Реализовать дату
+        componentProps: { placeholder: 'Дата регистрации' }
+      },
+    });
+}
 
-  const handleChange = async () => {
-    // Сбрасываем на первую страницу и загружаем с новыми фильтрами
-    usersTableActions.setPage(1);
-    await usersTableActions.loadData(filters);
-  };
+const UsersFilterForm: React.FC<FilterFormProps> = ({ className, onFilter }) => {
+  const form = React.useMemo(makeUsersFilterForm, []);
 
-  const updateFilter = <K extends keyof Filters>(
-    key: K,
-    value: Filters[K]
-  ) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-
-    // Обновляем фильтры и перезагружаем данные
-    usersTableActions.setPage(1);
-    usersTableActions.loadData(newFilters);
-  };
+  // Автоматическая фильтрация при изменении значений
+  React.useEffect(() => {
+    if (onFilter && form.valid) {
+      onFilter(form.getValue());
+    }
+  }, [form.dirty, onFilter]);
 
   return (
-    <div className={className}>
-      <label>
-        Логин:
-        <input
-          type="text"
-          value={filters.login}
-          onChange={e => updateFilter('login', e.target.value)}
-        />
-      </label>{' '}
-      <label>
-        Почта:
-        <input
-          type="text"
-          value={filters.email}
-          onChange={e => updateFilter('email', e.target.value)}
-        />
-      </label>{' '}
-      <label>
-        Статус:
-        <select
-          value={filters.status}
-          onChange={e => updateFilter('status', e.target.value as '' | 'active' | 'inactive')}
-        >
-          <option value="">Все</option>
-          <option value="active">Активный</option>
-          <option value="inactive">Неактивный</option>
-        </select>
-      </label>{' '}
-      <label>
-        Роль:
-        <select
-          value={filters.role}
-          onChange={e => updateFilter('role', e.target.value as '' | 'admin' | 'user' | 'moderator')}
-        >
-          <option value="">Все</option>
-          <option value="admin">Администратор</option>
-          <option value="user">Пользователь</option>
-          <option value="moderator">Модератор</option>
-        </select>
-      </label>{' '}
-      <label>
-        Дата регистрации:
-        <input
-          type="date"
-          value={filters.registrationDate}
-          onChange={e => updateFilter('registrationDate', e.target.value)}
-        />
-      </label>
-    </div>
+    <Form className={cn(className, "flex gap-4")}>
+      <FormField control={form.controls.login}/>
+      <FormField control={form.controls.email}/>
+      <FormField control={form.controls.status}/>
+      <FormField control={form.controls.role}/>
+      <FormField control={form.controls.registrationDate}/>
+    </Form>
   );
 };
 
