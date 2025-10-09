@@ -1,7 +1,7 @@
 import './App.css';
 import { useSignals } from '@preact/signals-react/runtime';
 import TablePage from './pages/TablePage';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './lib/ui/dialog';
 
 
 function App() {

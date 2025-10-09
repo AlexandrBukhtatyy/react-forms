@@ -6,7 +6,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from "@/components/ui/table";
+} from "@/lib/ui/table";
 import { cn } from "@/lib/utils";
 import { computed } from "@preact/signals-react";
 import type { TableStore } from "../store/TableStore";

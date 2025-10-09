@@ -1,6 +1,6 @@
 import React from 'react';
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { computed, type Signal } from '@preact/signals-react';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/lib/ui/pagination";
+import { computed } from '@preact/signals-react';
 import type { TableStore } from '../store/TableStore';
 
 interface TablePaginationProps<T extends Record<string, any> = any> {
