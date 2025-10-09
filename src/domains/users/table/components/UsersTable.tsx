@@ -17,6 +17,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ className }) => {
 
   return (
     <>
+      <h1 className="text-2xl font-bold mb-6">Таблица пользователей</h1>
       <UsersFilterForm className="mb-6"/>
       <TableToolbar className="mb-6"/>
       <Table className="mb-6" control={usersTable} />

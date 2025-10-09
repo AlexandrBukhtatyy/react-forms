@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/lib/ui/button';
 import { Input } from '@/lib/forms/components/input';
 import { InputPassword } from '@/lib/forms/components/input-password';
 import { InputSearch } from '@/lib/forms/components/input-search';
@@ -35,6 +35,7 @@ const createUsersForm = () => {
       value: null,
       component: Input,
       componentProps: {
+        label: 'Текст',
         placeholder: 'Введите текст...'
       }
     },
@@ -42,6 +43,7 @@ const createUsersForm = () => {
       value: null,
       component: InputPassword,
       componentProps: {
+        label: 'Пароль',
         placeholder: 'Введите пароль...'
       }
     },
@@ -49,6 +51,7 @@ const createUsersForm = () => {
       value: null,
       component: InputSearch,
       componentProps: {
+        label: 'Поиск',
         placeholder: 'Поиск...',
         resource: searchResource,
         debounce: 300
@@ -58,6 +61,7 @@ const createUsersForm = () => {
       value: null,
       component: Select,
       componentProps: {
+        label: 'Выбор',
         placeholder: 'Выберите вариант',
         resource: selectResource
       }
@@ -66,6 +70,7 @@ const createUsersForm = () => {
       value: null,
       component: InputFiles,
       componentProps: {
+        label: 'Файлы',
         uploader: fileUploader,
         accept: 'image/*,.pdf',
         maxSize: 5 * 1024 * 1024 // 5MB
@@ -103,46 +108,44 @@ function UsersForm() {
   };
 
   return (
-    <div className="container mx-auto px-4 pt-6 pb-6 max-w-6xl">
-      <div className="flex flex-col md:flex-row w-full gap-8">
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold mb-6">Форма пользователя</h1>
+    <div className="flex flex-col md:flex-row w-full gap-8">
+      <div className="flex-1">
+        <h1 className="text-2xl font-bold mb-6">Форма пользователя</h1>
 
-          <Form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <FormField control={form.controls.input} label="Текст" />
-            <FormField control={form.controls.password} label="Пароль" />
-            <FormField control={form.controls.search} label="Поиск" />
-            <FormField control={form.controls.select} label="Выбор" />
-            <FormField control={form.controls.files} label="Файлы" />
+        <Form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <FormField control={form.controls.input}/>
+          <FormField control={form.controls.password}/>
+          <FormField control={form.controls.search}/>
+          <FormField control={form.controls.select}/>
+          <FormField control={form.controls.files}/>
 
-            <div className="flex gap-2 mt-6">
-              <Button
-                type="submit"
-                disabled={form.invalid || form.submitting}
-                className="flex-1"
-              >
-                {form.submitting ? 'Сохранение...' : 'Сохранить'}
-              </Button>
+          <div className="flex gap-2 mt-6">
+            <Button
+              type="submit"
+              disabled={form.invalid || form.submitting}
+              className="flex-1"
+            >
+              {form.submitting ? 'Сохранение...' : 'Сохранить'}
+            </Button>
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => form.reset()}
-                disabled={form.submitting}
-              >
-                Сбросить
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+              disabled={form.submitting}
+            >
+              Сбросить
+            </Button>
+          </div>
 
-            {/* Индикаторы состояния */}
-            <div className="text-sm text-gray-500 space-y-1">
-              <div>Valid: {form.valid ? '✓' : '✗'}</div>
-              <div>Dirty: {form.dirty ? '✓' : '✗'}</div>
-              <div>Touched: {form.touched ? '✓' : '✗'}</div>
-              <div>Submitting: {form.submitting ? '✓' : '✗'}</div>
-            </div>
-          </Form>
-        </div>
+          {/* Индикаторы состояния */}
+          <div className="flex gap-6 text-sm text-gray-500 space-y-1">
+            <span>Valid: {form.valid ? '✓' : '✗'}</span>
+            <span>Dirty: {form.dirty ? '✓' : '✗'}</span>
+            <span>Touched: {form.touched ? '✓' : '✗'}</span>
+            <span>Submitting: {form.submitting ? '✓' : '✗'}</span>
+          </div>
+        </Form>
       </div>
     </div>
   );

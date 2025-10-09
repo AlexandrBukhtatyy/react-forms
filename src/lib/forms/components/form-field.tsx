@@ -10,8 +10,7 @@ export interface FormFieldProps {
 
 export const FormField: React.FC<FormFieldProps> = ({
   control,
-  className,
-  label
+  className
 }) => {
   useSignals();
 
@@ -19,7 +18,7 @@ export const FormField: React.FC<FormFieldProps> = ({
 
   return (
     <div className={className}>
-      {label && <label className="block mb-1 text-sm font-medium">{label}</label>}
+      {control.componentProps.label && <label className="block mb-1 text-sm font-medium">{control.componentProps.label}</label>}
 
       <Component
         value={control.value}
