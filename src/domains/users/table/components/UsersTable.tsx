@@ -15,10 +15,14 @@ const UsersTable: React.FC<UsersTableProps> = ({ className }) => {
     usersTable.loadData();
   }, []);
 
+  const handleFilter = (filters: any) => {
+    usersTable.setFilters(filters);
+  };
+
   return (
     <>
-      <h1 className="text-2xl font-bold mb-6">Таблица пользователей</h1>
-      <UsersFilterForm className="mb-6"/>
+      <UsersFilterForm className="mb-6" onFilter={handleFilter} />
+      {/* TODO: Сделать тулбар унифицированным */}
       <TableToolbar className="mb-6"/>
       <Table className="mb-6" control={usersTable} />
       <TablePagination control={usersTable} />

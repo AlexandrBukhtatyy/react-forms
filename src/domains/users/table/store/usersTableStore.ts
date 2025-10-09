@@ -59,7 +59,7 @@ export const usersTable = createTable<User>({
   },
   handlers: {
     onSort: async (column, direction) => {
-      // При сортировке перезагружаем данные
+      // При сортировке перезагружаем данные с сохранением фильтров
       await usersTable.loadData();
     }
   }

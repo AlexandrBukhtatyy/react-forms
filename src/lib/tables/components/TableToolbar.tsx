@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/lib/ui/button';
-import { useModal } from '@/context/ModalContext';
+import { useDialog } from '@/context/DialogContext';
 import UsersForm from '@/domains/users/form/components/UsersForm';
 
 interface TableToolbarProps {
@@ -8,10 +8,10 @@ interface TableToolbarProps {
 }
 
 const TableToolbar: React.FC<TableToolbarProps> = ({ className }) => {
-  const { openModal } = useModal();
+  const { openDialog } = useDialog();
 
   const clickHandler = () => {
-    const result = openModal(UsersForm).then(() => {
+    const result = openDialog('Таблица пользователей',UsersForm).then(() => {
       console.log("Ответ из модального окна:", result);
     });
   }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
 import { Button } from '@/lib/ui/button';
 import { Input } from '@/lib/forms/components/input';
@@ -12,6 +12,7 @@ import { searchResource } from '../resources/search.resource';
 import { selectResource } from '../resources/select.resource';
 import { fileUploader } from '../resources/file-uploader.resource';
 import { FormField, FormStore } from '@/lib/forms';
+import { useDialog } from '@/context/DialogContext';
 
 // ============================================================================
 // Модель формы
@@ -85,10 +86,15 @@ const createUsersForm = () => {
 // Компонент формы
 // ============================================================================
 
-function UsersForm() {
+interface UsersFormProps {
+  openInDialog?: boolean;
+}
+
+function UsersForm({ openInDialog = false }: UsersFormProps) {
   useSignals();
 
   const form = React.useMemo(() => createUsersForm(), []);
+  const { closeDialog } = useDialog();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,14 +110,17 @@ function UsersForm() {
 
     if (result) {
       console.log('Form submitted successfully:', result);
+
+      if (openInDialog) {
+        // TODO: Добавить алерт
+        closeDialog(result);
+      }
     }
   };
 
   return (
     <div className="flex flex-col md:flex-row w-full gap-8">
       <div className="flex-1">
-        <h1 className="text-2xl font-bold mb-6">Форма пользователя</h1>
-
         <Form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <FormField control={form.controls.input}/>
           <FormField control={form.controls.password}/>

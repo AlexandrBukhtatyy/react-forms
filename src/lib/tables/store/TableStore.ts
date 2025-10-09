@@ -13,6 +13,7 @@ export class TableStore<T extends Record<string, any>> {
   public signal: Signal<TableState<T>>;
   private options: TableOptions<T>;
   private idKey: keyof T;
+  private filters: Record<string, any> = {};
 
   constructor(options: TableOptions<T>, idKey: keyof T = 'id' as keyof T) {
     this.options = options;
@@ -260,10 +261,32 @@ export class TableStore<T extends Record<string, any>> {
   };
 
   // ============================================================================
+  // Фильтрация
+  // ============================================================================
+
+  public setFilters = (filters: Record<string, any>) => {
+    this.filters = filters;
+    this.mutate((draft) => { draft.data.page = 1; }); // Сброс на первую страницу при изменении фильтров
+    this.loadData(filters);
+  };
+
+  public getFilters = () => {
+    return this.filters;
+  };
+
+  public clearFilters = () => {
+    this.filters = {};
+    this.mutate((draft) => { draft.data.page = 1; });
+    this.loadData({});
+  };
+
+  // ============================================================================
   // Утилиты
   // ============================================================================
 
   public loadData = async (filters?: Record<string, any>) => {
+    const filtersToUse = filters ?? this.filters;
+
     this.mutate((draft) => {
       draft.ui.isLoading = true;
       draft.ui.error = null;
@@ -276,7 +299,7 @@ export class TableStore<T extends Record<string, any>> {
         pageSize: data.pageSize,
         sortBy: ui.sortBy,
         sortDirection: ui.sortDirection,
-        filters
+        filters: filtersToUse
       });
 
       this.mutate((draft) => {
