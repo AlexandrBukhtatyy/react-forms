@@ -24,7 +24,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       <Component
         value={control.value}
         onChange={(e: any) => {
-          control.value = e.target?.value ?? e;
+          control.value = e?.target?.value ?? e;
         }}
         onBlur={() => control.markAsTouched()}
         disabled={control.status === 'disabled'}

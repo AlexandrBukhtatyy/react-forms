@@ -9,6 +9,7 @@ import {
 } from "@/lib/ui/table";
 import { cn } from "@/lib/utils";
 import { computed } from "@preact/signals-react";
+import { useSignals } from "@preact/signals-react/runtime";
 import type { TableStore } from "../store/TableStore";
 
 interface TableProps<T extends Record<string, any> = any> {
@@ -17,6 +18,8 @@ interface TableProps<T extends Record<string, any> = any> {
 }
 
 const Table = <T extends Record<string, any>>({ className, control }: TableProps<T>) => {
+	useSignals();
+
 	const items = computed(() => control.signal.value.data.items);
 	const isLoading = computed(() => control.signal.value.ui.isLoading);
 	const error = computed(() => control.signal.value.ui.error);

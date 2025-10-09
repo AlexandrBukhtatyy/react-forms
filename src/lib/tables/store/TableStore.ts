@@ -10,7 +10,7 @@ import type {
 } from "../types";
 
 export class TableStore<T extends Record<string, any>> {
-  private _signal: Signal<TableState<T>>;
+  public signal: Signal<TableState<T>>;
   private options: TableOptions<T>;
   private idKey: keyof T;
 
@@ -19,12 +19,7 @@ export class TableStore<T extends Record<string, any>> {
     this.idKey = idKey;
 
     const initialState = this.createInitialState(options);
-    this._signal = signal(initialState);
-  }
-
-  // Публичный геттер для доступа к signal
-  public get signal(): Signal<TableState<T>> {
-    return this._signal;
+    this.signal = signal(initialState);
   }
 
   // Вспомогательный метод для сокращения повторяющихся вызовов mutateSignal

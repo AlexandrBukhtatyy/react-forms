@@ -1,67 +1,61 @@
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
-import type { Field } from '@/forms/core/forms'
-import type { Resource } from '@/forms/core/make-resource'
+import type { ResourceConfig } from '../resources/index'
 
-export interface SelectProps {
+export interface SelectProps extends Omit<React.ComponentProps<typeof SelectPrimitive.Root>, 'value' | 'onValueChange'> {
   className?: string;
-  control: Field<any | any[]>;
-  resource?: Resource;
+  value?: string | null;
+  onChange?: (value: string | null) => void;
+  onBlur?: () => void;
+  resource?: ResourceConfig;
   placeholder?: string;
   disabled?: boolean;
-  multiple?: boolean;
 }
 
 const Select = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Root>,
-  SelectProps & Omit<React.ComponentProps<typeof SelectPrimitive.Root>, keyof SelectProps>
->(({ className, control, resource, placeholder, disabled, multiple, ...props }, ref) => {
-  const [options, setOptions] = React.useState<Array<{id: string; label: string; value: string; group?: string}>>([]);
+  SelectProps
+>(({ className, value, onChange, onBlur, resource, placeholder, disabled, ...props }, ref) => {
+  const [options, setOptions] = React.useState<Array<{id: string | number; label: string; value: string; group?: string}>>([]);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
     if (resource) {
       setLoading(true);
-      resource.fetch({})
+      resource.load({})
         .then(response => {
-          if (response.success) {
-            setOptions(response.data);
-          }
+          setOptions(response.items.map(item => ({
+            id: item.id,
+            label: item.label,
+            value: String(item.value),
+            group: item.group
+          })));
         })
+        .catch(() => setOptions([]))
         .finally(() => setLoading(false));
     }
   }, [resource]);
 
-  const handleValueChange = (value: string) => {
-    const selectedOption = options.find(option => option.value === value);
-    if (multiple) {
-      const currentValues = Array.isArray(control.value.value) ? control.value.value : [];
-      const isAlreadySelected = currentValues.some(v =>
-        (typeof v === 'object' ? v.value : v) === value
-      );
-      const newValues = isAlreadySelected
-        ? currentValues.filter(v => (typeof v === 'object' ? v.value : v) !== value)
-        : [...currentValues, selectedOption];
-      control.value.value = newValues;
-    } else {
-      control.value.value = selectedOption;
-    }
+  const handleValueChange = (newValue: string) => {
+    onChange?.(newValue);
   };
 
-  const currentValue = multiple
-    ? (Array.isArray(control.value.value) ? control.value.value : [])
-    : (typeof control.value.value === 'object' ? control.value.value?.value || "" : control.value.value || "");
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onBlur?.();
+    }
+  };
 
   return (
     <SelectPrimitive.Root
       ref={ref}
       data-slot="select"
-      value={multiple ? undefined : currentValue as string}
+      value={value || ''}
       onValueChange={handleValueChange}
-      disabled={disabled}
+      onOpenChange={handleOpenChange}
+      disabled={disabled || loading}
       {...props}
     >
       <SelectTrigger className={className} disabled={loading}>

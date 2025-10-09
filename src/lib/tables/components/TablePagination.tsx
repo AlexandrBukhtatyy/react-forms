@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/lib/ui/pagination";
 import { computed } from '@preact/signals-react';
+import { useSignals } from '@preact/signals-react/runtime';
 import type { TableStore } from '../store/TableStore';
 
 interface TablePaginationProps<T extends Record<string, any> = any> {
@@ -9,6 +10,8 @@ interface TablePaginationProps<T extends Record<string, any> = any> {
 }
 
 const TablePagination = <T extends Record<string, any>>({ className, control }: TablePaginationProps<T>) => {
+  useSignals();
+
   const currentPage = computed(() => control.signal.value.data.page);
   const totalCount = computed(() => control.signal.value.data.totalCount);
   const pageSize = computed(() => control.signal.value.data.pageSize);
