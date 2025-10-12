@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, XIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ResourceConfig } from '../resources/index'
 
@@ -12,12 +12,13 @@ export interface SelectProps extends Omit<React.ComponentProps<typeof SelectPrim
   resource?: ResourceConfig;
   placeholder?: string;
   disabled?: boolean;
+  clearable?: boolean;
 }
 
 const Select = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Root>,
   SelectProps
->(({ className, value, onChange, onBlur, resource, placeholder, disabled, ...props }, ref) => {
+>(({ className, value, onChange, onBlur, resource, placeholder, disabled, clearable = false, ...props }, ref) => {
   const [options, setOptions] = React.useState<Array<{id: string | number; label: string; value: string; group?: string}>>([]);
   const [loading, setLoading] = React.useState(false);
 
@@ -48,20 +49,28 @@ const Select = React.forwardRef<
     }
   };
 
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange?.(null);
+  };
+
+  const showClearButton = clearable && value && !disabled && !loading;
+
   return (
-    <SelectPrimitive.Root
-      ref={ref}
-      data-slot="select"
-      value={value || ''}
-      onValueChange={handleValueChange}
-      onOpenChange={handleOpenChange}
-      disabled={disabled || loading}
-      {...props}
-    >
-      <SelectTrigger className={className} disabled={loading}>
-        <SelectValue placeholder={loading ? "Loading..." : placeholder || "Select an option..."} />
-      </SelectTrigger>
-      <SelectContent>
+    <div className="relative w-full">
+      <SelectPrimitive.Root
+        ref={ref}
+        data-slot="select"
+        value={value || ''}
+        onValueChange={handleValueChange}
+        onOpenChange={handleOpenChange}
+        disabled={disabled || loading}
+        {...props}
+      >
+        <SelectTrigger className={cn(className, showClearButton && "pr-8")} disabled={loading}>
+          <SelectValue placeholder={loading ? "Loading..." : placeholder || "Select an option..."} />
+        </SelectTrigger>
+        <SelectContent>
         {loading ? (
           <div className="px-2 py-1.5 text-sm text-muted-foreground">
             Loading...
@@ -97,6 +106,20 @@ const Select = React.forwardRef<
         )}
       </SelectContent>
     </SelectPrimitive.Root>
+
+    {/* Clear button */}
+    {showClearButton && (
+      <button
+        type="button"
+        className="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors bg-transparent border-none p-0 cursor-pointer focus:outline-none z-10"
+        onClick={handleClear}
+        aria-label="Clear selection"
+        tabIndex={-1}
+      >
+        <XIcon className="size-4" />
+      </button>
+    )}
+    </div>
   );
 });
 

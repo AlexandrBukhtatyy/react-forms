@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import UsersFilterForm from "./UsersFilterForm";
+import React, { useEffect, useMemo, useRef } from 'react';
+import { useSignals } from '@preact/signals-react/runtime';
+import UsersFilterForm, { makeUsersFilterForm } from "./UsersFilterForm";
 import { usersTable } from '../store/usersTableStore';
 import TableToolbar from '@/lib/tables/components/TableToolbar';
 import Table from '@/lib/tables/components/Table';
@@ -10,18 +11,30 @@ interface UsersTableProps {
 }
 
 const UsersTable: React.FC<UsersTableProps> = ({ className }) => {
+  useSignals();
+  const form = useMemo(makeUsersFilterForm, []);
+  const isInitializedRef = useRef(false);
+
+  // Автоматическая фильтрация при изменении значений
+  // Эффект сработает когда formValues изменится (так как это зависимость)
+  useEffect(() => {
+    // Пропускаем первый вызов (инициализацию)
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+      return;
+    }
+    // TODO: Масло масленное form.value.value
+    usersTable.setFilters(form.value.value);
+  }, [form.value.value]);
+
   useEffect(() => {
     // Загружаем данные при монтировании
     usersTable.loadData();
   }, []);
 
-  const handleFilter = (filters: any) => {
-    usersTable.setFilters(filters);
-  };
-
   return (
     <>
-      <UsersFilterForm className="mb-6" onFilter={handleFilter} />
+      <UsersFilterForm className="mb-6" control={form} />
       {/* TODO: Сделать тулбар унифицированным */}
       <TableToolbar className="mb-6"/>
       <Table className="mb-6" control={usersTable} />

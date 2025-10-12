@@ -10,13 +10,14 @@ export interface InputFilesProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   accept?: string;
   disabled?: boolean;
   placeholder?: string;
+  maxSize?: number;
   uploader?: {
     upload: (file: File) => Promise<any>;
   };
 }
 
 const InputFiles = React.forwardRef<HTMLInputElement, InputFilesProps>(
-  ({ className, onChange, onBlur, multiple = false, accept, disabled, placeholder, uploader, ...props }, ref) => {
+  ({ className, value, onChange, onBlur, multiple = false, accept, disabled, placeholder, maxSize, uploader, ...props }, ref) => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files;
 

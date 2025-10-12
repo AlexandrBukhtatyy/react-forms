@@ -18,10 +18,10 @@ interface UsersFilterModel {
 
 interface FilterFormProps {
   className?: string;
-  onFilter?: (values: UsersFilterModel) => void;
+  control: FormStore<UsersFilterModel>;
 }
 
-const makeUsersFilterForm = (): FormStore<UsersFilterModel> => {
+export const makeUsersFilterForm = (): FormStore<UsersFilterModel> => {
   return new FormStore({
       login: {
         value: null,
@@ -44,7 +44,8 @@ const makeUsersFilterForm = (): FormStore<UsersFilterModel> => {
         component: Select,
         componentProps: {
           placeholder: 'Статус',
-          resource: statusResource
+          resource: statusResource,
+          clearable: true
         }
       },
       role: {
@@ -52,7 +53,8 @@ const makeUsersFilterForm = (): FormStore<UsersFilterModel> => {
         component: Select,
         componentProps: {
           placeholder: 'Роль',
-          resource: roleResource
+          resource: roleResource,
+          clearable: true
         }
       },
       registrationDate: {
@@ -63,23 +65,14 @@ const makeUsersFilterForm = (): FormStore<UsersFilterModel> => {
     });
 }
 
-const UsersFilterForm: React.FC<FilterFormProps> = ({ className, onFilter }) => {
-  const form = React.useMemo(makeUsersFilterForm, []);
-
-  // Автоматическая фильтрация при изменении значений
-  React.useEffect(() => {
-    if (onFilter && form.valid) {
-      onFilter(form.getValue());
-    }
-  }, [form.dirty, onFilter]);
-
+const UsersFilterForm: React.FC<FilterFormProps> = ({ className, control }) => {
   return (
     <Form className={cn(className, "flex gap-4")}>
-      <FormField control={form.controls.login}/>
-      <FormField control={form.controls.email}/>
-      <FormField control={form.controls.status}/>
-      <FormField control={form.controls.role}/>
-      <FormField control={form.controls.registrationDate}/>
+      <FormField control={control.controls.login}/>
+      <FormField control={control.controls.email}/>
+      <FormField control={control.controls.status}/>
+      <FormField control={control.controls.role}/>
+      <FormField control={control.controls.registrationDate}/>
     </Form>
   );
 };

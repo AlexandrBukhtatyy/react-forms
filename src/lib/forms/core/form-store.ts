@@ -1,11 +1,12 @@
-import { signal } from "@preact/signals-react";
-import type { Signal } from "@preact/signals-react";
+import { signal, computed } from "@preact/signals-react";
+import type { Signal, ReadonlySignal } from "@preact/signals-react";
 import { FieldController } from "./field-controller";
 import type { FormSchema } from "../types";
 
 export class FormStore<T extends Record<string, any>> {
   private fields: Map<keyof T, FieldController<any>>;
   private _submitting: Signal<boolean>;
+  public value: ReadonlySignal<T>;
 
   constructor(schema: FormSchema<T>) {
     this.fields = new Map();
@@ -15,6 +16,15 @@ export class FormStore<T extends Record<string, any>> {
     for (const [key, config] of Object.entries(schema)) {
       this.fields.set(key as keyof T, new FieldController(config));
     }
+
+    // Создаем computed signal для отслеживания изменений значений
+    this.value = computed(() => {
+      const result = {} as T;
+      this.fields.forEach((field, key) => {
+        result[key] = field.value;
+      });
+      return result;
+    });
   }
 
   // ============================================================================

@@ -85,3 +85,28 @@ export const fetchUsersResource = async (params: ResourceParams): Promise<{ item
     total: result.totalCount
   };
 };
+
+export interface CreateUserData {
+  login: string;
+  email: string;
+  password: string;
+  status: 'active' | 'inactive';
+  role: 'admin' | 'user' | 'moderator';
+}
+
+export const createUser = async (data: CreateUserData): Promise<User> => {
+  await delay(1000); // Имитация API запроса
+
+  const newUser: User = {
+    id: allUsers.length + 1,
+    login: data.login,
+    email: data.email,
+    status: data.status,
+    role: data.role,
+    registrationDate: new Date().toISOString().split('T')[0]
+  };
+
+  allUsers.push(newUser);
+
+  return newUser;
+};

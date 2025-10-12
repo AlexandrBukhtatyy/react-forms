@@ -13,6 +13,7 @@ import { selectResource } from '../resources/select.resource';
 import { fileUploader } from '../resources/file-uploader.resource';
 import { FormField, FormStore } from '@/lib/forms';
 import { useDialog } from '@/context/DialogContext';
+import { createUser } from '@/domains/users/_shared/services/users';
 
 // ============================================================================
 // Модель формы
@@ -89,7 +90,7 @@ const createUsersForm = () => {
 interface UsersFormProps {
   openInDialog?: boolean;
 }
-
+// TODO: Понимать из контекста где было запущена форма а не через пропс openInDialog
 function UsersForm({ openInDialog = false }: UsersFormProps) {
   useSignals();
 
@@ -98,23 +99,23 @@ function UsersForm({ openInDialog = false }: UsersFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const result = await form.submit(async (values) => {
-      console.log('Submitting form:', values);
-
-      // Имитация API запроса
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      return { success: true, data: values };
-    });
-
-    if (result) {
-      console.log('Form submitted successfully:', result);
-
+    try {
+      const result = await form.submit(async (values) => {
+        const newUser = await createUser({
+          login: values.input || '',
+          email: values.search || '',
+          password: values.password || '',
+          status: 'active',
+          role: 'user'
+        });
+        return { success: true, data: newUser };
+      });
       if (openInDialog) {
-        // TODO: Добавить алерт
+        // TODO: Добавить алерт успеха
         closeDialog(result);
       }
+    } catch (error) {
+      // TODO: Добавить алерт ошибки
     }
   };
 
@@ -139,20 +140,11 @@ function UsersForm({ openInDialog = false }: UsersFormProps) {
 
             <Button
               type="button"
-              variant="outline"
               onClick={() => form.reset()}
               disabled={form.submitting}
             >
               Сбросить
             </Button>
-          </div>
-
-          {/* Индикаторы состояния */}
-          <div className="flex gap-6 text-sm text-gray-500 space-y-1">
-            <span>Valid: {form.valid ? '✓' : '✗'}</span>
-            <span>Dirty: {form.dirty ? '✓' : '✗'}</span>
-            <span>Touched: {form.touched ? '✓' : '✗'}</span>
-            <span>Submitting: {form.submitting ? '✓' : '✗'}</span>
           </div>
         </Form>
       </div>

@@ -16,12 +16,15 @@ export const FormField: React.FC<FormFieldProps> = ({
 
   const Component = control.component;
 
+  // Конвертируем null в пустую строку для избежания React warning
+  const safeValue = control.value ?? '';
+
   return (
     <div className={className}>
       {control.componentProps.label && <label className="block mb-1 text-sm font-medium">{control.componentProps.label}</label>}
 
       <Component
-        value={control.value}
+        value={safeValue}
         onChange={(e: any) => {
           control.value = e?.target?.value ?? e;
         }}

@@ -1,5 +1,5 @@
 import { createTable, createServerPaginatedResource } from '@/lib/tables';
-import { fetchUsersResource, type User } from '../services/users';
+import { fetchUsersResource, type User } from '../../_shared/services/users';
 
 // Создаем resource для загрузки пользователей
 const usersResource = createServerPaginatedResource(fetchUsersResource);
