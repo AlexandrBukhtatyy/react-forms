@@ -1,13 +1,13 @@
-# Вариант 2: Functional Builder Schema (Angular-подобный)
+# Вариант 2: Functional Schema (Angular Signal Forms style)
 
 ## Концепция
 
-Схема валидации задается через функцию-билдер с использованием DSL (Domain Specific Language), похожего на Angular Signal Forms. Использует паттерн "path" для доступа к полям.
+Схема валидации задается через **отдельные функции** (без билдера), похожие на Angular Signal Forms. Использует паттерн "path" для доступа к полям.
 
 ## Преимущества
 
 - ✅ Максимально похож на Angular Signal Forms
-- ✅ Выразительный DSL синтаксис
+- ✅ Простой и понятный API - только функции, без классов и билдеров
 - ✅ Отличная поддержка условной валидации
 - ✅ Легко добавлять новые правила валидации
 - ✅ Хорошая читаемость для сложных схем
@@ -15,7 +15,6 @@
 
 ## Недостатки
 
-- ⚠️ Более сложная реализация (3-4 дня)
 - ⚠️ Требует создания DSL инфраструктуры
 - ⚠️ Может быть непривычен для разработчиков, не знакомых с Angular
 
@@ -39,96 +38,109 @@ interface ValidationContext<T = any> {
   getField: <K extends keyof any>(key: K) => any;
 }
 
-// Билдер схемы
-interface SchemaBuilder<T extends Record<string, any>> {
-  // Built-in validators
-  required<K extends keyof T>(
-    path: FieldPath<T>[K],
-    options?: { message?: string }
-  ): SchemaBuilder<T>;
-
-  minLength<K extends keyof T>(
-    path: FieldPath<T>[K],
-    length: number,
-    options?: { message?: string }
-  ): SchemaBuilder<T>;
-
-  maxLength<K extends keyof T>(
-    path: FieldPath<T>[K],
-    length: number,
-    options?: { message?: string }
-  ): SchemaBuilder<T>;
-
-  email<K extends keyof T>(
-    path: FieldPath<T>[K],
-    options?: { message?: string }
-  ): SchemaBuilder<T>;
-
-  pattern<K extends keyof T>(
-    path: FieldPath<T>[K],
-    regex: RegExp,
-    options?: { message?: string }
-  ): SchemaBuilder<T>;
-
-  min<K extends keyof T>(
-    path: FieldPath<T>[K],
-    value: number,
-    options?: { message?: string }
-  ): SchemaBuilder<T>;
-
-  max<K extends keyof T>(
-    path: FieldPath<T>[K],
-    value: number,
-    options?: { message?: string }
-  ): SchemaBuilder<T>;
-
-  // Custom validator
-  validate<K extends keyof T>(
-    path: FieldPath<T>[K],
-    validator: (ctx: ValidationContext<T[K]>) => ValidationError | null,
-    options?: { message?: string }
-  ): SchemaBuilder<T>;
-
-  // Async validator
-  validateAsync<K extends keyof T>(
-    path: FieldPath<T>[K],
-    validator: (
-      ctx: ValidationContext<T[K]>
-    ) => Promise<ValidationError | null>,
-    options?: { debounce?: number }
-  ): SchemaBuilder<T>;
-
-  // Cross-field validation
-  validateTree(
-    validator: (ctx: ValidationContext<T>) => ValidationError | null,
-    options?: { targetField?: keyof T }
-  ): SchemaBuilder<T>;
-
-  // Conditional validation
-  applyWhenValue<K extends keyof T>(
-    path: FieldPath<T>[K],
-    condition: (value: T[K]) => boolean,
-    builder: (schema: SchemaBuilder<T>) => SchemaBuilder<T>
-  ): SchemaBuilder<T>;
-
-  // Update strategy
-  updateOn<K extends keyof T>(
-    path: FieldPath<T>[K],
-    strategy: 'change' | 'blur' | 'submit'
-  ): SchemaBuilder<T>;
-}
-
-// Функция для создания схемы
+// Функция для создания схемы (просто получает path, без билдера!)
 type FormValidationSchema<T extends Record<string, any>> = (
-  path: FieldPath<T>,
-  builder: SchemaBuilder<T>
+  path: FieldPath<T>
 ) => void;
 ```
 
-### Использование
+### Функции валидации
 
 ```typescript
-import { FormStore, formSchema } from './forms';
+// Built-in validators
+function required<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  options?: { message?: string }
+): void;
+
+function minLength<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  length: number,
+  options?: { message?: string }
+): void;
+
+function maxLength<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  length: number,
+  options?: { message?: string }
+): void;
+
+function email<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  options?: { message?: string }
+): void;
+
+function pattern<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  regex: RegExp,
+  options?: { message?: string }
+): void;
+
+function min<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  value: number,
+  options?: { message?: string }
+): void;
+
+function max<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  value: number,
+  options?: { message?: string }
+): void;
+
+// Custom validator
+function validate<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  validator: (ctx: ValidationContext<T[K]>) => ValidationError | null
+): void;
+
+// Async validator
+function validateAsync<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  validator: (ctx: ValidationContext<T[K]>) => Promise<ValidationError | null>,
+  options?: { debounce?: number }
+): void;
+
+// Cross-field validation
+function validateTree<T>(
+  validator: (ctx: ValidationContext<T>) => ValidationError | null,
+  options?: { targetField?: keyof T }
+): void;
+
+// Conditional validation
+function applyWhen<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  condition: (value: T[K]) => boolean,
+  schemaFn: (path: FieldPath<T>) => void
+): void;
+
+// Update strategy
+function updateOn<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  strategy: 'change' | 'blur' | 'submit'
+): void;
+```
+
+## Использование
+
+### Пример: Форма регистрации пользователя
+
+```typescript
+import { FormStore } from './forms';
+import {
+  required,
+  minLength,
+  maxLength,
+  email,
+  pattern,
+  min,
+  max,
+  validate,
+  validateAsync,
+  validateTree,
+  applyWhen,
+  updateOn,
+} from './forms/validators';
 
 interface UserFormModel {
   username: string;
@@ -141,38 +153,35 @@ interface UserFormModel {
   acceptTerms: boolean;
 }
 
-// Создаем схему валидации (Angular-стиль)
-const userValidationSchema: FormValidationSchema<UserFormModel> = (
-  path,
-  schema
-) => {
+// Создаем схему валидации (чистые функции, как в Angular!)
+const userValidationSchema = (path: FieldPath<UserFormModel>) => {
   // Required fields
-  schema.required(path.username, { message: 'Имя пользователя обязательно' });
-  schema.required(path.email, { message: 'Email обязателен' });
-  schema.required(path.password, { message: 'Пароль обязателен' });
-  schema.required(path.confirmPassword, { message: 'Подтвердите пароль' });
-  schema.required(path.age, { message: 'Возраст обязателен' });
-  schema.required(path.acceptTerms, { message: 'Примите условия' });
+  required(path.username, { message: 'Имя пользователя обязательно' });
+  required(path.email, { message: 'Email обязателен' });
+  required(path.password, { message: 'Пароль обязателен' });
+  required(path.confirmPassword, { message: 'Подтвердите пароль' });
+  required(path.age, { message: 'Возраст обязателен' });
+  required(path.acceptTerms, { message: 'Примите условия' });
 
   // String validators
-  schema.minLength(path.username, 3, { message: 'Минимум 3 символа' });
-  schema.maxLength(path.username, 20, { message: 'Максимум 20 символов' });
+  minLength(path.username, 3, { message: 'Минимум 3 символа' });
+  maxLength(path.username, 20, { message: 'Максимум 20 символов' });
 
   // Email validator
-  schema.email(path.email);
+  email(path.email);
 
   // Password validators
-  schema.minLength(path.password, 8, { message: 'Минимум 8 символов' });
-  schema.pattern(path.password, /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
+  minLength(path.password, 8, { message: 'Минимум 8 символов' });
+  pattern(path.password, /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
     message: 'Должен содержать буквы и цифры',
   });
 
   // Number validators
-  schema.min(path.age, 18, { message: 'Минимальный возраст: 18' });
-  schema.max(path.age, 100, { message: 'Максимальный возраст: 100' });
+  min(path.age, 18, { message: 'Минимальный возраст: 18' });
+  max(path.age, 100, { message: 'Максимальный возраст: 100' });
 
   // Custom validator
-  schema.validate(path.username, (ctx) => {
+  validate(path.username, (ctx) => {
     const value = ctx.value();
     if (value.includes(' ')) {
       return {
@@ -184,7 +193,7 @@ const userValidationSchema: FormValidationSchema<UserFormModel> = (
   });
 
   // Async validator (проверка уникальности)
-  schema.validateAsync(
+  validateAsync(
     path.username,
     async (ctx) => {
       const value = ctx.value();
@@ -201,10 +210,10 @@ const userValidationSchema: FormValidationSchema<UserFormModel> = (
   );
 
   // Update strategy
-  schema.updateOn(path.email, 'blur'); // Проверять только при потере фокуса
+  updateOn(path.email, 'blur'); // Проверять только при потере фокуса
 
   // Cross-field validation (проверка совпадения паролей)
-  schema.validateTree(
+  validateTree(
     (ctx) => {
       const formValue = ctx.formValue();
       if (formValue.password !== formValue.confirmPassword) {
@@ -219,13 +228,13 @@ const userValidationSchema: FormValidationSchema<UserFormModel> = (
   );
 
   // Conditional validation (город обязателен только для России)
-  schema.applyWhenValue(path.country, (value) => value === 'Russia', (schema) =>
-    schema.required(path.city, { message: 'Укажите город для России' })
-  );
+  applyWhen(path.country, (value) => value === 'Russia', (path) => {
+    required(path.city, { message: 'Укажите город для России' });
+  });
 
   // Complex conditional validation
-  schema.applyWhenValue(path.age, (age) => age < 18, (schema) => {
-    schema.minLength(path.username, 5, {
+  applyWhen(path.age, (age) => age < 18, (path) => {
+    minLength(path.username, 5, {
       message: 'Для несовершеннолетних требуется имя не короче 5 символов',
     });
   });
@@ -247,174 +256,118 @@ const form = new FormStore<UserFormModel>(
 );
 ```
 
-### Альтернативный синтаксис (цепочки методов)
+## Сравнение с Angular
+
+### Angular Signal Forms
 
 ```typescript
-const userValidationSchema = formSchema<UserFormModel>((path) => ({
-  username: schema =>
-    schema
-      .required({ message: 'Имя пользователя обязательно' })
-      .minLength(3)
-      .maxLength(20)
-      .custom((value) => !value.includes(' ') || 'Без пробелов')
-      .asyncValidate(checkUsernameAvailability, { debounce: 500 }),
+// Angular
+flightForm = form(this.flight, (path) => {
+  required(path.from);
+  minLength(path.from, 3);
+  validate(path.from, (ctx) => {
+    if (!allowed.includes(ctx.value())) {
+      return customError({ kind: 'city', value: ctx.value() });
+    }
+    return null;
+  });
+});
+```
 
-  email: schema =>
-    schema
-      .required()
-      .email()
-      .updateOn('blur')
-      .asyncValidate(checkEmailAvailability),
+### Наша реализация (идентично!)
 
-  password: schema =>
-    schema
-      .required()
-      .minLength(8)
-      .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Должен содержать буквы и цифры'),
+```typescript
+// React Forms
+const flightValidation = (path: FieldPath<FlightModel>) => {
+  required(path.from);
+  minLength(path.from, 3);
+  validate(path.from, (ctx) => {
+    if (!allowed.includes(ctx.value())) {
+      return { code: 'city', message: 'Invalid city', params: { value: ctx.value() } };
+    }
+    return null;
+  });
+};
 
-  confirmPassword: schema =>
-    schema
-      .required()
-      .matches('password', 'Пароли не совпадают'), // Helper для cross-field
-
-  age: schema =>
-    schema
-      .required()
-      .min(18)
-      .max(100),
-
-  acceptTerms: schema =>
-    schema.required().custom((value) => value === true || 'Примите условия'),
-}));
+const form = new FormStore<FlightModel>(fieldSchema, flightValidation);
 ```
 
 ## Реализация
 
-### SchemaBuilder класс
+### Внутренний механизм сбора правил
 
 ```typescript
-class SchemaBuilderImpl<T extends Record<string, any>>
-  implements SchemaBuilder<T>
-{
-  private rules: Map<keyof T, ValidationRule[]> = new Map();
+// ValidationSchemaBuilder - используется внутри для сбора правил
+class ValidationSchemaBuilder<T extends Record<string, any>> {
+  private fieldRules: Map<keyof T, ValidationRule[]> = new Map();
   private treeRules: TreeValidationRule[] = [];
   private conditionalRules: ConditionalRule<T>[] = [];
-  private updateStrategies: Map<keyof T, 'change' | 'blur' | 'submit'> =
-    new Map();
+  private updateStrategies: Map<keyof T, 'change' | 'blur' | 'submit'> = new Map();
 
-  required<K extends keyof T>(
-    path: FieldPath<T>[K],
-    options?: { message?: string }
-  ): SchemaBuilder<T> {
-    this.addRule(path.key, {
-      type: 'sync',
-      validator: Validators.required(options?.message),
-    });
-    return this;
-  }
-
-  minLength<K extends keyof T>(
-    path: FieldPath<T>[K],
-    length: number,
-    options?: { message?: string }
-  ): SchemaBuilder<T> {
-    this.addRule(path.key, {
-      type: 'sync',
-      validator: Validators.minLength(length, options?.message),
-    });
-    return this;
-  }
-
-  validate<K extends keyof T>(
-    path: FieldPath<T>[K],
-    validator: (ctx: ValidationContext<T[K]>) => ValidationError | null,
-    options?: { message?: string }
-  ): SchemaBuilder<T> {
-    this.addRule(path.key, {
-      type: 'sync',
-      validator: (value: T[K], formValue: T) => {
-        const ctx: ValidationContext<T[K]> = {
-          value: () => value,
-          formValue: () => formValue,
-          getField: (key) => formValue[key],
-        };
-        return validator(ctx);
-      },
-    });
-    return this;
-  }
-
-  validateAsync<K extends keyof T>(
-    path: FieldPath<T>[K],
-    validator: (
-      ctx: ValidationContext<T[K]>
-    ) => Promise<ValidationError | null>,
-    options?: { debounce?: number }
-  ): SchemaBuilder<T> {
-    this.addRule(path.key, {
-      type: 'async',
-      validator: async (value: T[K], formValue: T) => {
-        const ctx: ValidationContext<T[K]> = {
-          value: () => value,
-          formValue: () => formValue,
-          getField: (key) => formValue[key],
-        };
-        return await validator(ctx);
-      },
-      debounce: options?.debounce,
-    });
-    return this;
-  }
-
-  validateTree(
-    validator: (ctx: ValidationContext<T>) => ValidationError | null,
-    options?: { targetField?: keyof T }
-  ): SchemaBuilder<T> {
-    this.treeRules.push({
-      validator,
-      targetField: options?.targetField,
-    });
-    return this;
-  }
-
-  applyWhenValue<K extends keyof T>(
-    path: FieldPath<T>[K],
-    condition: (value: T[K]) => boolean,
-    builder: (schema: SchemaBuilder<T>) => SchemaBuilder<T>
-  ): SchemaBuilder<T> {
-    this.conditionalRules.push({
-      field: path.key,
-      condition,
-      builder,
-    });
-    return this;
-  }
-
-  updateOn<K extends keyof T>(
-    path: FieldPath<T>[K],
-    strategy: 'change' | 'blur' | 'submit'
-  ): SchemaBuilder<T> {
-    this.updateStrategies.set(path.key, strategy);
-    return this;
-  }
-
-  private addRule(field: keyof T, rule: ValidationRule): void {
-    if (!this.rules.has(field)) {
-      this.rules.set(field, []);
+  addFieldRule<K extends keyof T>(field: K, rule: ValidationRule): void {
+    if (!this.fieldRules.has(field)) {
+      this.fieldRules.set(field, []);
     }
-    this.rules.get(field)!.push(rule);
+    this.fieldRules.get(field)!.push(rule);
   }
 
-  // Метод для получения скомпилированных правил
-  compile(): CompiledSchema<T> {
-    return {
-      fieldRules: this.rules,
-      treeRules: this.treeRules,
-      conditionalRules: this.conditionalRules,
-      updateStrategies: this.updateStrategies,
-    };
-  }
+  // ... другие методы
 }
+
+// Глобальный стек билдеров (скрытый от пользователя!)
+const builderStack: ValidationSchemaBuilder<any>[] = [];
+```
+
+### Функции валидации (публичный API)
+
+```typescript
+/**
+ * Поле обязательно для заполнения
+ */
+export function required<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  options?: { message?: string }
+): void {
+  const builder = getCurrentBuilder<T>();
+  builder.addFieldRule(field.key, {
+    type: 'sync',
+    validator: (value: any): ValidationError | null => {
+      if (value === null || value === undefined || value === '') {
+        return {
+          code: 'required',
+          message: options?.message || 'Поле обязательно для заполнения',
+        };
+      }
+      return null;
+    },
+  });
+}
+
+/**
+ * Минимальная длина строки
+ */
+export function minLength<T, K extends keyof T>(
+  field: FieldPath<T>[K],
+  length: number,
+  options?: { message?: string }
+): void {
+  const builder = getCurrentBuilder<T>();
+  builder.addFieldRule(field.key, {
+    type: 'sync',
+    validator: (value: string): ValidationError | null => {
+      if (value && value.length < length) {
+        return {
+          code: 'minLength',
+          message: options?.message || `Минимальная длина: ${length}`,
+          params: { min: length, actual: value.length },
+        };
+      }
+      return null;
+    },
+  });
+}
+
+// ... остальные функции аналогично
 ```
 
 ### Создание path proxy
@@ -429,6 +382,28 @@ function createFieldPath<T extends Record<string, any>>(): FieldPath<T> {
       return undefined;
     },
   });
+}
+```
+
+### Компиляция схемы
+
+```typescript
+/**
+ * Компилирует схему валидации в объект с правилами
+ */
+export function compileValidationSchema<T extends Record<string, any>>(
+  schemaFn: (path: FieldPath<T>) => void
+): CompiledSchema<T> {
+  const builder = new ValidationSchemaBuilder<T>();
+  builderStack.push(builder);
+
+  try {
+    const path = createFieldPath<T>();
+    schemaFn(path); // Пользователь вызывает функции напрямую!
+    return builder.compile();
+  } finally {
+    builderStack.pop();
+  }
 }
 ```
 
@@ -447,17 +422,15 @@ export class FormStore<T extends Record<string, any>> {
 
     // Компилируем схему валидации
     if (validationSchema) {
-      const builder = new SchemaBuilderImpl<T>();
-      const path = createFieldPath<T>();
-      validationSchema(path, builder);
-      this.compiledSchema = builder.compile();
+      this.compiledSchema = compileValidationSchema(validationSchema);
     }
 
     // Создаем контроллеры с примененной валидацией
     for (const [key, config] of Object.entries(schema)) {
-      const fieldRules = this.compiledSchema?.fieldRules.get(key as keyof T) || [];
+      const fieldKey = key as keyof T;
+      const fieldRules = this.compiledSchema?.fieldRules.get(fieldKey) || [];
       const updateStrategy =
-        this.compiledSchema?.updateStrategies.get(key as keyof T) || 'change';
+        this.compiledSchema?.updateStrategies.get(fieldKey) || 'change';
 
       const fieldConfig: FieldConfig<any> = {
         ...config,
@@ -471,15 +444,12 @@ export class FormStore<T extends Record<string, any>> {
           ...(config.asyncValidators || []),
           ...fieldRules
             .filter((r) => r.type === 'async')
-            .map(
-              (r) => async (value: any) =>
-                await r.validator(value, this.getValue())
-            ),
+            .map((r) => async (value: any) => await r.validator(value, this.getValue())),
         ],
         updateOn: updateStrategy,
       };
 
-      this.fields.set(key as keyof T, new FieldController(fieldConfig));
+      this.fields.set(fieldKey, new FieldController(fieldConfig));
     }
 
     // Применяем tree validators
@@ -524,26 +494,25 @@ export class FormStore<T extends Record<string, any>> {
 ```typescript
 describe('Functional ValidationSchema', () => {
   it('должен компилировать схему валидации', () => {
-    const schema: FormValidationSchema<UserFormModel> = (path, builder) => {
-      builder.required(path.username);
-      builder.email(path.email);
+    const schema = (path: FieldPath<UserFormModel>) => {
+      required(path.username);
+      email(path.email);
     };
 
-    const compiled = compileSchema(schema);
+    const compiled = compileValidationSchema(schema);
 
     expect(compiled.fieldRules.get('username')).toBeDefined();
     expect(compiled.fieldRules.get('email')).toBeDefined();
   });
 
   it('должен применять условные правила', () => {
-    const schema: FormValidationSchema<UserFormModel> = (path, builder) => {
-      builder.applyWhenValue(path.age, (age) => age < 18, (schema) =>
-        schema.minLength(path.username, 5)
-      );
+    const schema = (path: FieldPath<UserFormModel>) => {
+      applyWhen(path.age, (age) => age < 18, (path) => {
+        minLength(path.username, 5);
+      });
     };
 
-    const compiled = compileSchema(schema);
-    // Проверяем что правило добавлено
+    const compiled = compileValidationSchema(schema);
     expect(compiled.conditionalRules).toHaveLength(1);
   });
 });
@@ -554,6 +523,11 @@ describe('Functional ValidationSchema', () => {
 ```typescript
 describe('FormStore with Functional Schema', () => {
   it('должен валидировать поля согласно схеме', async () => {
+    const validationSchema = (path: FieldPath<UserFormModel>) => {
+      required(path.username);
+      minLength(path.username, 3);
+    };
+
     const form = new FormStore<UserFormModel>(fieldSchema, validationSchema);
 
     form.controls.username.setValue('ab'); // Too short
@@ -562,62 +536,50 @@ describe('FormStore with Functional Schema', () => {
     expect(form.controls.username.invalid).toBe(true);
   });
 
-  it('должен применять условную валидацию', async () => {
+  it('должен применять cross-field валидацию', async () => {
+    const validationSchema = (path: FieldPath<UserFormModel>) => {
+      validateTree(
+        (ctx) => {
+          const form = ctx.formValue();
+          if (form.password !== form.confirmPassword) {
+            return { code: 'mismatch', message: 'Пароли не совпадают' };
+          }
+          return null;
+        },
+        { targetField: 'confirmPassword' }
+      );
+    };
+
     const form = new FormStore<UserFormModel>(fieldSchema, validationSchema);
 
-    form.controls.age.setValue(17);
-    form.controls.username.setValue('john'); // 4 символа, но нужно 5 для age < 18
+    form.controls.password.setValue('password123');
+    form.controls.confirmPassword.setValue('different');
     await form.validate();
 
-    expect(form.controls.username.invalid).toBe(true);
+    expect(form.controls.confirmPassword.invalid).toBe(true);
   });
 });
 ```
 
-## Сравнение с Angular
+## Ключевые отличия от варианта с билдером
 
-### Angular Signal Forms
-
-```typescript
-// Angular
-flightForm = form(this.flight, (path) => {
-  required(path.from);
-  minLength(path.from, 3);
-  validate(path.from, (ctx) => {
-    if (!allowed.includes(ctx.value())) {
-      return customError({ kind: 'city', value: ctx.value() });
-    }
-    return null;
-  });
-});
-```
-
-### Наша реализация
+### Было (с билдером):
 
 ```typescript
-// React Forms
-const flightValidation: FormValidationSchema<FlightModel> = (path, schema) => {
-  schema.required(path.from);
-  schema.minLength(path.from, 3);
-  schema.validate(path.from, (ctx) => {
-    if (!allowed.includes(ctx.value())) {
-      return { code: 'city', message: 'Invalid city', params: { value: ctx.value() } };
-    }
-    return null;
-  });
+const schema = (path: FieldPath<UserForm>, builder: SchemaBuilder<UserForm>) => {
+  builder.required(path.username);
+  builder.email(path.email);
 };
 ```
 
-## Сложность реализации
+### Стало (чистые функции):
 
-- **Время**: 3-4 дня
-- **Изменения**:
-  - Новые типы: `FieldPath`, `ValidationContext`, `SchemaBuilder`
-  - Новый класс: `SchemaBuilderImpl`
-  - Функции: `createFieldPath`, `compileSchema`
-  - Изменения в `FormStore`: интеграция с compiled schema
-  - Изменения в `FieldController`: поддержка динамических валидаторов
-- **Тестирование**: Средней сложности, требует тестирования компиляции схемы
+```typescript
+const schema = (path: FieldPath<UserForm>) => {
+  required(path.username);
+  email(path.email);
+};
+```
 
 ## Рекомендации
 
@@ -626,4 +588,4 @@ const flightValidation: FormValidationSchema<FlightModel> = (path, schema) => {
 - ✅ Нужна мощная система условной валидации
 - ✅ Важна выразительность и читаемость сложных схем
 - ✅ Планируется много кросс-филд валидаций
-- ✅ Можно выделить время на более сложную реализацию
+- ✅ Хочется максимально чистый API без лишних абстракций
