@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/lib/ui/button';
 import { useDialog } from '@/context/DialogContext';
 import UsersForm from '@/domains/users/form/components/UsersForm';
+import { usersTable } from '@/domains/users/table/store/usersTableStore';
 
 interface TableToolbarProps {
   className?: string;
@@ -11,8 +12,8 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ className }) => {
   const { openDialog } = useDialog();
 
   const clickHandler = () => {
-    const result = openDialog('Таблица пользователей',UsersForm).then(() => {
-      console.log("Ответ из модального окна:", result);
+    openDialog('Таблица пользователей', UsersForm).then((result) => {
+      usersTable.loadData();
     });
   }
 

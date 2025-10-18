@@ -1,6 +1,7 @@
 // DialogContext.tsx
 import React, { createContext, useState, useCallback, useContext, type ReactNode, type ComponentType } from "react";
-import { Dialog, DialogContent } from "@/lib/ui/dialog";
+import { Dialog, DialogContent, DialogHeader } from "@/lib/ui/dialog";
+import { DialogTitle } from "@radix-ui/react-dialog";
 
 type DialogState = {
   title: string;
@@ -35,7 +36,9 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       {dialog && (
         <Dialog open={!!dialog} onOpenChange={() => closeDialog()}>
           <DialogContent>
-            { dialog.title && <h2 className="text-2xl font-bold">{dialog.title}</h2>}
+            <DialogTitle>
+              { dialog.title && <span className="text-2xl font-bold">{dialog.title}</span>}
+            </DialogTitle>
             { ComponentInstance && <ComponentInstance openInDialog={ true }/> }
           </DialogContent>
         </Dialog>
