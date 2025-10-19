@@ -68,6 +68,46 @@ type PropertyType = 'apartment' | 'house' | 'car' | 'land' | 'none';
 type EducationLevel = 'secondary' | 'specialized' | 'higher' | 'postgraduate';
 
 // ============================================================================
+// Вложенные интерфейсы (Nested Forms)
+// ============================================================================
+
+/**
+ * Личные данные (вложенная форма)
+ */
+interface PersonalData {
+  lastName: string;
+  firstName: string;
+  middleName: string;
+  birthDate: string;
+  birthPlace: string;
+  gender: 'male' | 'female';
+}
+
+/**
+ * Паспортные данные (вложенная форма)
+ */
+interface PassportData {
+  series: string;
+  number: string;
+  issueDate: string;
+  issuedBy: string;
+  departmentCode: string;
+}
+
+/**
+ * Адрес (вложенная форма)
+ * Используется для адреса регистрации и адреса проживания
+ */
+interface Address {
+  region: string;
+  city: string;
+  street: string;
+  house: string;
+  apartment?: string;
+  postalCode: string;
+}
+
+// ============================================================================
 // Интерфейсы данных
 // ============================================================================
 
@@ -96,29 +136,21 @@ interface CreditApplicationForm {
   carPrice?: number;
 
   // ============================================================================
-  // Шаг 2: Персональные данные
+  // Шаг 2: Персональные данные (вложенные формы)
   // ============================================================================
 
-  lastName: string;
-  firstName: string;
-  middleName: string;
-  birthDate: string;
-  birthPlace: string;
-  gender: 'male' | 'female';
+  // Личные данные (вложенная форма)
+  personalData: PersonalData;
 
-  // Паспорт
-  passportSeries: string;
-  passportNumber: string;
-  passportIssueDate: string;
-  passportIssuedBy: string;
-  passportDepartmentCode: string;
+  // Паспортные данные (вложенная форма)
+  passportData: PassportData;
 
   // Другие документы
   inn: string;
   snils: string;
 
   // ============================================================================
-  // Шаг 3: Контактная информация
+  // Шаг 3: Контактная информация (вложенные формы)
   // ============================================================================
 
   phoneMain: string;
@@ -126,22 +158,12 @@ interface CreditApplicationForm {
   email: string;
   emailAdditional?: string;
 
-  // Адрес регистрации
-  registrationRegion: string;
-  registrationCity: string;
-  registrationStreet: string;
-  registrationHouse: string;
-  registrationApartment?: string;
-  registrationPostalCode: string;
+  // Адрес регистрации (вложенная форма)
+  registrationAddress: Address;
 
-  // Адрес проживания
+  // Адрес проживания (вложенная форма, опциональная)
   sameAsRegistration: boolean;
-  residenceRegion?: string;
-  residenceCity?: string;
-  residenceStreet?: string;
-  residenceHouse?: string;
-  residenceApartment?: string;
-  residencePostalCode?: string;
+  residenceAddress?: Address;
 
   // ============================================================================
   // Шаг 4: Информация о занятости
@@ -278,45 +300,129 @@ function validateFullName<T>(
 }
 
 /**
- * Валидация номера паспорта
+ * Валидация вложенной формы: Личные данные
  */
-function validatePassport<T>(path: FieldPath<T>) {
-  required(path.passportSeries as any, { message: 'Серия паспорта обязательна' });
-  pattern(path.passportSeries as any, /^\d{4}$/, {
-    message: 'Серия должна содержать 4 цифры',
-  });
+function validatePersonalData<T>(personalDataPath: FieldPath<T>[keyof T]) {
+  // Приводим к типу вложенной формы
+  const data = personalDataPath as any as FieldPath<PersonalData>;
 
-  required(path.passportNumber as any, { message: 'Номер паспорта обязателен' });
-  pattern(path.passportNumber as any, /^\d{6}$/, {
-    message: 'Номер должен содержать 6 цифр',
-  });
+  validateFullName(data.lastName, 'Фамилия');
+  validateFullName(data.firstName, 'Имя');
+  validateFullName(data.middleName, 'Отчество');
 
-  required(path.passportIssueDate as any, { message: 'Дата выдачи обязательна' });
-  required(path.passportIssuedBy as any, { message: 'Кем выдан обязательно' });
-  minLength(path.passportIssuedBy as any, 10);
+  required(data.birthDate, { message: 'Дата рождения обязательна' });
+  required(data.birthPlace, { message: 'Место рождения обязательно' });
+  minLength(data.birthPlace, 5);
 
-  required(path.passportDepartmentCode as any, { message: 'Код подразделения обязателен' });
-  pattern(path.passportDepartmentCode as any, /^\d{3}-\d{3}$/, {
-    message: 'Формат: 123-456',
+  required(data.gender, { message: 'Выберите пол' });
+
+  // Валидация возраста
+  validate(data.birthDate, (ctx) => {
+    const birthDate = new Date(ctx.value());
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+
+    if (age < 18) {
+      return {
+        code: 'tooYoung',
+        message: 'Заемщику должно быть не менее 18 лет',
+      };
+    }
+
+    if (age > 75) {
+      return {
+        code: 'tooOld',
+        message: 'Максимальный возраст заемщика: 75 лет',
+      };
+    }
+
+    return null;
   });
 }
 
 /**
- * Валидация адреса
+ * Валидация вложенной формы: Паспортные данные
+ */
+function validatePassportData<T>(passportDataPath: FieldPath<T>[keyof T]) {
+  // Приводим к типу вложенной формы
+  const passport = passportDataPath as any as FieldPath<PassportData>;
+
+  required(passport.series, { message: 'Серия паспорта обязательна' });
+  pattern(passport.series, /^\d{4}$/, {
+    message: 'Серия должна содержать 4 цифры',
+  });
+
+  required(passport.number, { message: 'Номер паспорта обязателен' });
+  pattern(passport.number, /^\d{6}$/, {
+    message: 'Номер должен содержать 6 цифр',
+  });
+
+  required(passport.issueDate, { message: 'Дата выдачи обязательна' });
+  required(passport.issuedBy, { message: 'Кем выдан обязательно' });
+  minLength(passport.issuedBy, 10);
+
+  required(passport.departmentCode, { message: 'Код подразделения обязателен' });
+  pattern(passport.departmentCode, /^\d{3}-\d{3}$/, {
+    message: 'Формат: 123-456',
+  });
+
+  // Валидация даты выдачи
+  validate(passport.issueDate, (ctx) => {
+    const issueDate = new Date(ctx.value());
+    const today = new Date();
+
+    if (issueDate > today) {
+      return {
+        code: 'issueDateInFuture',
+        message: 'Дата выдачи не может быть в будущем',
+      };
+    }
+
+    return null;
+  });
+}
+
+/**
+ * Валидация вложенной формы: Адрес
  */
 function validateAddress<T>(
-  path: FieldPath<T>,
-  prefix: 'registration' | 'residence'
+  addressPath: FieldPath<T>[keyof T],
+  fieldLabel: string = 'Адрес'
 ) {
-  const fields = path as any;
+  // Приводим к типу вложенной формы
+  const address = addressPath as any as FieldPath<Address>;
 
-  required(fields[`${prefix}Region`], { message: 'Регион обязателен' });
-  required(fields[`${prefix}City`], { message: 'Город обязателен' });
-  required(fields[`${prefix}Street`], { message: 'Улица обязательна' });
-  required(fields[`${prefix}House`], { message: 'Дом обязателен' });
-  required(fields[`${prefix}PostalCode`], { message: 'Индекс обязателен' });
+  required(address.region, { message: `${fieldLabel}: Регион обязателен` });
+  minLength(address.region, 2);
 
-  pattern(fields[`${prefix}PostalCode`], /^\d{6}$/, {
+  required(address.city, { message: `${fieldLabel}: Город обязателен` });
+  minLength(address.city, 2);
+
+  required(address.street, { message: `${fieldLabel}: Улица обязательна` });
+  minLength(address.street, 3);
+
+  required(address.house, { message: `${fieldLabel}: Дом обязателен` });
+  pattern(address.house, /^[\dА-Яа-я/-]+$/, {
+    message: 'Допустимы только буквы, цифры, дефис и слэш',
+  });
+
+  // Квартира опциональна
+  validate(address.apartment as any, (ctx) => {
+    const value = ctx.value();
+    if (!value) return null;
+
+    if (!/^[\dА-Яа-я/-]+$/.test(value)) {
+      return {
+        code: 'invalidFormat',
+        message: 'Допустимы только буквы, цифры, дефис и слэш',
+      };
+    }
+
+    return null;
+  });
+
+  required(address.postalCode, { message: `${fieldLabel}: Индекс обязателен` });
+  pattern(address.postalCode, /^\d{6}$/, {
     message: 'Индекс должен содержать 6 цифр',
   });
 }
@@ -514,41 +620,25 @@ const creditApplicationValidation = (path: FieldPath<CreditApplicationForm>) => 
   );
 
   // ============================================================================
-  // ШАГ 2: Персональные данные
+  // ШАГ 2: Персональные данные (с вложенными формами)
   // ============================================================================
 
   applyWhen(
     path.currentStep,
     (step) => step >= 2,
     (path) => {
-      // ФИО
-      validateFullName(path.lastName, 'Фамилия');
-      validateFullName(path.firstName, 'Имя');
-      validateFullName(path.middleName, 'Отчество');
+      // ========================================================================
+      // ВЛОЖЕННАЯ ФОРМА: Личные данные
+      // ========================================================================
+      validatePersonalData(path.personalData);
 
-      // Дата рождения
-      required(path.birthDate, { message: 'Дата рождения обязательна' });
-
-      validate(path.birthDate, (ctx) => {
+      // Дополнительная валидация возраста для ипотеки
+      validate(path.personalData.birthDate as any, (ctx) => {
         const birthDate = new Date(ctx.value());
         const today = new Date();
         const age = today.getFullYear() - birthDate.getFullYear();
 
-        if (age < 18) {
-          return {
-            code: 'tooYoung',
-            message: 'Заемщику должно быть не менее 18 лет',
-          };
-        }
-
-        if (age > 75) {
-          return {
-            code: 'tooOld',
-            message: 'Максимальный возраст заемщика: 75 лет',
-          };
-        }
-
-        // Дополнительная проверка для ипотеки
+        // Получаем данные из основной формы
         const loanType = ctx.getField('loanType');
         const loanTerm = ctx.getField('loanTerm');
 
@@ -565,37 +655,29 @@ const creditApplicationValidation = (path: FieldPath<CreditApplicationForm>) => 
         return null;
       });
 
-      // Место рождения
-      required(path.birthPlace, { message: 'Место рождения обязательно' });
-      minLength(path.birthPlace, 5);
+      // ========================================================================
+      // ВЛОЖЕННАЯ ФОРМА: Паспортные данные
+      // ========================================================================
+      validatePassportData(path.passportData);
 
-      // Пол
-      required(path.gender, { message: 'Выберите пол' });
+      // Cross-field валидация: дата выдачи не может быть раньше даты рождения
+      validateTree(
+        (ctx) => {
+          const form = ctx.formValue();
+          const issueDate = new Date(form.passportData.issueDate);
+          const birthDate = new Date(form.personalData.birthDate);
 
-      // Паспортные данные
-      validatePassport(path);
+          if (issueDate < birthDate) {
+            return {
+              code: 'issueDateBeforeBirth',
+              message: 'Дата выдачи паспорта не может быть раньше даты рождения',
+            };
+          }
 
-      validate(path.passportIssueDate, (ctx) => {
-        const issueDate = new Date(ctx.value());
-        const birthDate = new Date(ctx.getField('birthDate'));
-        const today = new Date();
-
-        if (issueDate < birthDate) {
-          return {
-            code: 'issueDateBeforeBirth',
-            message: 'Дата выдачи не может быть раньше даты рождения',
-          };
-        }
-
-        if (issueDate > today) {
-          return {
-            code: 'issueDateInFuture',
-            message: 'Дата выдачи не может быть в будущем',
-          };
-        }
-
-        return null;
-      });
+          return null;
+        },
+        { targetField: 'passportData.issueDate' }
+      );
 
       // ИНН
       required(path.inn, { message: 'ИНН обязателен' });
@@ -644,7 +726,7 @@ const creditApplicationValidation = (path: FieldPath<CreditApplicationForm>) => 
   );
 
   // ============================================================================
-  // ШАГ 3: Контактная информация
+  // ШАГ 3: Контактная информация (с вложенными формами)
   // ============================================================================
 
   applyWhen(
@@ -717,15 +799,19 @@ const creditApplicationValidation = (path: FieldPath<CreditApplicationForm>) => 
         { debounce: 700 }
       );
 
-      // Адрес регистрации
-      validateAddress(path, 'registration');
+      // ========================================================================
+      // ВЛОЖЕННАЯ ФОРМА: Адрес регистрации
+      // ========================================================================
+      validateAddress(path.registrationAddress, 'Адрес регистрации');
 
-      // Адрес проживания (если отличается от регистрации)
+      // ========================================================================
+      // ВЛОЖЕННАЯ ФОРМА: Адрес проживания (если отличается от регистрации)
+      // ========================================================================
       applyWhen(
         path.sameAsRegistration,
         (value) => value === false,
         (path) => {
-          validateAddress(path, 'residence');
+          validateAddress(path.residenceAddress as any, 'Адрес проживания');
         }
       );
     }

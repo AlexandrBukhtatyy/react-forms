@@ -18,7 +18,7 @@
 - ✅ Асинхронная валидация (проверка на сервере)
 - ✅ Сложные паттерны и динамические формы
 - ✅ Переиспользование валидации
-- ✅ Стратегии обновления (change/blur/submit)
+- ✅ Стратегии обновления (change/blur/submit) 
 
 **Ключевые разделы:**
 - Базовая структура и доступ к значениям
@@ -216,6 +216,35 @@ email(path.email);
 minLength(path.password, 8);
 ```
 
+### Вложенные формы (Nested Forms)
+```typescript
+// Интерфейс вложенной формы
+interface Address {
+  city: string;
+  street: string;
+  postalCode: string;
+}
+
+// Переиспользуемый валидатор
+function validateAddress<T>(addressPath: FieldPath<T>[keyof T]) {
+  const addr = addressPath as any as FieldPath<Address>;
+  required(addr.city);
+  required(addr.postalCode);
+  pattern(addr.postalCode, /^\d{6}$/, { message: '6 цифр' });
+}
+
+// Основная форма с вложенными адресами
+interface Form {
+  registrationAddress: Address;
+  residenceAddress?: Address;
+}
+
+const validation = (path: FieldPath<Form>) => {
+  validateAddress(path.registrationAddress);
+  validateAddress(path.residenceAddress as any);
+};
+```
+
 ### Cross-field валидация
 ```typescript
 validateTree(
@@ -270,19 +299,22 @@ validateAsync(
 ### Покрывает
 - ✅ 6 шагов формы
 - ✅ 40+ полей формы
+- ✅ **4 вложенные формы** (PersonalData, PassportData, Address x2)
 - ✅ 5 типов кредитов с разной логикой
 - ✅ 4 статуса занятости
 - ✅ 20+ условных правил
-- ✅ 10+ cross-field проверок
+- ✅ 10+ cross-field проверок (включая между вложенными формами)
 - ✅ 5 асинхронных валидаторов
 - ✅ Валидация массивов и динамических полей
 - ✅ Бизнес-правила банковской сферы
 
 ### Демонстрирует
 - ✅ Мульти-степенную форму (wizard)
+- ✅ **Вложенные формы** с переиспользуемой валидацией
 - ✅ Динамические поля
 - ✅ Сложную условную логику
 - ✅ Расчеты на основе нескольких полей
+- ✅ Cross-field валидацию между вложенными формами
 - ✅ Проверку на сервере
 - ✅ UX-паттерны (индикатор прогресса, сохранение черновика)
 - ✅ Реактивность и производительность

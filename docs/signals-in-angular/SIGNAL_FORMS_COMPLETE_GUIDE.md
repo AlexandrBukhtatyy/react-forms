@@ -10,10 +10,11 @@
 3. [Cross-field валидация](#cross-field-валидация)
 4. [Условная валидация](#условная-валидация)
 5. [Асинхронная валидация](#асинхронная-валидация)
-6. [Сложные паттерны](#сложные-паттерны)
-7. [Динамические формы](#динамические-формы)
-8. [Переиспользование валидации](#переиспользование-валидации)
-9. [Реальный пример: Заявка на кредит](#пример-заявка-на-кредит)
+6. [Вложенные формы (Nested Forms)](#вложенные-формы-nested-forms)
+7. [Сложные паттерны](#сложные-паттерны)
+8. [Динамические формы](#динамические-формы)
+9. [Переиспользование валидации](#переиспользование-валидации)
+10. [Реальный пример: Заявка на кредит](#пример-заявка-на-кредит)
 
 ---
 
@@ -673,6 +674,316 @@ const validation = (path: FieldPath<UserForm>) => {
       return null;
     },
     { debounce: 500 }
+  );
+};
+```
+
+---
+
+## Вложенные формы (Nested Forms)
+
+### Концепция вложенных форм
+
+Вложенные формы позволяют группировать связанные поля в отдельные структуры данных, обеспечивая лучшую организацию кода и переиспользование валидации.
+
+### Базовый пример
+
+```typescript
+// ============================================================================
+// Вложенные интерфейсы
+// ============================================================================
+
+interface Address {
+  region: string;
+  city: string;
+  street: string;
+  house: string;
+  apartment?: string;
+  postalCode: string;
+}
+
+interface PersonalData {
+  lastName: string;
+  firstName: string;
+  middleName: string;
+  birthDate: string;
+}
+
+// ============================================================================
+// Основная форма с вложенными формами
+// ============================================================================
+
+interface UserRegistrationForm {
+  email: string;
+  password: string;
+
+  // Вложенная форма: персональные данные
+  personalData: PersonalData;
+
+  // Вложенная форма: адрес
+  address: Address;
+}
+```
+
+### Валидация вложенных форм
+
+```typescript
+// ============================================================================
+// Переиспользуемый валидатор для вложенной формы
+// ============================================================================
+
+function validatePersonalData<T>(personalDataPath: FieldPath<T>[keyof T]) {
+  // Приводим к типу вложенной формы
+  const data = personalDataPath as any as FieldPath<PersonalData>;
+
+  required(data.lastName, { message: 'Фамилия обязательна' });
+  minLength(data.lastName, 2);
+  maxLength(data.lastName, 50);
+
+  required(data.firstName, { message: 'Имя обязательно' });
+  minLength(data.firstName, 2);
+
+  required(data.middleName, { message: 'Отчество обязательно' });
+  minLength(data.middleName, 2);
+
+  required(data.birthDate, { message: 'Дата рождения обязательна' });
+}
+
+function validateAddress<T>(
+  addressPath: FieldPath<T>[keyof T],
+  fieldLabel: string = 'Адрес'
+) {
+  // Приводим к типу вложенной формы
+  const address = addressPath as any as FieldPath<Address>;
+
+  required(address.region, { message: `${fieldLabel}: Регион обязателен` });
+  required(address.city, { message: `${fieldLabel}: Город обязателен` });
+  required(address.street, { message: `${fieldLabel}: Улица обязательна` });
+  required(address.house, { message: `${fieldLabel}: Дом обязателен` });
+
+  required(address.postalCode, { message: `${fieldLabel}: Индекс обязателен` });
+  pattern(address.postalCode, /^\d{6}$/, {
+    message: 'Индекс должен содержать 6 цифр',
+  });
+}
+
+// ============================================================================
+// Основная схема валидации
+// ============================================================================
+
+const validation = (path: FieldPath<UserRegistrationForm>) => {
+  required(path.email);
+  email(path.email);
+
+  required(path.password);
+  minLength(path.password, 8);
+
+  // ВЛОЖЕННАЯ ФОРМА: Персональные данные
+  validatePersonalData(path.personalData);
+
+  // ВЛОЖЕННАЯ ФОРМА: Адрес
+  validateAddress(path.address, 'Адрес проживания');
+};
+```
+
+### Множественные вложенные формы одного типа
+
+```typescript
+interface ShippingForm {
+  email: string;
+
+  // Два адреса одного типа
+  billingAddress: Address;
+  shippingAddress: Address;
+
+  sameAsBilling: boolean;
+}
+
+const validation = (path: FieldPath<ShippingForm>) => {
+  required(path.email);
+  email(path.email);
+
+  // ВЛОЖЕННАЯ ФОРМА: Адрес выставления счета
+  validateAddress(path.billingAddress, 'Адрес выставления счета');
+
+  // ВЛОЖЕННАЯ ФОРМА: Адрес доставки (условно)
+  applyWhen(
+    path.sameAsBilling,
+    (value) => value === false,
+    (path) => {
+      validateAddress(path.shippingAddress, 'Адрес доставки');
+    }
+  );
+};
+```
+
+### Cross-field валидация между вложенными формами
+
+```typescript
+interface CreditApplicationForm {
+  personalData: PersonalData;
+  passportData: PassportData;
+  // ...
+}
+
+interface PassportData {
+  series: string;
+  number: string;
+  issueDate: string;
+  issuedBy: string;
+}
+
+const validation = (path: FieldPath<CreditApplicationForm>) => {
+  // Валидация вложенных форм
+  validatePersonalData(path.personalData);
+  validatePassportData(path.passportData);
+
+  // Cross-field валидация между вложенными формами
+  validateTree(
+    (ctx) => {
+      const form = ctx.formValue();
+      const issueDate = new Date(form.passportData.issueDate);
+      const birthDate = new Date(form.personalData.birthDate);
+
+      if (issueDate < birthDate) {
+        return {
+          code: 'issueDateBeforeBirth',
+          message: 'Дата выдачи паспорта не может быть раньше даты рождения',
+        };
+      }
+
+      return null;
+    },
+    { targetField: 'passportData.issueDate' }
+  );
+};
+```
+
+### Вложенные формы с условной валидацией
+
+```typescript
+interface EmploymentForm {
+  employmentStatus: 'employed' | 'selfEmployed' | 'unemployed';
+
+  // Вложенная форма для работающих
+  companyInfo?: CompanyInfo;
+
+  // Вложенная форма для ИП
+  businessInfo?: BusinessInfo;
+}
+
+interface CompanyInfo {
+  name: string;
+  inn: string;
+  position: string;
+}
+
+interface BusinessInfo {
+  type: string;
+  inn: string;
+  activity: string;
+}
+
+const validation = (path: FieldPath<EmploymentForm>) => {
+  required(path.employmentStatus);
+
+  // Условная валидация вложенной формы для работающих
+  applyWhen(
+    path.employmentStatus,
+    (status) => status === 'employed',
+    (path) => {
+      validateCompanyInfo(path.companyInfo as any);
+    }
+  );
+
+  // Условная валидация вложенной формы для ИП
+  applyWhen(
+    path.employmentStatus,
+    (status) => status === 'selfEmployed',
+    (path) => {
+      validateBusinessInfo(path.businessInfo as any);
+    }
+  );
+};
+
+function validateCompanyInfo<T>(companyPath: FieldPath<T>[keyof T]) {
+  const company = companyPath as any as FieldPath<CompanyInfo>;
+
+  required(company.name, { message: 'Название компании обязательно' });
+  minLength(company.name, 3);
+
+  required(company.inn, { message: 'ИНН компании обязателен' });
+  pattern(company.inn, /^\d{10}$/, {
+    message: 'ИНН компании должен содержать 10 цифр',
+  });
+
+  required(company.position, { message: 'Должность обязательна' });
+}
+
+function validateBusinessInfo<T>(businessPath: FieldPath<T>[keyof T]) {
+  const business = businessPath as any as FieldPath<BusinessInfo>;
+
+  required(business.type, { message: 'Тип бизнеса обязателен' });
+
+  required(business.inn, { message: 'ИНН ИП обязателен' });
+  pattern(business.inn, /^\d{12}$/, {
+    message: 'ИНН ИП должен содержать 12 цифр',
+  });
+
+  required(business.activity, { message: 'Вид деятельности обязателен' });
+  minLength(business.activity, 10);
+}
+```
+
+### Преимущества вложенных форм
+
+✅ **Лучшая организация кода** - группировка связанных полей
+✅ **Переиспользование валидации** - один валидатор для разных контекстов
+✅ **Type-safety** - TypeScript знает структуру вложенных форм
+✅ **Модульность** - можно использовать вложенную форму в разных местах
+✅ **Читаемость** - понятная структура данных
+
+### Пример: Форма с несколькими адресами
+
+```typescript
+interface MultiAddressForm {
+  personalData: PersonalData;
+
+  // Адрес регистрации
+  registrationAddress: Address;
+
+  // Адрес проживания (опционально)
+  sameAsRegistration: boolean;
+  residenceAddress?: Address;
+
+  // Адрес работы (опционально)
+  hasWorkAddress: boolean;
+  workAddress?: Address;
+}
+
+const validation = (path: FieldPath<MultiAddressForm>) => {
+  // Личные данные
+  validatePersonalData(path.personalData);
+
+  // Адрес регистрации (всегда обязателен)
+  validateAddress(path.registrationAddress, 'Адрес регистрации');
+
+  // Адрес проживания (если отличается)
+  applyWhen(
+    path.sameAsRegistration,
+    (value) => value === false,
+    (path) => {
+      validateAddress(path.residenceAddress as any, 'Адрес проживания');
+    }
+  );
+
+  // Адрес работы (если указан)
+  applyWhen(
+    path.hasWorkAddress,
+    (value) => value === true,
+    (path) => {
+      validateAddress(path.workAddress as any, 'Адрес работы');
+    }
   );
 };
 ```
