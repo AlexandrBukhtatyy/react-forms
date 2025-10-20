@@ -40,3 +40,23 @@ export interface FieldConfig<T = any> {
 export type FormSchema<T extends Record<string, any>> = {
   [K in keyof T]: FieldConfig<T[K]>;
 };
+
+// ============================================================================
+// Re-exports from validation-schema
+// ============================================================================
+
+export type {
+  ValidationContext,
+  TreeValidationContext,
+  ContextualValidatorFn,
+  ContextualAsyncValidatorFn,
+  TreeValidatorFn,
+  ConditionFn,
+  FieldPath,
+  FieldPathNode,
+  ValidateOptions,
+  ValidateAsyncOptions,
+  ValidateTreeOptions,
+  ValidationSchemaFn,
+  ValidatorRegistration,
+} from './validation-schema';

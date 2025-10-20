@@ -1,7 +1,8 @@
 import { signal, computed } from "@preact/signals-react";
 import type { Signal, ReadonlySignal } from "@preact/signals-react";
 import { FieldController } from "./field-controller";
-import type { FormSchema } from "../types";
+import type { FormSchema, ValidationSchemaFn } from "../types";
+import { ValidationRegistry, createFieldPath } from "../validators";
 
 export class FormStore<T extends Record<string, any>> {
   private fields: Map<keyof T, FieldController<any>>;
@@ -77,10 +78,130 @@ export class FormStore<T extends Record<string, any>> {
   // ============================================================================
 
   async validate(): Promise<boolean> {
+    // Шаг 1: Стандартная валидация через FieldController
     const results = await Promise.all(
       Array.from(this.fields.values()).map(field => field.validate())
     );
-    return results.every(result => result);
+
+    // Шаг 2: Применение contextual валидаторов из validation schema
+    const validators = ValidationRegistry.getValidators(this);
+    if (validators && validators.length > 0) {
+      await this.applyContextualValidators(validators);
+    }
+
+    // Проверяем, все ли поля валидны
+    return Array.from(this.fields.values()).every(field => field.valid);
+  }
+
+  /**
+   * Применить contextual валидаторы к полям
+   * @private
+   */
+  private async applyContextualValidators(validators: any[]): Promise<void> {
+    // Импортируем необходимые классы
+    const { ValidationContextImpl, TreeValidationContextImpl } = await import('../validators/validation-context');
+
+    // Группируем валидаторы по полям
+    const validatorsByField = new Map<string, any[]>();
+    const treeValidators: any[] = [];
+
+    for (const registration of validators) {
+      if (registration.type === 'tree') {
+        treeValidators.push(registration);
+      } else {
+        const existing = validatorsByField.get(registration.fieldPath) || [];
+        existing.push(registration);
+        validatorsByField.set(registration.fieldPath, existing);
+      }
+    }
+
+    // Применяем валидаторы к полям
+    for (const [fieldPath, fieldValidators] of validatorsByField) {
+      const fieldKey = fieldPath as keyof T;
+      const control = this.fields.get(fieldKey);
+
+      if (!control) {
+        console.warn(`Field ${fieldPath} not found in FormStore`);
+        continue;
+      }
+
+      const errors: any[] = [];
+
+      // Создаем ValidationContext для поля
+      const context = new ValidationContextImpl(this, fieldKey, control);
+
+      // Выполняем валидаторы
+      for (const registration of fieldValidators) {
+        // Проверяем условие, если есть
+        if (registration.condition) {
+          const conditionField = this.fields.get(registration.condition.fieldPath as keyof T);
+          if (conditionField) {
+            const conditionValue = conditionField.value;
+            const shouldApply = registration.condition.conditionFn(conditionValue);
+            if (!shouldApply) {
+              continue; // Пропускаем этот валидатор
+            }
+          }
+        }
+
+        // Вызываем валидатор
+        try {
+          let error;
+          if (registration.type === 'sync') {
+            error = registration.validator(context);
+          } else if (registration.type === 'async') {
+            error = await registration.validator(context);
+          }
+
+          if (error) {
+            errors.push(error);
+          }
+        } catch (e) {
+          console.error(`Error in validator for ${fieldPath}:`, e);
+        }
+      }
+
+      // Устанавливаем ошибки в FieldController
+      if (errors.length > 0) {
+        control.setErrors(errors);
+      } else {
+        // Очищаем ошибки, если они были
+        if (control.errors.length > 0 && !control.errors.some(e => e.code !== 'contextual')) {
+          control.clearErrors();
+        }
+      }
+    }
+
+    // Применяем tree валидаторы
+    for (const registration of treeValidators) {
+      const context = new TreeValidationContextImpl(this);
+
+      // Проверяем условие, если есть
+      if (registration.condition) {
+        const conditionField = this.fields.get(registration.condition.fieldPath as keyof T);
+        if (conditionField) {
+          const conditionValue = conditionField.value;
+          const shouldApply = registration.condition.conditionFn(conditionValue);
+          if (!shouldApply) {
+            continue;
+          }
+        }
+      }
+
+      try {
+        const error = registration.validator(context);
+        if (error && registration.options?.targetField) {
+          // Устанавливаем ошибку на целевое поле
+          const targetControl = this.fields.get(registration.options.targetField as keyof T);
+          if (targetControl) {
+            const existingErrors = targetControl.errors;
+            targetControl.setErrors([...existingErrors, error]);
+          }
+        }
+      } catch (e) {
+        console.error('Error in tree validator:', e);
+      }
+    }
   }
 
   markAllAsTouched(): void {
@@ -147,6 +268,48 @@ export class FormStore<T extends Record<string, any>> {
       return result;
     } finally {
       this._submitting.value = false;
+    }
+  }
+
+  // ============================================================================
+  // Validation Schema
+  // ============================================================================
+
+  /**
+   * Применить validation schema к форме
+   *
+   * @example
+   * ```typescript
+   * const form = new FormStore(schema);
+   * form.applyValidationSchema((path) => {
+   *   required(path.email, { message: 'Email обязателен' });
+   *   applyWhen(
+   *     path.loanType,
+   *     (type) => type === 'mortgage',
+   *     (path) => {
+   *       required(path.propertyValue, { message: 'Укажите стоимость' });
+   *     }
+   *   );
+   * });
+   * ```
+   */
+  applyValidationSchema(schemaFn: ValidationSchemaFn<T>): void {
+    // Начинаем регистрацию валидаторов
+    ValidationRegistry.beginRegistration();
+
+    try {
+      // Создаем FieldPath proxy
+      const path = createFieldPath<T>();
+
+      // Вызываем validation schema функцию
+      // Она зарегистрирует все валидаторы через ValidationRegistry
+      schemaFn(path);
+
+      // Завершаем регистрацию и применяем валидаторы
+      ValidationRegistry.endRegistration(this);
+    } catch (error) {
+      console.error('Error applying validation schema:', error);
+      throw error;
     }
   }
 }

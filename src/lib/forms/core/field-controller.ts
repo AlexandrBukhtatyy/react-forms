@@ -160,6 +160,23 @@ export class FieldController<T = any> {
     return true;
   }
 
+  /**
+   * Установить ошибки валидации извне
+   * Используется для contextual validators
+   */
+  setErrors(errors: ValidationError[]): void {
+    this._errors.value = errors;
+    this._status.value = errors.length > 0 ? 'invalid' : 'valid';
+  }
+
+  /**
+   * Очистить ошибки валидации
+   */
+  clearErrors(): void {
+    this._errors.value = [];
+    this._status.value = 'valid';
+  }
+
   reset(value?: T): void {
     this._value.value = value !== undefined ? value : this._value.peek();
     this._errors.value = [];

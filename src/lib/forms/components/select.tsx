@@ -10,6 +10,7 @@ export interface SelectProps extends Omit<React.ComponentProps<typeof SelectPrim
   onChange?: (value: string | null) => void;
   onBlur?: () => void;
   resource?: ResourceConfig;
+  options?: Array<{value: string | number; label: string; group?: string}>;
   placeholder?: string;
   disabled?: boolean;
   clearable?: boolean;
@@ -18,8 +19,8 @@ export interface SelectProps extends Omit<React.ComponentProps<typeof SelectPrim
 const Select = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Root>,
   SelectProps
->(({ className, value, onChange, onBlur, resource, placeholder, disabled, clearable = false, ...props }, ref) => {
-  const [options, setOptions] = React.useState<Array<{id: string | number; label: string; value: string; group?: string}>>([]);
+>(({ className, value, onChange, onBlur, resource, options: directOptions, placeholder, disabled, clearable = false, ...props }, ref) => {
+  const [resourceOptions, setResourceOptions] = React.useState<Array<{id: string | number; label: string; value: string; group?: string}>>([]);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
@@ -27,17 +28,30 @@ const Select = React.forwardRef<
       setLoading(true);
       resource.load({})
         .then(response => {
-          setOptions(response.items.map(item => ({
+          setResourceOptions(response.items.map(item => ({
             id: item.id,
             label: item.label,
             value: String(item.value),
             group: item.group
           })));
         })
-        .catch(() => setOptions([]))
+        .catch(() => setResourceOptions([]))
         .finally(() => setLoading(false));
     }
   }, [resource]);
+
+  // Используем прямые опции или опции из ресурса
+  const options = React.useMemo(() => {
+    if (directOptions) {
+      return directOptions.map(opt => ({
+        id: opt.value,
+        label: opt.label,
+        value: String(opt.value),
+        group: opt.group
+      }));
+    }
+    return resourceOptions;
+  }, [directOptions, resourceOptions]);
 
   const handleValueChange = (newValue: string) => {
     onChange?.(newValue);
