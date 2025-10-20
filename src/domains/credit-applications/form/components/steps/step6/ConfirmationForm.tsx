@@ -1,13 +1,13 @@
 import { useSignals } from '@preact/signals-react/runtime';
 import type { FormStore } from '@/lib/forms/core/form-store';
-import type { CreditApplicationForm } from '../../_shared/types/credit-application';
+import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
 import { FormField } from '@/lib/forms/components';
 
-interface Step6Props {
+interface ConfirmationFormProps {
   form: FormStore<CreditApplicationForm>;
 }
 
-export function Step6Confirmation({ form }: Step6Props) {
+export function ConfirmationForm({ form }: ConfirmationFormProps) {
   useSignals();
 
   return (
@@ -51,7 +51,7 @@ export function Step6Confirmation({ form }: Step6Props) {
       {/* Финальное предупреждение */}
       <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md mt-6">
         <p className="text-sm text-yellow-800">
-          <strong>Внимание!</strong> После нажатия кнопки "Отправить заявку" вы подтверждаете достоверность предоставленной информации и согласие с условиями кредитования.
+          <strong>Внимание!</strong> После нажатия кнопки "Отправить заявку" вы подтверждаете достоверность предоставленной информации и согласие c условиями кредитования.
         </p>
       </div>
 
@@ -60,7 +60,7 @@ export function Step6Confirmation({ form }: Step6Props) {
         <h4 className="font-semibold text-green-900 mb-2">Что будет дальше?</h4>
         <ul className="text-sm text-green-800 space-y-1 list-disc list-inside">
           <li>Ваша заявка будет рассмотрена в течение 24 часов</li>
-          <li>Мы свяжемся с вами для подтверждения информации</li>
+          <li>Мы свяжемся c вами для подтверждения информации</li>
           <li>После одобрения вы получите индивидуальное предложение</li>
           <li>Вы сможете подписать договор онлайн или в офисе</li>
         </ul>

@@ -1,25 +1,20 @@
 import { useState } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
 import type { FormStore } from '@/lib/forms/core/form-store';
-import type { CreditApplicationForm, PropertyItem, ExistingLoan, CoBorrower } from '../../_shared/types/credit-application';
-import { FormField } from '@/lib/forms/components';
-import { PropertyForm, ExistingLoanForm, CoBorrowerForm } from '../nested-forms';
+import type { CreditApplicationForm, PropertyItem, ExistingLoan, CoBorrower } from '../../../../_shared/types/credit-application';
+import { FormArrayManager, FormField } from '@/lib/forms/components';
+import { PropertyForm, ExistingLoanForm, CoBorrowerForm } from '../../nested-forms';
 
-interface Step5Props {
+interface AdditionalInfoFormProps {
   form: FormStore<CreditApplicationForm>;
 }
 
-export function Step5Additional({ form }: Step5Props) {
+export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
   useSignals();
 
   const hasProperty = form.controls.hasProperty.value;
   const hasExistingLoans = form.controls.hasExistingLoans.value;
   const hasCoBorrower = form.controls.hasCoBorrower.value;
-
-  // Локальное состояние для массивов (упрощенная версия)
-  const [properties, setProperties] = useState<PropertyItem[]>([]);
-  const [existingLoans, setExistingLoans] = useState<ExistingLoan[]>([]);
-  const [coBorrowers, setCoBorrowers] = useState<CoBorrower[]>([]);
 
   return (
     <div className="space-y-6">
@@ -42,7 +37,7 @@ export function Step5Additional({ form }: Step5Props) {
 
         {hasProperty && (
           <div className="mt-4">
-            <PropertyForm properties={properties} onChange={setProperties} />
+            <FormArrayManager control={form.controls.properties} component={PropertyForm} />
           </div>
         )}
       </div>
@@ -54,7 +49,7 @@ export function Step5Additional({ form }: Step5Props) {
 
         {hasExistingLoans && (
           <div className="mt-4">
-            <ExistingLoanForm loans={existingLoans} onChange={setExistingLoans} />
+            <FormArrayManager control={form.controls.properties} component={ExistingLoanForm} />
           </div>
         )}
       </div>
@@ -66,7 +61,7 @@ export function Step5Additional({ form }: Step5Props) {
 
         {hasCoBorrower && (
           <div className="mt-4">
-            <CoBorrowerForm coBorrowers={coBorrowers} onChange={setCoBorrowers} />
+            <FormArrayManager control={form.controls.properties} component={CoBorrowerForm} />
           </div>
         )}
       </div>

@@ -20,10 +20,10 @@ export function PersonalDataForm({ control }: PersonalDataFormProps) {
     <>
       {/* ФИО */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField control={control.lastName as any} />
         <FormField control={control.firstName as any} />
+        <FormField control={control.lastName as any} />
+        <FormField control={control.middleName as any} />
       </div>
-      <FormField control={control.middleName as any} />
 
       {/* Дата рождения и пол */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

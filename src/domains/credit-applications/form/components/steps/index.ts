@@ -1,8 +1,8 @@
 // Удобный импорт всех компонентов шагов формы
 
-export { Step1BasicInfo } from './Step1BasicInfo';
-export { Step2PersonalData } from './Step2PersonalData';
-export { Step3ContactInfo } from './Step3ContactInfo';
-export { Step4Employment } from './Step4Employment';
-export { Step5Additional } from './Step5Additional';
-export { Step6Confirmation } from './Step6Confirmation';
+export { BasicInfoForm } from './step1/BasicInfoForm';
+export { PersonalInfoForm } from './step2/PersonalInfoForm';
+export { ContactInfoForm } from './step3/ContactInfoForm';
+export { EmploymentForm } from './step4/EmploymentForm';
+export { AdditionalInfoForm } from './step5/AdditionalInfoForm';
+export { ConfirmationForm } from './step6/ConfirmationForm';

@@ -4,7 +4,8 @@
       "Bash(git mv:*)",
       "Bash(npx tsc:*)",
       "Bash(npm run build)",
-      "Bash(npm run dev)"
+      "Bash(npm run dev)",
+      "Bash(find \"src/domains/credit-applications/form/components/steps\" -name \"*.tsx\" -type f -exec sed -i \"s|from ''../../_shared|from ''../../../_shared|g\" {} +)"
     ],
     "deny": [],
     "ask": []

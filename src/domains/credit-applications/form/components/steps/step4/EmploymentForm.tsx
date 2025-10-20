@@ -1,13 +1,13 @@
 import { useSignals } from '@preact/signals-react/runtime';
 import type { FormStore } from '@/lib/forms/core/form-store';
-import type { CreditApplicationForm } from '../../_shared/types/credit-application';
+import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
 import { FormField } from '@/lib/forms/components';
 
-interface Step4Props {
+interface EmploymentFormProps {
   form: FormStore<CreditApplicationForm>;
 }
 
-export function Step4Employment({ form }: Step4Props) {
+export function EmploymentForm({ form }: EmploymentFormProps) {
   useSignals();
 
   const employmentStatus = form.controls.employmentStatus.value;

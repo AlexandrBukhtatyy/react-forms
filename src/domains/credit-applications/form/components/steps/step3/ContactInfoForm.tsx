@@ -1,14 +1,14 @@
 import { useSignals } from '@preact/signals-react/runtime';
 import type { FormStore } from '@/lib/forms/core/form-store';
-import type { CreditApplicationForm } from '../../_shared/types/credit-application';
+import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
 import { FormField } from '@/lib/forms/components';
-import { AddressForm } from '../nested-forms';
+import { AddressForm } from '../../nested-forms';
 
-interface Step3Props {
+interface ContactInfoFormProps {
   form: FormStore<CreditApplicationForm>;
 }
 
-export function Step3ContactInfo({ form }: Step3Props) {
+export function ContactInfoForm({ form }: ContactInfoFormProps) {
   useSignals();
 
   const sameAsRegistration = form.controls.sameAsRegistration.value;
@@ -31,15 +31,8 @@ export function Step3ContactInfo({ form }: Step3Props) {
       </div>
 
       {/* Вложенная форма: Адрес регистрации */}
-      <AddressForm
-        title="Адрес регистрации"
-        regionControl={form.controls.registrationAddress_region}
-        cityControl={form.controls.registrationAddress_city}
-        streetControl={form.controls.registrationAddress_street}
-        houseControl={form.controls.registrationAddress_house}
-        apartmentControl={form.controls.registrationAddress_apartment}
-        postalCodeControl={form.controls.registrationAddress_postalCode}
-      />
+      <h3 className="text-lg font-semibold">Адрес регистрации</h3>
+      <AddressForm control={form.controls.registrationAddress} />
 
       {/* Адрес проживания */}
       <div className="space-y-4">
@@ -47,15 +40,10 @@ export function Step3ContactInfo({ form }: Step3Props) {
 
         {/* Вложенная форма: Адрес проживания (условная) */}
         {!sameAsRegistration && (
-          <AddressForm
-            title="Адрес проживания"
-            regionControl={form.controls.residenceAddress_region!}
-            cityControl={form.controls.residenceAddress_city!}
-            streetControl={form.controls.residenceAddress_street!}
-            houseControl={form.controls.residenceAddress_house!}
-            apartmentControl={form.controls.residenceAddress_apartment!}
-            postalCodeControl={form.controls.residenceAddress_postalCode!}
-          />
+          <>
+            <h3 className="text-lg font-semibold">Адрес проживания</h3>
+            <AddressForm control={form.controls.residenceAddress} />
+          </>
         )}
       </div>
     </div>

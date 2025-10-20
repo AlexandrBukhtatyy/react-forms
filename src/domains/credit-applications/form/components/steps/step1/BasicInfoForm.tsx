@@ -1,13 +1,13 @@
 import { useSignals } from '@preact/signals-react/runtime';
 import type { FormStore } from '@/lib/forms/core/form-store';
-import type { CreditApplicationForm } from '../../_shared/types/credit-application';
+import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
 import { FormField } from '@/lib/forms/components';
 
-interface Step1Props {
+interface BasicInfoFormProps {
   form: FormStore<CreditApplicationForm>;
 }
 
-export function Step1BasicInfo({ form }: Step1Props) {
+export function BasicInfoForm({ form }: BasicInfoFormProps) {
   useSignals();
 
   const loanType = form.controls.loanType.value;

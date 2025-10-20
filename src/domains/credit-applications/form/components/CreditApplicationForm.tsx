@@ -6,12 +6,12 @@ import { Input, Select, Textarea, Checkbox, RadioGroup, InputMask } from '@/lib/
 import { StepIndicator } from './StepIndicator';
 import { NavigationButtons } from './NavigationButtons';
 import {
-  Step1BasicInfo,
-  Step2PersonalData,
-  Step3ContactInfo,
-  Step4Employment,
-  Step5Additional,
-  Step6Confirmation,
+  BasicInfoForm,
+  PersonalInfoForm,
+  ContactInfoForm,
+  EmploymentForm,
+  AdditionalInfoForm,
+  ConfirmationForm,
 } from './steps';
 import type { CreditApplicationForm as CreditApplicationFormModel } from '../../_shared/types/credit-application';
 import {
@@ -21,7 +21,7 @@ import {
   EDUCATIONS,
   GENDERS,
 } from '../../_shared/constants/credit-application';
-import creditApplicationValidation from '../schema/credit-application-validation';
+import creditApplicationValidation, { STEP_VALIDATIONS } from './validation/credit-application-validation';
 
 // ============================================================================
 // Создание схемы формы
@@ -802,26 +802,40 @@ function CreditApplicationForm() {
   // ============================================================================
 
   const goToNextStep = async () => {
-    console.log('🔍 Attempting to go to next step. Current step:', currentStep);
+    // console.log('🔍 Attempting to go to next step. Current step:', currentStep);
 
-    // Валидируем текущий шаг
-    const isValid = await form.validate();
-    console.log('✅ Validation result:', isValid);
+    // // Получаем схему валидации для текущего шага
+    // const stepValidation = STEP_VALIDATIONS[currentStep as keyof typeof STEP_VALIDATIONS];
 
-    if (!isValid) {
-      // Показываем ошибки
-      console.warn('❌ Validation failed. Marking all as touched.');
+    // if (!stepValidation) {
+    //   console.error('❌ No validation schema found for step:', currentStep);
+    //   return;
+    // }
 
-      // Логируем ошибки для отладки
-      form.fields.forEach((field, key) => {
-        if (field.errors.length > 0) {
-          console.error(`Field "${String(key)}" has errors:`, field.errors);
-        }
-      });
+    // // Временно применяем схему валидации только для текущего шага
+    // form.applyValidationSchema(stepValidation);
 
-      form.markAllAsTouched();
-      return;
-    }
+    // // Валидируем только поля текущего шага
+    // const isValid = await form.validate();
+    // console.log('✅ Validation result for step', currentStep, ':', isValid);
+
+    // // Возвращаем полную схему валидации
+    // form.applyValidationSchema(creditApplicationValidation);
+
+    // if (!isValid) {
+    //   // Показываем ошибки
+    //   console.warn('❌ Validation failed for step', currentStep);
+
+    //   // Логируем ошибки для отладки
+    //   form.fields.forEach((field, key) => {
+    //     if (field.errors.length > 0) {
+    //       console.error(`Field "${String(key)}" has errors:`, field.errors);
+    //     }
+    //   });
+
+    //   form.markAllAsTouched();
+    //   return;
+    // }
 
     // Переходим на следующий шаг
     const nextStep = Math.min(currentStep + 1, 6);
@@ -899,12 +913,12 @@ function CreditApplicationForm() {
 
       {/* Форма текущего шага */}
       <div className="bg-white p-8 rounded-lg shadow-md">
-        {currentStep === 1 && <Step1BasicInfo form={form} />}
-        {currentStep === 2 && <Step2PersonalData form={form} />}
-        {currentStep === 3 && <Step3ContactInfo form={form} />}
-        {currentStep === 4 && <Step4Employment form={form} />}
-        {currentStep === 5 && <Step5Additional form={form} />}
-        {currentStep === 6 && <Step6Confirmation form={form} />}
+        {currentStep === 1 && <BasicInfoForm form={form} />}
+        {currentStep === 2 && <PersonalInfoForm form={form} />}
+        {currentStep === 3 && <ContactInfoForm form={form} />}
+        {currentStep === 4 && <EmploymentForm form={form} />}
+        {currentStep === 5 && <AdditionalInfoForm form={form} />}
+        {currentStep === 6 && <ConfirmationForm form={form} />}
       </div>
 
       {/* Кнопки навигации */}

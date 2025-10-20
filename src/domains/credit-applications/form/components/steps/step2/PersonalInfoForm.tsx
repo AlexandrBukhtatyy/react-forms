@@ -1,14 +1,14 @@
 import { useSignals } from '@preact/signals-react/runtime';
 import type { FormStore } from '@/lib/forms/core/form-store';
-import type { CreditApplicationForm } from '../../_shared/types/credit-application';
+import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
 import { FormField } from '@/lib/forms/components';
-import { PersonalDataForm, PassportDataForm } from '../nested-forms';
+import { PersonalDataForm, PassportDataForm } from '../../nested-forms';
 
-interface Step2Props {
+interface PersonalInfoFormProps {
   form: FormStore<CreditApplicationForm>;
 }
 
-export function Step2PersonalData({ form }: Step2Props) {
+export function PersonalInfoForm({ form }: PersonalInfoFormProps) {
   useSignals();
 
   return (
@@ -16,10 +16,10 @@ export function Step2PersonalData({ form }: Step2Props) {
       <h2 className="text-xl font-bold">Персональные данные</h2>
 
       {/* Вложенная форма: Личные данные */}
-      <PersonalDataForm form={form} />
+      <PersonalDataForm control={form} />
 
       {/* Вложенная форма: Паспортные данные */}
-      <PassportDataForm form={form} />
+      <PassportDataForm control={form} />
 
       {/* Дополнительные документы */}
       <div className="space-y-4">
