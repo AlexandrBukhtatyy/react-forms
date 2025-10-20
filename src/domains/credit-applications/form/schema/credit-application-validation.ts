@@ -28,7 +28,7 @@ const creditApplicationValidation = (path: FieldPath<CreditApplicationForm>) => 
 
   applyWhen(
     path.currentStep,
-    (step) => step >= 1,
+    (step) => step === 1,
     (path) => {
       required(path.loanType, { message: 'Выберите тип кредита' });
 
@@ -99,7 +99,7 @@ const creditApplicationValidation = (path: FieldPath<CreditApplicationForm>) => 
 
   applyWhen(
     path.currentStep,
-    (step) => step >= 2,
+    (step) => step === 2,
     (path) => {
       // Валидация личных данных
       required(path.personalData_lastName, { message: 'Фамилия обязательна' });
@@ -208,7 +208,7 @@ const creditApplicationValidation = (path: FieldPath<CreditApplicationForm>) => 
 
   applyWhen(
     path.currentStep,
-    (step) => step >= 3,
+    (step) => step === 3,
     (path) => {
       // Основной телефон
       required(path.phoneMain, { message: 'Телефон обязателен' });
@@ -275,7 +275,7 @@ const creditApplicationValidation = (path: FieldPath<CreditApplicationForm>) => 
 
   applyWhen(
     path.currentStep,
-    (step) => step >= 4,
+    (step) => step === 4,
     (path) => {
       required(path.employmentStatus, { message: 'Укажите статус занятости' });
 
@@ -357,7 +357,7 @@ const creditApplicationValidation = (path: FieldPath<CreditApplicationForm>) => 
 
   applyWhen(
     path.currentStep,
-    (step) => step >= 5,
+    (step) => step === 5,
     (path) => {
       required(path.maritalStatus, { message: 'Укажите семейное положение' });
 
@@ -429,7 +429,7 @@ const creditApplicationValidation = (path: FieldPath<CreditApplicationForm>) => 
 
   applyWhen(
     path.currentStep,
-    (step) => step >= 6,
+    (step) => step === 6,
     (path) => {
       // Согласие на обработку персональных данных (обязательно)
       required(path.agreePersonalData, { message: 'Необходимо согласие на обработку персональных данных' });

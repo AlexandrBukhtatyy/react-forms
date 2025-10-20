@@ -56,7 +56,7 @@ const createCreditApplicationForm = () => {
     },
 
     loanAmount: {
-      value: 0,
+      value: undefined,
       component: Input,
       componentProps: {
         label: 'Сумма кредита (₽)',
@@ -582,7 +582,7 @@ const createCreditApplicationForm = () => {
     },
 
     monthlyIncome: {
-      value: 0,
+      value: undefined,
       component: Input,
       componentProps: {
         label: 'Ежемесячный доход (₽)',
@@ -802,17 +802,30 @@ function CreditApplicationForm() {
   // ============================================================================
 
   const goToNextStep = async () => {
+    console.log('🔍 Attempting to go to next step. Current step:', currentStep);
+
     // Валидируем текущий шаг
     const isValid = await form.validate();
+    console.log('✅ Validation result:', isValid);
 
     if (!isValid) {
       // Показываем ошибки
+      console.warn('❌ Validation failed. Marking all as touched.');
+
+      // Логируем ошибки для отладки
+      form.fields.forEach((field, key) => {
+        if (field.errors.length > 0) {
+          console.error(`Field "${String(key)}" has errors:`, field.errors);
+        }
+      });
+
       form.markAllAsTouched();
       return;
     }
 
     // Переходим на следующий шаг
     const nextStep = Math.min(currentStep + 1, 6);
+    console.log('✨ Moving to step:', nextStep);
     form.controls.currentStep.setValue(nextStep);
 
     // Добавляем текущий шаг в список завершенных
