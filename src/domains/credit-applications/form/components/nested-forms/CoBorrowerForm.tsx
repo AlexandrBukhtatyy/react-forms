@@ -1,35 +1,58 @@
-import { useSignals } from '@preact/signals-react/runtime';
-import { FieldController } from '@/lib/forms/core/field-controller';
-import { FormField } from '@/lib/forms/components/form-field';
-import type { CoBorrower } from '../../../_shared/types/credit-application';
-
 /**
- * Компонент для отдельного созаемщика
- * Используется с FormArrayManager в родительском компоненте
+ * CoBorrowerForm
+ *
+ * Компонент для отдельного созаемщика.
+ * Работает с DeepFormStore через GroupProxy (элемент массива).
+ *
+ * ОСОБЕННОСТЬ: Созаемщик содержит вложенную группу personalData.
+ * Демонстрирует работу с массивами, содержащими вложенные группы.
+ *
+ * Используется с ArrayProxy в родительском компоненте:
+ * {form.controls.coBorrowers.map((coBorrower, index) => (
+ *   <CoBorrowerForm key={index} control={coBorrower} />
+ * ))}
  */
-export function CoBorrowerForm({ control }: { control: FieldController<CoBorrower> }) {
+
+import { useSignals } from '@preact/signals-react/runtime';
+import { FormField } from '@/lib/forms/components/form-field';
+
+interface CoBorrowerFormProps {
+  // GroupProxy для элемента массива coBorrowers (используем any для обхода ограничений TypeScript)
+  control: any;
+}
+
+export function CoBorrowerForm({ control }: CoBorrowerFormProps) {
   useSignals();
 
   return (
-    <>
-      {/* ФИО */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField control={control.lastName as any} />
-        <FormField control={control.firstName as any} />
+    <div className="space-y-4">
+      {/* Вложенная группа: personalData */}
+      <div className="p-3 bg-gray-50 rounded">
+        <h5 className="text-sm font-medium mb-3">Личные данные</h5>
+        <div className="space-y-3">
+          {/* ФИО */}
+          <div className="grid grid-cols-3 gap-3">
+            <FormField control={control.personalData.lastName} />
+            <FormField control={control.personalData.firstName} />
+            <FormField control={control.personalData.middleName} />
+          </div>
+
+          {/* Дата рождения */}
+          <FormField control={control.personalData.birthDate} />
+        </div>
       </div>
-      <FormField control={control.middleName as any} />
 
       {/* Контактные данные */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField control={control.birthDate as any} />
-        <FormField control={control.phone as any} />
+      <div className="grid grid-cols-2 gap-4">
+        <FormField control={control.phone} />
+        <FormField control={control.email} />
       </div>
 
       {/* Дополнительная информация */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField control={control.relationship as any} />
-        <FormField control={control.monthlyIncome as any} />
+      <div className="grid grid-cols-2 gap-4">
+        <FormField control={control.relationship} />
+        <FormField control={control.monthlyIncome} />
       </div>
-    </>
+    </div>
   );
 }

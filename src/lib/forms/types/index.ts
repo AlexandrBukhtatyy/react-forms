@@ -20,18 +20,14 @@ export interface ValidationError {
 export type FieldStatus = 'valid' | 'invalid' | 'pending' | 'disabled';
 
 // ============================================================================
-// Field Configuration
+// Field Configuration (re-exported from deep-schema)
 // ============================================================================
 
-export interface FieldConfig<T = any> {
-  value: T;
-  component: ComponentType<any>;
-  validators?: ValidatorFn<T>[];
-  asyncValidators?: AsyncValidatorFn<T>[];
-  disabled?: boolean;
-  updateOn?: 'change' | 'blur' | 'submit';
-  componentProps?: Record<string, any>;
-}
+// Import and re-export FieldConfig from deep-schema for single source of truth
+export type { FieldConfig } from './deep-schema';
+
+// Import for use in FormSchema
+import type { FieldConfig } from './deep-schema';
 
 // ============================================================================
 // Form Schema
@@ -60,3 +56,15 @@ export type {
   ValidationSchemaFn,
   ValidatorRegistration,
 } from './validation-schema';
+
+// ============================================================================
+// Re-exports from deep-schema (Variant 5)
+// ============================================================================
+
+export type {
+  DeepFormSchema,
+  DeepControls,
+  GroupControlProxy,
+  ArrayControlProxy,
+  ArrayConfig,
+} from './deep-schema';

@@ -1,11 +1,18 @@
+/**
+ * PersonalInfoForm (Step 2)
+ *
+ * Демонстрирует переиспользование вложенных форм:
+ * - PersonalDataForm (личные данные)
+ * - PassportDataForm (паспортные данные)
+ */
+
 import { useSignals } from '@preact/signals-react/runtime';
-import type { FormStore } from '@/lib/forms/core/form-store';
-import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
+import type { DeepFormStore } from '@/lib/forms/core/deep-form-store';
 import { FormField } from '@/lib/forms/components';
 import { PersonalDataForm, PassportDataForm } from '../../nested-forms';
 
 interface PersonalInfoFormProps {
-  form: FormStore<CreditApplicationForm>;
+  form: DeepFormStore<any>;
 }
 
 export function PersonalInfoForm({ form }: PersonalInfoFormProps) {
@@ -15,11 +22,23 @@ export function PersonalInfoForm({ form }: PersonalInfoFormProps) {
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Персональные данные</h2>
 
-      {/* Вложенная форма: Личные данные */}
-      <PersonalDataForm control={form} />
+      {/* ========================================================================
+          Вложенная форма: Личные данные
+          Переиспользуем готовый компонент PersonalDataForm
+          ======================================================================== */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Личные данные</h3>
+        <PersonalDataForm control={form.controls.personalData} />
+      </div>
 
-      {/* Вложенная форма: Паспортные данные */}
-      <PassportDataForm control={form} />
+      {/* ========================================================================
+          Вложенная форма: Паспортные данные
+          Переиспользуем готовый компонент PassportDataForm
+          ======================================================================== */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Паспортные данные</h3>
+        <PassportDataForm control={form.controls.passportData} />
+      </div>
 
       {/* Дополнительные документы */}
       <div className="space-y-4">

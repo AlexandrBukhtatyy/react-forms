@@ -1,29 +1,40 @@
-import { useSignals } from '@preact/signals-react/runtime';
-import { FieldController } from '@/lib/forms/core/field-controller';
-import { FormField } from '@/lib/forms/components/form-field';
-import type { ExistingLoan } from '../../../_shared/types/credit-application';
-
 /**
- * Компонент для отдельного кредита
- * Используется с FormArrayManager в родительском компоненте
+ * ExistingLoanForm
+ *
+ * Компонент для отдельного кредита.
+ * Работает с DeepFormStore через GroupProxy (элемент массива).
+ *
+ * Используется с ArrayProxy в родительском компоненте:
+ * {form.controls.existingLoans.map((loan, index) => (
+ *   <ExistingLoanForm key={index} control={loan} />
+ * ))}
  */
-export function ExistingLoanForm({ control }: { control: FieldController<ExistingLoan> }) {
+
+import { useSignals } from '@preact/signals-react/runtime';
+import { FormField } from '@/lib/forms/components/form-field';
+
+interface ExistingLoanFormProps {
+  // GroupProxy для элемента массива existingLoans (используем any для обхода ограничений TypeScript)
+  control: any;
+}
+
+export function ExistingLoanForm({ control }: ExistingLoanFormProps) {
   useSignals();
 
   return (
-    <>
-      <FormField control={control.bank as any} />
-      <FormField control={control.type as any} />
+    <div className="space-y-3">
+      <FormField control={control.bank} />
+      <FormField control={control.type} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField control={control.amount as any} />
-        <FormField control={control.remainingAmount as any} />
+      <div className="grid grid-cols-2 gap-4">
+        <FormField control={control.amount} />
+        <FormField control={control.remainingAmount} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField control={control.monthlyPayment as any} />
-        <FormField control={control.maturityDate as any} />
+      <div className="grid grid-cols-2 gap-4">
+        <FormField control={control.monthlyPayment} />
+        <FormField control={control.maturityDate} />
       </div>
-    </>
+    </div>
   );
 }

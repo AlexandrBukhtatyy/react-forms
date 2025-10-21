@@ -11,12 +11,26 @@ export type {
   FormSchema
 } from './types';
 
+// Variant 5 types
+export type {
+  DeepFormSchema,
+  DeepControls,
+  GroupControlProxy,
+  ArrayControlProxy,
+  ArrayConfig,
+} from './types';
+
 // ============================================================================
 // Core
 // ============================================================================
 
 export { FieldController } from './core/field-controller';
 export { FormStore } from './core/form-store';
+
+// Variant 5 core
+export { DeepFormStore } from './core/deep-form-store';
+export { GroupProxy } from './core/group-proxy';
+export { ArrayProxy } from './core/array-proxy';
 
 // ============================================================================
 // Components

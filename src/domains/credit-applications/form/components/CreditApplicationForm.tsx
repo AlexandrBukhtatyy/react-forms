@@ -1,7 +1,16 @@
+/**
+ * CreditApplicationForm
+ *
+ * Использует DeepFormStore для элегантной работы с:
+ * - Вложенными формами (personalData, passportData, addresses)
+ * - Массивами форм (properties, existingLoans, coBorrowers)
+ * - Полной типизацией TypeScript
+ */
+
 import { useState } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
-import { FormStore } from '@/lib/forms/core/form-store';
-import type { FormSchema } from '@/lib/forms/types';
+import { DeepFormStore } from '@/lib/forms/core/deep-form-store';
+import type { DeepFormSchema } from '@/lib/forms/types';
 import { Input, Select, Textarea, Checkbox, RadioGroup, InputMask } from '@/lib/forms/components';
 import { StepIndicator } from './StepIndicator';
 import { NavigationButtons } from './NavigationButtons';
@@ -13,7 +22,15 @@ import {
   AdditionalInfoForm,
   ConfirmationForm,
 } from './steps';
-import type { CreditApplicationForm as CreditApplicationFormModel } from '../../_shared/types/credit-application';
+import type {
+  CreditApplicationForm as CreditApplicationFormModel,
+  PersonalData,
+  PassportData,
+  Address,
+  PropertyItem,
+  ExistingLoan,
+  CoBorrower,
+} from '../../_shared/types/credit-application';
 import {
   LOAN_TYPES,
   EMPLOYMENT_STATUSES,
@@ -21,24 +38,46 @@ import {
   EDUCATIONS,
   GENDERS,
 } from '../../_shared/constants/credit-application';
-import creditApplicationValidation, { STEP_VALIDATIONS } from './validation/credit-application-validation';
+
+// ============================================================================
+// Интерфейс формы с мета-данными
+// ============================================================================
+
+interface CreditApplicationFormWithMeta extends Omit<CreditApplicationFormModel, 'personalData' | 'passportData' | 'registrationAddress' | 'residenceAddress' | 'properties' | 'existingLoans' | 'coBorrowers'> {
+  // Мета-данные
+  currentStep: number;
+  completedSteps: number[];
+
+  // Вложенные формы
+  personalData: PersonalData;
+  passportData: PassportData;
+  registrationAddress: Address;
+  residenceAddress?: Address;
+
+  // Массивы форм (если включены)
+  properties?: PropertyItem[];
+  existingLoans?: ExistingLoan[];
+  coBorrowers?: CoBorrower[];
+}
 
 // ============================================================================
 // Создание схемы формы
 // ============================================================================
 
 const createCreditApplicationForm = () => {
-  const schema: FormSchema<CreditApplicationFormModel> = {
-    // Метаданные формы
+  const schema: DeepFormSchema<CreditApplicationFormWithMeta> = {
+    // ========================================================================
+    // Мета-данные формы
+    // ========================================================================
+
     currentStep: {
       value: 1,
       component: () => null,
-      componentProps: {},
     },
+
     completedSteps: {
       value: [],
       component: () => null,
-      componentProps: {},
     },
 
     // ========================================================================
@@ -91,7 +130,7 @@ const createCreditApplicationForm = () => {
       },
     },
 
-    // Специфичные поля для ипотеки
+    // Условные поля для ипотеки
     propertyValue: {
       value: undefined,
       component: Input,
@@ -116,7 +155,7 @@ const createCreditApplicationForm = () => {
       },
     },
 
-    // Специфичные поля для автокредита
+    // Условные поля для автокредита
     carBrand: {
       value: undefined,
       component: Input,
@@ -160,111 +199,113 @@ const createCreditApplicationForm = () => {
     },
 
     // ========================================================================
-    // Шаг 2: Персональные данные
+    // Шаг 2: Персональные данные (ВЛОЖЕННЫЕ ФОРМЫ!)
     // ========================================================================
 
-    // Личные данные
-    personalData_lastName: {
-      value: '',
-      component: Input,
-      componentProps: {
-        label: 'Фамилия',
-        placeholder: 'Введите фамилию',
+    personalData: {
+      lastName: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Фамилия',
+          placeholder: 'Введите фамилию',
+        },
+      },
+
+      firstName: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Имя',
+          placeholder: 'Введите имя',
+        },
+      },
+
+      middleName: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Отчество',
+          placeholder: 'Введите отчество',
+        },
+      },
+
+      birthDate: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Дата рождения',
+          type: 'date',
+        },
+      },
+
+      gender: {
+        value: 'male',
+        component: RadioGroup,
+        componentProps: {
+          label: 'Пол',
+          options: GENDERS,
+        },
+      },
+
+      birthPlace: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Место рождения',
+          placeholder: 'Введите место рождения',
+        },
       },
     },
 
-    personalData_firstName: {
-      value: '',
-      component: Input,
-      componentProps: {
-        label: 'Имя',
-        placeholder: 'Введите имя',
+    passportData: {
+      series: {
+        value: '',
+        component: InputMask,
+        componentProps: {
+          label: 'Серия паспорта',
+          placeholder: '00 00',
+          mask: '99 99',
+        },
       },
-    },
 
-    personalData_middleName: {
-      value: '',
-      component: Input,
-      componentProps: {
-        label: 'Отчество',
-        placeholder: 'Введите отчество',
+      number: {
+        value: '',
+        component: InputMask,
+        componentProps: {
+          label: 'Номер паспорта',
+          placeholder: '000000',
+          mask: '999999',
+        },
       },
-    },
 
-    personalData_birthDate: {
-      value: '',
-      component: Input,
-      componentProps: {
-        label: 'Дата рождения',
-        type: 'date',
+      issueDate: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Дата выдачи',
+          type: 'date',
+        },
       },
-    },
 
-    personalData_gender: {
-      value: 'male',
-      component: RadioGroup,
-      componentProps: {
-        label: 'Пол',
-        options: GENDERS,
+      issuedBy: {
+        value: '',
+        component: Textarea,
+        componentProps: {
+          label: 'Кем выдан',
+          placeholder: 'Введите наименование органа',
+          rows: 3,
+        },
       },
-    },
 
-    personalData_birthPlace: {
-      value: '',
-      component: Input,
-      componentProps: {
-        label: 'Место рождения',
-        placeholder: 'Введите место рождения',
-      },
-    },
-
-    // Паспортные данные
-    passportData_series: {
-      value: '',
-      component: InputMask,
-      componentProps: {
-        label: 'Серия паспорта',
-        placeholder: '00 00',
-        mask: '99 99',
-      },
-    },
-
-    passportData_number: {
-      value: '',
-      component: InputMask,
-      componentProps: {
-        label: 'Номер паспорта',
-        placeholder: '000000',
-        mask: '999999',
-      },
-    },
-
-    passportData_issueDate: {
-      value: '',
-      component: Input,
-      componentProps: {
-        label: 'Дата выдачи',
-        type: 'date',
-      },
-    },
-
-    passportData_issuedBy: {
-      value: '',
-      component: Textarea,
-      componentProps: {
-        label: 'Кем выдан',
-        placeholder: 'Введите наименование органа',
-        rows: 3,
-      },
-    },
-
-    passportData_departmentCode: {
-      value: '',
-      component: InputMask,
-      componentProps: {
-        label: 'Код подразделения',
-        placeholder: '000-000',
-        mask: '999-999',
+      departmentCode: {
+        value: '',
+        component: InputMask,
+        componentProps: {
+          label: 'Код подразделения',
+          placeholder: '000-000',
+          mask: '999-999',
+        },
       },
     },
 
@@ -287,32 +328,6 @@ const createCreditApplicationForm = () => {
         placeholder: '123-456-789 00',
         mask: '999-999-999 99',
       },
-    },
-
-    // Заглушки для обратной совместимости с типами
-    personalData: {
-      value: {
-        lastName: '',
-        firstName: '',
-        middleName: '',
-        birthDate: '',
-        birthPlace: '',
-        gender: 'male',
-      },
-      component: () => null,
-      componentProps: {},
-    },
-
-    passportData: {
-      value: {
-        series: '',
-        number: '',
-        issueDate: '',
-        issuedBy: '',
-        departmentCode: '',
-      },
-      component: () => null,
-      componentProps: {},
     },
 
     // ========================================================================
@@ -359,59 +374,61 @@ const createCreditApplicationForm = () => {
       },
     },
 
-    // Адрес регистрации
-    registrationAddress_region: {
-      value: '',
-      component: Input,
-      componentProps: {
-        label: 'Регион',
-        placeholder: 'Введите регион',
+    // Адрес регистрации (вложенная форма)
+    registrationAddress: {
+      region: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Регион',
+          placeholder: 'Введите регион',
+        },
       },
-    },
 
-    registrationAddress_city: {
-      value: '',
-      component: Input,
-      componentProps: {
-        label: 'Город',
-        placeholder: 'Введите город',
+      city: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Город',
+          placeholder: 'Введите город',
+        },
       },
-    },
 
-    registrationAddress_street: {
-      value: '',
-      component: Input,
-      componentProps: {
-        label: 'Улица',
-        placeholder: 'Введите улицу',
+      street: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Улица',
+          placeholder: 'Введите улицу',
+        },
       },
-    },
 
-    registrationAddress_house: {
-      value: '',
-      component: Input,
-      componentProps: {
-        label: 'Дом',
-        placeholder: '№',
+      house: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Дом',
+          placeholder: '№',
+        },
       },
-    },
 
-    registrationAddress_apartment: {
-      value: undefined,
-      component: Input,
-      componentProps: {
-        label: 'Квартира',
-        placeholder: '№',
+      apartment: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Квартира',
+          placeholder: '№',
+        },
       },
-    },
 
-    registrationAddress_postalCode: {
-      value: '',
-      component: InputMask,
-      componentProps: {
-        label: 'Индекс',
-        placeholder: '000000',
-        mask: '999999',
+      postalCode: {
+        value: '',
+        component: InputMask,
+        componentProps: {
+          label: 'Индекс',
+          placeholder: '000000',
+          mask: '999999',
+        },
       },
     },
 
@@ -423,80 +440,62 @@ const createCreditApplicationForm = () => {
       },
     },
 
-    // Адрес проживания (условные поля)
-    residenceAddress_region: {
-      value: undefined,
-      component: Input,
-      componentProps: {
-        label: 'Регион',
-        placeholder: 'Введите регион',
-      },
-    },
-
-    residenceAddress_city: {
-      value: undefined,
-      component: Input,
-      componentProps: {
-        label: 'Город',
-        placeholder: 'Введите город',
-      },
-    },
-
-    residenceAddress_street: {
-      value: undefined,
-      component: Input,
-      componentProps: {
-        label: 'Улица',
-        placeholder: 'Введите улицу',
-      },
-    },
-
-    residenceAddress_house: {
-      value: undefined,
-      component: Input,
-      componentProps: {
-        label: 'Дом',
-        placeholder: '№',
-      },
-    },
-
-    residenceAddress_apartment: {
-      value: undefined,
-      component: Input,
-      componentProps: {
-        label: 'Квартира',
-        placeholder: '№',
-      },
-    },
-
-    residenceAddress_postalCode: {
-      value: undefined,
-      component: InputMask,
-      componentProps: {
-        label: 'Индекс',
-        placeholder: '000000',
-        mask: '999999',
-      },
-    },
-
-    // Заглушки для обратной совместимости с типами
-    registrationAddress: {
-      value: {
-        region: '',
-        city: '',
-        street: '',
-        house: '',
-        apartment: undefined,
-        postalCode: '',
-      },
-      component: () => null,
-      componentProps: {},
-    },
-
+    // Адрес проживания (условная вложенная форма)
     residenceAddress: {
-      value: undefined,
-      component: () => null,
-      componentProps: {},
+      region: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Регион',
+          placeholder: 'Введите регион',
+        },
+      },
+
+      city: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Город',
+          placeholder: 'Введите город',
+        },
+      },
+
+      street: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Улица',
+          placeholder: 'Введите улицу',
+        },
+      },
+
+      house: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Дом',
+          placeholder: '№',
+        },
+      },
+
+      apartment: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Квартира',
+          placeholder: '№',
+        },
+      },
+
+      postalCode: {
+        value: undefined,
+        component: InputMask,
+        componentProps: {
+          label: 'Индекс',
+          placeholder: '000000',
+          mask: '999999',
+        },
+      },
     },
 
     // ========================================================================
@@ -686,11 +685,52 @@ const createCreditApplicationForm = () => {
       },
     },
 
-    properties: {
-      value: undefined,
-      component: () => null,
-      componentProps: {},
-    },
+    // Массив форм: Имущество
+    properties: [{
+      type: {
+        value: 'apartment',
+        component: Select,
+        componentProps: {
+          label: 'Тип имущества',
+          placeholder: 'Выберите тип',
+          options: [
+            { value: 'apartment', label: 'Квартира' },
+            { value: 'house', label: 'Дом' },
+            { value: 'land', label: 'Земельный участок' },
+            { value: 'commercial', label: 'Коммерческая недвижимость' },
+            { value: 'car', label: 'Автомобиль' },
+            { value: 'other', label: 'Другое' },
+          ],
+        },
+      },
+      description: {
+        value: '',
+        component: Textarea,
+        componentProps: {
+          label: 'Описание',
+          placeholder: 'Опишите имущество',
+          rows: 2,
+        },
+      },
+      estimatedValue: {
+        value: 0,
+        component: Input,
+        componentProps: {
+          label: 'Оценочная стоимость',
+          placeholder: '0',
+          type: 'number',
+          min: 0,
+          step: 1000,
+        },
+      },
+      hasEncumbrance: {
+        value: false,
+        component: Checkbox,
+        componentProps: {
+          label: 'Имеется обременение (залог)',
+        },
+      },
+    }],
 
     hasExistingLoans: {
       value: false,
@@ -700,11 +740,13 @@ const createCreditApplicationForm = () => {
       },
     },
 
-    existingLoans: {
-      value: undefined,
-      component: () => null,
-      componentProps: {},
-    },
+    // existingLoans: [{
+    //   bank: { value: '', component: Input },
+    //   type: { value: '', component: Select },
+    //   amount: { value: 0, component: Input },
+    //   monthlyPayment: { value: 0, component: Input },
+    //   maturityDate: { value: '', component: Input },
+    // }],
 
     hasCoBorrower: {
       value: false,
@@ -714,11 +756,17 @@ const createCreditApplicationForm = () => {
       },
     },
 
-    coBorrowers: {
-      value: undefined,
-      component: () => null,
-      componentProps: {},
-    },
+    // coBorrowers: [{
+    //   personalData: {
+    //     firstName: { value: '', component: Input },
+    //     lastName: { value: '', component: Input },
+    //     middleName: { value: '', component: Input },
+    //   },
+    //   phone: { value: '', component: InputMask },
+    //   email: { value: '', component: Input },
+    //   relationship: { value: '', component: Select },
+    //   monthlyIncome: { value: 0, component: Input },
+    // }],
 
     // ========================================================================
     // Шаг 6: Согласия
@@ -773,12 +821,12 @@ const createCreditApplicationForm = () => {
         mask: '999999',
       },
     },
-  } as any; // Используем 'as any' из-за вложенных объектов
+  };
 
-  const form = new FormStore(schema);
+  const form = new DeepFormStore(schema);
 
-  // Применяем validation schema
-  form.applyValidationSchema(creditApplicationValidation);
+  // TODO: Применить validation schema
+  // form.applyValidationSchema(creditApplicationValidation);
 
   return form;
 };
@@ -790,10 +838,9 @@ const createCreditApplicationForm = () => {
 function CreditApplicationForm() {
   useSignals();
 
-  // Создаем форму при инициализации компонента
   const [form] = useState(() => createCreditApplicationForm());
 
-  // Текущий шаг (reactive через signals)
+  // Доступ к полям через DeepFormStore API
   const currentStep = form.controls.currentStep.value;
   const completedSteps = form.controls.completedSteps.value;
 
@@ -802,52 +849,13 @@ function CreditApplicationForm() {
   // ============================================================================
 
   const goToNextStep = async () => {
-    // console.log('🔍 Attempting to go to next step. Current step:', currentStep);
-
-    // // Получаем схему валидации для текущего шага
-    // const stepValidation = STEP_VALIDATIONS[currentStep as keyof typeof STEP_VALIDATIONS];
-
-    // if (!stepValidation) {
-    //   console.error('❌ No validation schema found for step:', currentStep);
-    //   return;
-    // }
-
-    // // Временно применяем схему валидации только для текущего шага
-    // form.applyValidationSchema(stepValidation);
-
-    // // Валидируем только поля текущего шага
-    // const isValid = await form.validate();
-    // console.log('✅ Validation result for step', currentStep, ':', isValid);
-
-    // // Возвращаем полную схему валидации
-    // form.applyValidationSchema(creditApplicationValidation);
-
-    // if (!isValid) {
-    //   // Показываем ошибки
-    //   console.warn('❌ Validation failed for step', currentStep);
-
-    //   // Логируем ошибки для отладки
-    //   form.fields.forEach((field, key) => {
-    //     if (field.errors.length > 0) {
-    //       console.error(`Field "${String(key)}" has errors:`, field.errors);
-    //     }
-    //   });
-
-    //   form.markAllAsTouched();
-    //   return;
-    // }
-
-    // Переходим на следующий шаг
     const nextStep = Math.min(currentStep + 1, 6);
-    console.log('✨ Moving to step:', nextStep);
     form.controls.currentStep.setValue(nextStep);
 
-    // Добавляем текущий шаг в список завершенных
     if (!completedSteps.includes(currentStep)) {
       form.controls.completedSteps.setValue([...completedSteps, currentStep]);
     }
 
-    // Скроллим наверх
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -858,7 +866,6 @@ function CreditApplicationForm() {
   };
 
   const goToStep = (step: number) => {
-    // Можно перейти только на завершенный шаг или следующий после последнего завершенного
     const canGoTo = step === 1 || completedSteps.includes(step - 1);
 
     if (canGoTo) {
@@ -881,15 +888,13 @@ function CreditApplicationForm() {
     }
 
     try {
-      const values = form.value;
+      const values = form.getValue();
       console.log('Отправка формы:', values);
 
-      // Здесь будет реальная отправка на сервер
-      // const response = await fetch('/api/credit-applications', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(values),
-      // });
+      // Демонстрация доступа к вложенным данным
+      console.log('Personal Data:', form.controls.personalData.getValue());
+      console.log('Passport Data:', form.controls.passportData.getValue());
+      console.log('Registration Address:', form.controls.registrationAddress.getValue());
 
       alert('Заявка успешно отправлена!');
     } catch (error) {

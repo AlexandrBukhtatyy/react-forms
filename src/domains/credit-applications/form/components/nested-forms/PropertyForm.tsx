@@ -1,21 +1,32 @@
-import { useSignals } from '@preact/signals-react/runtime';
-import { FieldController } from '@/lib/forms/core/field-controller';
-import { FormField } from '@/lib/forms/components/form-field';
-import type { PropertyItem } from '../../../_shared/types/credit-application';
-
 /**
- * Компонент для отдельного элемента имущества
- * Используется с FormArrayManager в родительском компоненте
+ * PropertyForm
+ *
+ * Компонент для отдельного элемента имущества.
+ * Работает с DeepFormStore через GroupProxy (элемент массива).
+ *
+ * Используется с ArrayProxy в родительском компоненте:
+ * {form.controls.properties.map((property, index) => (
+ *   <PropertyForm key={index} control={property} />
+ * ))}
  */
-export function PropertyForm({ control }: { control: FieldController<PropertyItem> }) {
+
+import { useSignals } from '@preact/signals-react/runtime';
+import { FormField } from '@/lib/forms/components/form-field';
+
+interface PropertyFormProps {
+  // GroupProxy для элемента массива properties (используем any для обхода ограничений TypeScript)
+  control: any;
+}
+
+export function PropertyForm({ control }: PropertyFormProps) {
   useSignals();
 
   return (
-    <>
-      <FormField control={control.type as any} />
-      <FormField control={control.description as any} />
-      <FormField control={control.estimatedValue as any} />
-      <FormField control={control.hasEncumbrance as any} />
-    </>
+    <div className="space-y-3">
+      <FormField control={control.type} />
+      <FormField control={control.description} />
+      <FormField control={control.estimatedValue} />
+      <FormField control={control.hasEncumbrance} />
+    </div>
   );
 }

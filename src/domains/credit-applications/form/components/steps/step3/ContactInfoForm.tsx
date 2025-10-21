@@ -1,11 +1,20 @@
+/**
+ * ContactInfoForm (Step 3)
+ *
+ * Демонстрирует:
+ * - Переиспользование AddressForm для двух разных адресов
+ * - Операции с группами: getValue(), setValue()
+ * - Условное отображение вложенных форм
+ */
+
 import { useSignals } from '@preact/signals-react/runtime';
-import type { FormStore } from '@/lib/forms/core/form-store';
-import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
+import type { DeepFormStore } from '@/lib/forms/core/deep-form-store';
 import { FormField } from '@/lib/forms/components';
 import { AddressForm } from '../../nested-forms';
+import { Button } from '@/lib/ui/button';
 
 interface ContactInfoFormProps {
-  form: FormStore<CreditApplicationForm>;
+  form: DeepFormStore<any>;
 }
 
 export function ContactInfoForm({ form }: ContactInfoFormProps) {
@@ -13,39 +22,79 @@ export function ContactInfoForm({ form }: ContactInfoFormProps) {
 
   const sameAsRegistration = form.controls.sameAsRegistration.value;
 
+  // Копировать адрес регистрации в адрес проживания
+  const copyRegistrationAddress = () => {
+    const regAddress = form.controls.registrationAddress.getValue();
+    form.controls.residenceAddress.setValue(regAddress);
+  };
+
+  // Очистить адрес проживания
+  const clearResidenceAddress = () => {
+    form.controls.residenceAddress.reset();
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Контактная информация</h2>
 
-      {/* Телефоны и Email */}
+      {/* Телефоны и email */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Контакты</h3>
+
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.controls.phoneMain} />
           <FormField control={form.controls.phoneAdditional} />
         </div>
+
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.controls.email} />
           <FormField control={form.controls.emailAdditional} />
         </div>
       </div>
 
-      {/* Вложенная форма: Адрес регистрации */}
-      <h3 className="text-lg font-semibold">Адрес регистрации</h3>
-      <AddressForm control={form.controls.registrationAddress} />
-
-      {/* Адрес проживания */}
+      {/* ========================================================================
+          Вложенная форма: Адрес регистрации
+          Используем переиспользуемый компонент AddressForm
+          ======================================================================== */}
       <div className="space-y-4">
-        <FormField control={form.controls.sameAsRegistration} />
-
-        {/* Вложенная форма: Адрес проживания (условная) */}
-        {!sameAsRegistration && (
-          <>
-            <h3 className="text-lg font-semibold">Адрес проживания</h3>
-            <AddressForm control={form.controls.residenceAddress} />
-          </>
-        )}
+        <h3 className="text-lg font-semibold">Адрес регистрации</h3>
+        <AddressForm control={form.controls.registrationAddress} />
       </div>
+
+      {/* Чекбокс совпадения адресов */}
+      <FormField control={form.controls.sameAsRegistration} />
+
+      {/* ========================================================================
+          Условная вложенная форма: Адрес проживания
+          Используем тот же компонент AddressForm, но для другого адреса
+          Демонстрирует переиспользуемость компонентов
+          ======================================================================== */}
+      {!sameAsRegistration && (
+        <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Адрес проживания</h3>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={copyRegistrationAddress}
+            >
+              Скопировать из адреса регистрации
+            </Button>
+          </div>
+
+          <AddressForm control={form.controls.residenceAddress} />
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={clearResidenceAddress}
+          >
+            Очистить адрес проживания
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
