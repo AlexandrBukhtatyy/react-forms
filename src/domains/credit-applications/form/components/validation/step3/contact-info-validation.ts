@@ -1,5 +1,5 @@
 import type { FieldPath } from '@/lib/forms/types';
-import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 import {
   applyWhen,
   required,
@@ -25,22 +25,22 @@ export const contactInfoValidation = (path: FieldPath<CreditApplicationForm>) =>
   updateOn(path.email, 'blur');
 
   // Валидация адреса регистрации
-  required(path.registrationAddress_region, { message: 'Регион обязателен' });
-  minLength(path.registrationAddress_region, 2, { message: 'Минимум 2 символа' });
+  required(path.registrationAddress.region, { message: 'Регион обязателен' });
+  minLength(path.registrationAddress.region, 2, { message: 'Минимум 2 символа' });
 
-  required(path.registrationAddress_city, { message: 'Город обязателен' });
-  minLength(path.registrationAddress_city, 2, { message: 'Минимум 2 символа' });
+  required(path.registrationAddress.city, { message: 'Город обязателен' });
+  minLength(path.registrationAddress.city, 2, { message: 'Минимум 2 символа' });
 
-  required(path.registrationAddress_street, { message: 'Улица обязательна' });
-  minLength(path.registrationAddress_street, 3, { message: 'Минимум 3 символа' });
+  required(path.registrationAddress.street, { message: 'Улица обязательна' });
+  minLength(path.registrationAddress.street, 3, { message: 'Минимум 3 символа' });
 
-  required(path.registrationAddress_house, { message: 'Дом обязателен' });
-  pattern(path.registrationAddress_house, /^[\dА-Яа-я/-]+$/, {
+  required(path.registrationAddress.house, { message: 'Дом обязателен' });
+  pattern(path.registrationAddress.house, /^[\dА-Яа-я/-]+$/, {
     message: 'Допустимы только буквы, цифры, дефис и слэш',
   });
 
-  required(path.registrationAddress_postalCode, { message: 'Индекс обязателен' });
-  pattern(path.registrationAddress_postalCode, /^\d{6}$/, {
+  required(path.registrationAddress.postalCode, { message: 'Индекс обязателен' });
+  pattern(path.registrationAddress.postalCode, /^\d{6}$/, {
     message: 'Индекс должен содержать 6 цифр',
   });
 
@@ -49,22 +49,22 @@ export const contactInfoValidation = (path: FieldPath<CreditApplicationForm>) =>
     path.sameAsRegistration,
     (value) => value === false,
     (path) => {
-      required(path.residenceAddress_region as any, { message: 'Регион обязателен' });
-      minLength(path.residenceAddress_region as any, 2, { message: 'Минимум 2 символа' });
+      required(path.residenceAddress.region as any, { message: 'Регион обязателен' });
+      minLength(path.residenceAddress.region as any, 2, { message: 'Минимум 2 символа' });
 
-      required(path.residenceAddress_city as any, { message: 'Город обязателен' });
-      minLength(path.residenceAddress_city as any, 2, { message: 'Минимум 2 символа' });
+      required(path.residenceAddress.city as any, { message: 'Город обязателен' });
+      minLength(path.residenceAddress.city as any, 2, { message: 'Минимум 2 символа' });
 
-      required(path.residenceAddress_street as any, { message: 'Улица обязательна' });
-      minLength(path.residenceAddress_street as any, 3, { message: 'Минимум 3 символа' });
+      required(path.residenceAddress.street as any, { message: 'Улица обязательна' });
+      minLength(path.residenceAddress.street as any, 3, { message: 'Минимум 3 символа' });
 
-      required(path.residenceAddress_house as any, { message: 'Дом обязателен' });
-      pattern(path.residenceAddress_house as any, /^[\dА-Яа-я/-]+$/, {
+      required(path.residenceAddress.house as any, { message: 'Дом обязателен' });
+      pattern(path.residenceAddress.house as any, /^[\dА-Яа-я/-]+$/, {
         message: 'Допустимы только буквы, цифры, дефис и слэш',
       });
 
-      required(path.residenceAddress_postalCode as any, { message: 'Индекс обязателен' });
-      pattern(path.residenceAddress_postalCode as any, /^\d{6}$/, {
+      required(path.residenceAddress.postalCode as any, { message: 'Индекс обязателен' });
+      pattern(path.residenceAddress.postalCode as any, /^\d{6}$/, {
         message: 'Индекс должен содержать 6 цифр',
       });
     }

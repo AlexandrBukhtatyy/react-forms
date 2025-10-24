@@ -1,57 +1,132 @@
-/**
- * CoBorrowerForm
- *
- * Компонент для отдельного созаемщика.
- * Работает с DeepFormStore через GroupProxy (элемент массива).
- *
- * ОСОБЕННОСТЬ: Созаемщик содержит вложенную группу personalData.
- * Демонстрирует работу с массивами, содержащими вложенные группы.
- *
- * Используется с ArrayProxy в родительском компоненте:
- * {form.controls.coBorrowers.map((coBorrower, index) => (
- *   <CoBorrowerForm key={index} control={coBorrower} />
- * ))}
- */
-
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
+import { Input, InputMask } from '@/lib/forms/components';
+import { Select } from '@radix-ui/react-select';
+import { RELATIONSHIPS } from '../../constants/credit-application';
+
+    export const coBorrowersFormSchema = {
+      personalData: {
+        lastName: {
+          value: '',
+          component: Input,
+          componentProps: {
+            label: 'Фамилия',
+            placeholder: 'Введите фамилию',
+          },
+        },
+        firstName: {
+          value: '',
+          component: Input,
+          componentProps: {
+            label: 'Имя',
+            placeholder: 'Введите имя',
+          },
+        },
+        middleName: {
+          value: '',
+          component: Input,
+          componentProps: {
+            label: 'Отчество',
+            placeholder: 'Введите отчество',
+          },
+        },
+        birthDate: {
+          value: '',
+          component: Input,
+          componentProps: {
+            label: 'Дата рождения',
+            type: 'date',
+          },
+        },
+      },
+      phone: {
+        value: '',
+        component: InputMask,
+        componentProps: {
+          label: 'Телефон',
+          placeholder: '+7 (___) ___-__-__',
+          mask: '+7 (999) 999-99-99',
+        },
+      },
+      email: {
+        value: '',
+        component: Input,
+        componentProps: {
+          label: 'Email',
+          placeholder: 'example@mail.com',
+          type: 'email',
+        },
+      },
+      relationship: {
+        value: 'spouse',
+        component: Select,
+        componentProps: {
+          label: 'Отношение к заемщику',
+          placeholder: 'Выберите отношение',
+          options: RELATIONSHIPS,
+        },
+      },
+      monthlyIncome: {
+        value: 0,
+        component: Input,
+        componentProps: {
+          label: 'Ежемесячный доход (₽)',
+          placeholder: '0',
+          type: 'number',
+          min: 0,
+          step: 1000,
+        },
+      },
+    };
 
 interface CoBorrowerFormProps {
-  // GroupProxy для элемента массива coBorrowers (используем any для обхода ограничений TypeScript)
+  // GroupProxy для элемента массива coBorrowers
   control: any;
+  // Индекс элемента в массиве
+  index: number;
+  // Функция для удаления элемента
+  onRemove: () => void;
 }
 
-export function CoBorrowerForm({ control }: CoBorrowerFormProps) {
+export function CoBorrowerForm({ control, index, onRemove }: CoBorrowerFormProps) {
   useSignals();
 
   return (
-    <div className="space-y-4">
-      {/* Вложенная группа: personalData */}
-      <div className="p-3 bg-gray-50 rounded">
-        <h5 className="text-sm font-medium mb-3">Личные данные</h5>
-        <div className="space-y-3">
-          {/* ФИО */}
-          <div className="grid grid-cols-3 gap-3">
-            <FormField control={control.personalData.lastName} />
-            <FormField control={control.personalData.firstName} />
-            <FormField control={control.personalData.middleName} />
+    <div className="mb-4 p-4 bg-white rounded border">
+      <div className="flex justify-between items-center mb-3">
+        <h4 className="font-medium">Созаемщик #{index + 1}</h4>
+        <button
+          type="button"
+          className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+          onClick={onRemove}
+        >
+          Удалить
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <div className="p-3 bg-gray-50 rounded">
+          <h5 className="text-sm font-medium mb-3">Личные данные</h5>
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
+              <FormField control={control.personalData.lastName} />
+              <FormField control={control.personalData.firstName} />
+              <FormField control={control.personalData.middleName} />
+            </div>
+
+            <FormField control={control.personalData.birthDate} />
           </div>
-
-          {/* Дата рождения */}
-          <FormField control={control.personalData.birthDate} />
         </div>
-      </div>
 
-      {/* Контактные данные */}
-      <div className="grid grid-cols-2 gap-4">
-        <FormField control={control.phone} />
-        <FormField control={control.email} />
-      </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField control={control.phone} />
+          <FormField control={control.email} />
+        </div>
 
-      {/* Дополнительная информация */}
-      <div className="grid grid-cols-2 gap-4">
-        <FormField control={control.relationship} />
-        <FormField control={control.monthlyIncome} />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField control={control.relationship} />
+          <FormField control={control.monthlyIncome} />
+        </div>
       </div>
     </div>
   );

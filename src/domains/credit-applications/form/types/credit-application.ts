@@ -52,7 +52,7 @@ export interface Address {
 // ============================================================================
 
 export interface PropertyItem {
-  id: string;
+  id?: string;
   type: PropertyType;
   description: string;
   estimatedValue: number;
@@ -60,7 +60,7 @@ export interface PropertyItem {
 }
 
 export interface ExistingLoan {
-  id: string;
+  id?: string;
   bank: string;
   type: string;
   amount: number;
@@ -70,12 +70,15 @@ export interface ExistingLoan {
 }
 
 export interface CoBorrower {
-  id: string;
-  lastName: string;
-  firstName: string;
-  middleName: string;
-  birthDate: string;
+  id?: string;
+  personalData: {
+    lastName: string;
+    firstName: string;
+    middleName: string;
+    birthDate: string;
+  };
   phone: string;
+  email: string;
   relationship: string;
   monthlyIncome: number;
 }

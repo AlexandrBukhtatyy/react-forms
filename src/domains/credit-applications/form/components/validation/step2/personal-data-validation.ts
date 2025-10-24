@@ -1,5 +1,5 @@
 import type { FieldPath } from '@/lib/forms/types';
-import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 import {
   validate,
   required,
@@ -13,31 +13,31 @@ import {
  */
 export const personalDataValidation = (path: FieldPath<CreditApplicationForm>) => {
   // Валидация личных данных
-  required(path.personalData_lastName, { message: 'Фамилия обязательна' });
-  minLength(path.personalData_lastName, 2, { message: 'Минимум 2 символа' });
-  maxLength(path.personalData_lastName, 50, { message: 'Максимум 50 символов' });
-  pattern(path.personalData_lastName, /^[А-ЯЁа-яё\s-]+$/, {
+  required(path.personalData.lastName, { message: 'Фамилия обязательна' });
+  minLength(path.personalData.lastName, 2, { message: 'Минимум 2 символа' });
+  maxLength(path.personalData.lastName, 50, { message: 'Максимум 50 символов' });
+  pattern(path.personalData.lastName, /^[А-ЯЁа-яё\s-]+$/, {
     message: 'Только русские буквы, пробелы и дефис'
   });
 
-  required(path.personalData_firstName, { message: 'Имя обязательно' });
-  minLength(path.personalData_firstName, 2, { message: 'Минимум 2 символа' });
-  maxLength(path.personalData_firstName, 50, { message: 'Максимум 50 символов' });
-  pattern(path.personalData_firstName, /^[А-ЯЁа-яё\s-]+$/, {
+  required(path.personalData.firstName, { message: 'Имя обязательно' });
+  minLength(path.personalData.firstName, 2, { message: 'Минимум 2 символа' });
+  maxLength(path.personalData.firstName, 50, { message: 'Максимум 50 символов' });
+  pattern(path.personalData.firstName, /^[А-ЯЁа-яё\s-]+$/, {
     message: 'Только русские буквы, пробелы и дефис'
   });
 
-  required(path.personalData_middleName, { message: 'Отчество обязательно' });
-  minLength(path.personalData_middleName, 2, { message: 'Минимум 2 символа' });
-  maxLength(path.personalData_middleName, 50, { message: 'Максимум 50 символов' });
-  pattern(path.personalData_middleName, /^[А-ЯЁа-яё\s-]+$/, {
+  required(path.personalData.middleName, { message: 'Отчество обязательно' });
+  minLength(path.personalData.middleName, 2, { message: 'Минимум 2 символа' });
+  maxLength(path.personalData.middleName, 50, { message: 'Максимум 50 символов' });
+  pattern(path.personalData.middleName, /^[А-ЯЁа-яё\s-]+$/, {
     message: 'Только русские буквы, пробелы и дефис'
   });
 
-  required(path.personalData_birthDate, { message: 'Дата рождения обязательна' });
+  required(path.personalData.birthDate, { message: 'Дата рождения обязательна' });
 
   // Валидация возраста
-  validate(path.personalData_birthDate, (ctx) => {
+  validate(path.personalData.birthDate, (ctx) => {
     const birthDate = new Date(ctx.value());
     const today = new Date();
     const age = today.getFullYear() - birthDate.getFullYear();
@@ -59,25 +59,25 @@ export const personalDataValidation = (path: FieldPath<CreditApplicationForm>) =
     return null;
   });
 
-  required(path.personalData_gender, { message: 'Выберите пол' });
-  required(path.personalData_birthPlace, { message: 'Место рождения обязательно' });
-  minLength(path.personalData_birthPlace, 5, { message: 'Минимум 5 символов' });
+  required(path.personalData.gender, { message: 'Выберите пол' });
+  required(path.personalData.birthPlace, { message: 'Место рождения обязательно' });
+  minLength(path.personalData.birthPlace, 5, { message: 'Минимум 5 символов' });
 
   // Валидация паспортных данных
-  required(path.passportData_series, { message: 'Серия паспорта обязательна' });
-  pattern(path.passportData_series, /^\d{2}\s\d{2}$/, {
+  required(path.passportData.series, { message: 'Серия паспорта обязательна' });
+  pattern(path.passportData.series, /^\d{2}\s\d{2}$/, {
     message: 'Формат: 00 00',
   });
 
-  required(path.passportData_number, { message: 'Номер паспорта обязателен' });
-  pattern(path.passportData_number, /^\d{6}$/, {
+  required(path.passportData.number, { message: 'Номер паспорта обязателен' });
+  pattern(path.passportData.number, /^\d{6}$/, {
     message: 'Номер должен содержать 6 цифр',
   });
 
-  required(path.passportData_issueDate, { message: 'Дата выдачи обязательна' });
+  required(path.passportData.issueDate, { message: 'Дата выдачи обязательна' });
 
   // Валидация даты выдачи паспорта
-  validate(path.passportData_issueDate, (ctx) => {
+  validate(path.passportData.issueDate, (ctx) => {
     const issueDate = new Date(ctx.value());
     const today = new Date();
 
@@ -91,11 +91,11 @@ export const personalDataValidation = (path: FieldPath<CreditApplicationForm>) =
     return null;
   });
 
-  required(path.passportData_issuedBy, { message: 'Кем выдан обязательно' });
-  minLength(path.passportData_issuedBy, 10, { message: 'Минимум 10 символов' });
+  required(path.passportData.issuedBy, { message: 'Кем выдан обязательно' });
+  minLength(path.passportData.issuedBy, 10, { message: 'Минимум 10 символов' });
 
-  required(path.passportData_departmentCode, { message: 'Код подразделения обязателен' });
-  pattern(path.passportData_departmentCode, /^\d{3}-\d{3}$/, {
+  required(path.passportData.departmentCode, { message: 'Код подразделения обязателен' });
+  pattern(path.passportData.departmentCode, /^\d{3}-\d{3}$/, {
     message: 'Формат: 000-000',
   });
 

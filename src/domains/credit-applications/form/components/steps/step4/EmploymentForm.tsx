@@ -1,10 +1,9 @@
 import { useSignals } from '@preact/signals-react/runtime';
-import type { FormStore } from '@/lib/forms/core/form-store';
-import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
+import type { DeepFormStore } from '@/lib/forms/core/deep-form-store';
 import { FormField } from '@/lib/forms/components';
 
 interface EmploymentFormProps {
-  form: FormStore<CreditApplicationForm>;
+  form: DeepFormStore<any>;
 }
 
 export function EmploymentForm({ form }: EmploymentFormProps) {
@@ -16,12 +15,10 @@ export function EmploymentForm({ form }: EmploymentFormProps) {
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Информация о занятости</h2>
 
-      {/* Статус занятости */}
       <div className="space-y-4">
         <FormField control={form.controls.employmentStatus} />
       </div>
 
-      {/* Поля для работающих по найму */}
       {employmentStatus === 'employed' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold mt-6">Информация о работодателе</h3>
@@ -41,7 +38,6 @@ export function EmploymentForm({ form }: EmploymentFormProps) {
         </div>
       )}
 
-      {/* Поля для ИП */}
       {employmentStatus === 'selfEmployed' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold mt-6">Информация о бизнесе</h3>
@@ -51,7 +47,6 @@ export function EmploymentForm({ form }: EmploymentFormProps) {
         </div>
       )}
 
-      {/* Доход (для всех, кроме безработных) */}
       {employmentStatus !== 'unemployed' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold mt-6">Доход</h3>
@@ -63,7 +58,6 @@ export function EmploymentForm({ form }: EmploymentFormProps) {
         </div>
       )}
 
-      {/* Сообщение для безработных */}
       {employmentStatus === 'unemployed' && (
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md mt-6">
           <p className="text-sm text-yellow-800">

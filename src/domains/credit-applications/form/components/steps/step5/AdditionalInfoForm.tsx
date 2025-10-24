@@ -11,8 +11,10 @@
 
 import { useSignals } from '@preact/signals-react/runtime';
 import type { DeepFormStore } from '@/lib/forms/core/deep-form-store';
-import { FormField } from '@/lib/forms/components';
-import { PropertyForm, ExistingLoanForm, CoBorrowerForm } from '../../nested-forms';
+import { FormField, FormArrayManager } from '@/lib/forms/components';
+import { PropertyForm } from '../../nested-forms/PropertyForm';
+import { ExistingLoanForm } from '../../nested-forms/ExistingLoanForm';
+import { CoBorrowerForm } from '../../nested-forms/CoBorrowerForm';
 
 interface AdditionalInfoFormProps {
   form: DeepFormStore<any>;
@@ -29,7 +31,6 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Дополнительная информация</h2>
 
-      {/* Семейное положение и образование */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Общая информация</h3>
 
@@ -41,10 +42,6 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
         </div>
       </div>
 
-      {/* ========================================================================
-          МАССИВ ФОРМ: Имущество (properties)
-          Использует переиспользуемый компонент PropertyForm
-          ======================================================================== */}
       <div className="space-y-4">
         <FormField control={form.controls.hasProperty} />
 
@@ -52,57 +49,29 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
           <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Имущество</h3>
-              {/* TODO: Кнопка добавления имущества */}
-              {/* <Button
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => form.controls.properties.push()}
+                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={() => (form.controls.properties as any).push()}
               >
-                Добавить имущество
-              </Button> */}
+                + Добавить имущество
+              </button>
             </div>
 
-            {/* TODO: Список имущества с использованием PropertyForm */}
-            {/* {form.controls.properties.map((property, index) => (
-              <div key={index} className="mb-4 p-4 bg-white rounded border">
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="font-medium">Имущество #{index + 1}</h4>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => form.controls.properties.remove(index)}
-                  >
-                    Удалить
-                  </Button>
-                </div>
+            <FormArrayManager
+              control={form.controls.properties as any}
+              component={PropertyForm}
+            />
 
-                <PropertyForm control={property} />
+            {(form.controls.properties as any).length.value === 0 && (
+              <div className="p-4 bg-gray-100 border border-gray-300 rounded text-center text-gray-600">
+                Нажмите "Добавить имущество" для добавления информации
               </div>
-            ))} */}
-
-            {/* Временная заглушка */}
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
-              <p className="text-sm">
-                <strong>⚠️ В разработке</strong>
-                <br />
-                Массив форм будет доступен после раскомментирования в схеме.
-                <br />
-                <br />
-                <strong>Готовые компоненты:</strong>
-                <br />
-                <code className="text-xs">&lt;PropertyForm control=&#123;property&#125; /&gt;</code>
-              </p>
-            </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* ========================================================================
-          МАССИВ ФОРМ: Существующие кредиты (existingLoans)
-          Использует переиспользуемый компонент ExistingLoanForm
-          ======================================================================== */}
       <div className="space-y-4">
         <FormField control={form.controls.hasExistingLoans} />
 
@@ -110,51 +79,29 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
           <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Существующие кредиты</h3>
-              {/* <Button
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => form.controls.existingLoans.push()}
+                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={() => (form.controls.existingLoans as any).push()}
               >
-                Добавить кредит
-              </Button> */}
+                + Добавить кредит
+              </button>
             </div>
 
-            {/* TODO: Список кредитов с использованием ExistingLoanForm */}
-            {/* {form.controls.existingLoans.map((loan, index) => (
-              <div key={index} className="mb-4 p-4 bg-white rounded border">
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="font-medium">Кредит #{index + 1}</h4>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => form.controls.existingLoans.remove(index)}
-                  >
-                    Удалить
-                  </Button>
-                </div>
+            <FormArrayManager
+              control={form.controls.existingLoans as any}
+              component={ExistingLoanForm}
+            />
 
-                <ExistingLoanForm control={loan} />
+            {(form.controls.existingLoans as any).length.value === 0 && (
+              <div className="p-4 bg-gray-100 border border-gray-300 rounded text-center text-gray-600">
+                Нажмите "Добавить кредит" для добавления информации
               </div>
-            ))} */}
-
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
-              <p className="text-sm">
-                <strong>⚠️ В разработке</strong>
-                <br />
-                <code className="text-xs">&lt;ExistingLoanForm control=&#123;loan&#125; /&gt;</code>
-              </p>
-            </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* ========================================================================
-          МАССИВ ФОРМ С ВЛОЖЕННЫМИ ГРУППАМИ: Созаемщики (coBorrowers)
-          Самый сложный случай: массив элементов, где каждый содержит вложенную группу personalData
-          Использует переиспользуемый компонент CoBorrowerForm
-          ======================================================================== */}
       <div className="space-y-4">
         <FormField control={form.controls.hasCoBorrower} />
 
@@ -162,55 +109,28 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
           <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Созаемщики</h3>
-              {/* <Button
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => form.controls.coBorrowers.push()}
+                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={() => (form.controls.coBorrowers as any).push()}
               >
-                Добавить созаемщика
-              </Button> */}
+                + Добавить созаемщика
+              </button>
             </div>
 
-            {/* TODO: Список созаемщиков с использованием CoBorrowerForm */}
-            {/* {form.controls.coBorrowers.map((coBorrower, index) => (
-              <div key={index} className="mb-4 p-4 bg-white rounded border">
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="font-medium">Созаемщик #{index + 1}</h4>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => form.controls.coBorrowers.remove(index)}
-                  >
-                    Удалить
-                  </Button>
+            <FormArrayManager
+              control={form.controls.coBorrowers as any}
+              component={CoBorrowerForm}
+            />
+
+            {(form.controls.coBorrowers as any).length.value === 0 && (
+              <div className="p-4 bg-gray-100 border border-gray-300 rounded text-center text-gray-600">
+                Нажмите "Добавить созаемщика" для добавления информации
+                <div className="mt-2 text-xs text-gray-500">
+                  CoBorrowerForm поддерживает вложенную группу personalData
                 </div>
-
-                <CoBorrowerForm control={coBorrower} />
               </div>
-            ))} */}
-
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
-              <p className="text-sm">
-                <strong>⚠️ В разработке</strong>
-                <br />
-                Массив с вложенными группами personalData будет доступен после раскомментирования.
-                <br />
-                <br />
-                <strong>Готовые компоненты:</strong>
-                <br />
-                <code className="text-xs">&lt;CoBorrowerForm control=&#123;coBorrower&#125; /&gt;</code>
-                <br />
-                <small className="text-xs text-gray-600">
-                  CoBorrowerForm автоматически обрабатывает вложенную группу personalData
-                </small>
-              </p>
-              <ul className="mt-2 text-xs space-y-1 list-disc list-inside text-gray-600">
-                <li>Доступ: <code>coBorrower.personalData.firstName</code></li>
-                <li>Операции: <code>form.controls.coBorrowers.push()</code></li>
-              </ul>
-            </div>
+            )}
           </div>
         )}
       </div>

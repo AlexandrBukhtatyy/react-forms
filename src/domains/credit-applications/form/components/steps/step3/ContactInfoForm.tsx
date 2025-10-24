@@ -10,8 +10,8 @@
 import { useSignals } from '@preact/signals-react/runtime';
 import type { DeepFormStore } from '@/lib/forms/core/deep-form-store';
 import { FormField } from '@/lib/forms/components';
-import { AddressForm } from '../../nested-forms';
 import { Button } from '@/lib/ui/button';
+import { AddressForm } from '../../nested-forms/AddressForm';
 
 interface ContactInfoFormProps {
   form: DeepFormStore<any>;
@@ -37,38 +37,24 @@ export function ContactInfoForm({ form }: ContactInfoFormProps) {
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Контактная информация</h2>
 
-      {/* Телефоны и email */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Контакты</h3>
-
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.controls.phoneMain} />
           <FormField control={form.controls.phoneAdditional} />
         </div>
-
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.controls.email} />
           <FormField control={form.controls.emailAdditional} />
         </div>
       </div>
 
-      {/* ========================================================================
-          Вложенная форма: Адрес регистрации
-          Используем переиспользуемый компонент AddressForm
-          ======================================================================== */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Адрес регистрации</h3>
         <AddressForm control={form.controls.registrationAddress} />
       </div>
 
-      {/* Чекбокс совпадения адресов */}
       <FormField control={form.controls.sameAsRegistration} />
-
-      {/* ========================================================================
-          Условная вложенная форма: Адрес проживания
-          Используем тот же компонент AddressForm, но для другого адреса
-          Демонстрирует переиспользуемость компонентов
-          ======================================================================== */}
       {!sameAsRegistration && (
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div className="flex justify-between items-center">

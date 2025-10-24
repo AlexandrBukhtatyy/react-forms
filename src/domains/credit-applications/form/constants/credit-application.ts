@@ -1,3 +1,14 @@
+import type { StepIndicatorProps } from '../components/StepIndicator';
+
+export const STEPS: StepIndicatorProps['steps'] = [
+  { number: 1, title: 'Кредит', icon: '💰' },
+  { number: 2, title: 'Данные', icon: '👤' },
+  { number: 3, title: 'Контакты', icon: '📞' },
+  { number: 4, title: 'Работа', icon: '💼' },
+  { number: 5, title: 'Доп. инфо', icon: '📋' },
+  { number: 6, title: 'Подтверждение', icon: '✓' },
+];
+
 export const LOAN_TYPES = [
   { value: 'consumer', label: 'Потребительский кредит' },
   { value: 'mortgage', label: 'Ипотека' },
@@ -39,4 +50,21 @@ export const PROPERTY_TYPES = [
 export const GENDERS = [
   { value: 'male', label: 'Мужской' },
   { value: 'female', label: 'Женский' },
+];
+
+export const EXISTING_LOAN_TYPES = [
+  { value: 'consumer', label: 'Потребительский кредит' },
+  { value: 'mortgage', label: 'Ипотека' },
+  { value: 'car', label: 'Автокредит' },
+  { value: 'creditCard', label: 'Кредитная карта' },
+  { value: 'other', label: 'Другое' },
+];
+
+export const RELATIONSHIPS = [
+  { value: 'spouse', label: 'Супруг(а)' },
+  { value: 'parent', label: 'Родитель' },
+  { value: 'child', label: 'Ребенок' },
+  { value: 'sibling', label: 'Брат/Сестра' },
+  { value: 'relative', label: 'Другой родственник' },
+  { value: 'other', label: 'Другое' },
 ];

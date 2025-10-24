@@ -1,23 +1,29 @@
 import React, { ComponentType } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
-import { FieldController } from '../core/field-controller';
 
 interface FormArrayManagerProps<T> {
-  // Контроллер массива
-  control: FieldController<T[]>;
+  // ArrayProxy (из DeepFormStore)
+  control: any;
   // Компонент для рендера одного элемента массива
-  component: ComponentType<{ control: FieldController<T> }>;
+  component: ComponentType<{ control: any; index: number; onRemove: () => void }>;
 }
 
 /**
- * Простой компонент для управления массивами форм
- * Имеет только 2 параметра: control и component
+ * Компонент для управления массивами форм
+ *
+ * Использует ArrayProxy.map() для итерации по элементам массива.
+ * Работает с DeepFormStore через ArrayProxy.
  *
  * @example
  * <FormArrayManager
  *   control={form.controls.properties}
  *   component={PropertyForm}
  * />
+ *
+ * // PropertyForm получит пропсы:
+ * // - control: GroupProxy элемента массива
+ * // - index: индекс элемента
+ * // - onRemove: функция для удаления элемента
  */
 export function FormArrayManager<T>({
   control,
@@ -25,12 +31,15 @@ export function FormArrayManager<T>({
 }: FormArrayManagerProps<T>) {
   useSignals();
 
+  // ArrayProxy имеет метод map, который возвращает массив proxy элементов
   return (
     <>
-      {control.value?.map((_, index) => (
+      {control.map((itemControl: any, index: number) => (
         <ItemComponent
           key={index}
-          control={control[index] as any}
+          control={itemControl}
+          index={index}
+          onRemove={() => control.remove(index)}
         />
       ))}
     </>

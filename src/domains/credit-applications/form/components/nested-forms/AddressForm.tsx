@@ -1,22 +1,67 @@
-/**
- * AddressForm
- *
- * Полностью переиспользуемый компонент для ввода адреса.
- * Работает с DeepFormStore через GroupProxy.
- *
- * Можно использовать для:
- * - Адреса регистрации
- * - Адреса проживания
- * - Адреса работы
- * - Любого другого адреса
- *
- * Использование:
- * <AddressForm control={form.controls.registrationAddress} />
- * <AddressForm control={form.controls.residenceAddress} />
- */
-
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
+import { Input, InputMask } from '@/lib/forms/components';
+
+
+/**
+ * Переиспользуемая схема формы
+ */
+export const addressFormSchema = {
+      region: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Регион',
+          placeholder: 'Введите регион',
+        },
+      },
+
+      city: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Город',
+          placeholder: 'Введите город',
+        },
+      },
+
+      street: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Улица',
+          placeholder: 'Введите улицу',
+        },
+      },
+
+      house: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Дом',
+          placeholder: '№',
+        },
+      },
+
+      apartment: {
+        value: undefined,
+        component: Input,
+        componentProps: {
+          label: 'Квартира',
+          placeholder: '№',
+        },
+      },
+
+      postalCode: {
+        value: undefined,
+        component: InputMask,
+        componentProps: {
+          label: 'Индекс',
+          placeholder: '000000',
+          mask: '999999',
+        },
+      },
+}
 
 interface AddressFormProps {
   // GroupProxy для вложенной формы address (используем any для обхода ограничений TypeScript)
@@ -28,16 +73,13 @@ export function AddressForm({ control }: AddressFormProps) {
 
   return (
     <div className="space-y-4">
-      {/* Регион и город */}
       <div className="grid grid-cols-2 gap-4">
         <FormField control={control.region} />
         <FormField control={control.city} />
       </div>
 
-      {/* Улица */}
       <FormField control={control.street} />
 
-      {/* Дом, квартира, индекс */}
       <div className="grid grid-cols-3 gap-4">
         <FormField control={control.house} />
         <FormField control={control.apartment} />

@@ -1,32 +1,84 @@
-/**
- * PropertyForm
- *
- * Компонент для отдельного элемента имущества.
- * Работает с DeepFormStore через GroupProxy (элемент массива).
- *
- * Используется с ArrayProxy в родительском компоненте:
- * {form.controls.properties.map((property, index) => (
- *   <PropertyForm key={index} control={property} />
- * ))}
- */
-
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
+import { Checkbox, Input, Select, Textarea } from '@/lib/forms/components';
+
+export const propertyFormSchema = {
+  type: {
+    value: 'apartment',
+    component: Select,
+    componentProps: {
+      label: 'Тип имущества',
+      placeholder: 'Выберите тип',
+      options: [
+        { value: 'apartment', label: 'Квартира' },
+        { value: 'house', label: 'Дом' },
+        { value: 'land', label: 'Земельный участок' },
+        { value: 'commercial', label: 'Коммерческая недвижимость' },
+        { value: 'car', label: 'Автомобиль' },
+        { value: 'other', label: 'Другое' },
+      ],
+    },
+  },
+  description: {
+    value: '',
+    component: Textarea,
+    componentProps: {
+      label: 'Описание',
+      placeholder: 'Опишите имущество',
+      rows: 2,
+    },
+  },
+  estimatedValue: {
+    value: 0,
+    component: Input,
+    componentProps: {
+      label: 'Оценочная стоимость',
+      placeholder: '0',
+      type: 'number',
+      min: 0,
+      step: 1000,
+    },
+  },
+  hasEncumbrance: {
+    value: false,
+    component: Checkbox,
+    componentProps: {
+      label: 'Имеется обременение (залог)',
+    },
+  },
+};
 
 interface PropertyFormProps {
-  // GroupProxy для элемента массива properties (используем any для обхода ограничений TypeScript)
+  // GroupProxy для элемента массива properties
   control: any;
+  // Индекс элемента в массиве
+  index: number;
+  // Функция для удаления элемента
+  onRemove: () => void;
 }
 
-export function PropertyForm({ control }: PropertyFormProps) {
+export function PropertyForm({ control, index, onRemove }: PropertyFormProps) {
   useSignals();
 
   return (
-    <div className="space-y-3">
-      <FormField control={control.type} />
-      <FormField control={control.description} />
-      <FormField control={control.estimatedValue} />
-      <FormField control={control.hasEncumbrance} />
+    <div className="mb-4 p-4 bg-white rounded border">
+      <div className="flex justify-between items-center mb-3">
+        <h4 className="font-medium">Имущество #{index + 1}</h4>
+        <button
+          type="button"
+          className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+          onClick={onRemove}
+        >
+          Удалить
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        <FormField control={control.type} />
+        <FormField control={control.description} />
+        <FormField control={control.estimatedValue} />
+        <FormField control={control.hasEncumbrance} />
+      </div>
     </div>
   );
 }

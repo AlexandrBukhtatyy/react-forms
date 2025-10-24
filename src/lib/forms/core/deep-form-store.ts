@@ -242,6 +242,60 @@ export class DeepFormStore<T extends Record<string, any>> {
   }
 
   // ============================================================================
+  // Проверка валидности по пути
+  // ============================================================================
+
+  /**
+   * Проверить валидность поля, группы или массива по пути
+   *
+   * @example
+   * form.isValid('email') // Проверка поля
+   * form.isValid('personalData') // Проверка группы
+   * form.isValid('personalData.firstName') // Проверка вложенного поля
+   * form.isValid('properties') // Проверка массива
+   * form.isValid('properties.0.title') // Проверка поля элемента массива
+   */
+  isValid(path: string): boolean {
+    const flatKey = path;
+
+    // Проверяем: поле?
+    const field = this.fields.get(flatKey);
+    if (field) {
+      return field.valid;
+    }
+
+    // Проверяем: массив?
+    const arrayProxy = this.arrayProxies.get(flatKey);
+    if (arrayProxy) {
+      return arrayProxy.valid;
+    }
+
+    // Проверяем: группа?
+    // Группа валидна, если все её дочерние поля валидны
+    const hasNested =
+      Array.from(this.fields.keys()).some(k => k.startsWith(flatKey + '.')) ||
+      Array.from(this.arrayProxies.keys()).some(k => k.startsWith(flatKey + '.'));
+
+    if (hasNested) {
+      // Проверяем все дочерние поля
+      const childFieldsValid = Array.from(this.fields.entries())
+        .filter(([key]) => key.startsWith(flatKey + '.'))
+        .every(([_, field]) => field.valid);
+
+      // Проверяем все дочерние массивы
+      const childArraysValid = Array.from(this.arrayProxies.entries())
+        .filter(([key]) => key.startsWith(flatKey + '.'))
+        .every(([_, arr]) => arr.valid);
+
+      return childFieldsValid && childArraysValid;
+    }
+
+    // Путь не найден
+    console.warn(`isValid: Path "${path}" not found in form`);
+    return false;
+  }
+
+  // ============================================================================
   // Методы управления
   // ============================================================================
 

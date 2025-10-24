@@ -1,4 +1,4 @@
-import type { CreditApplicationForm } from '../../../../_shared/types/credit-application';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 import type { FieldPath } from '@/lib/forms/types';
 
 import {

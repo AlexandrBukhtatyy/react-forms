@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
 import type { FieldController } from '../core/field-controller';
+import { Checkbox } from './checkbox';
 
 export interface FormFieldProps {
-  control: FieldController;
+  control: FieldController | any; // Поддержка DeepFormStore controls
   className?: string;
   label?: string;
 }
@@ -21,7 +22,7 @@ export const FormField: React.FC<FormFieldProps> = ({
 
   return (
     <div className={className}>
-      {control.componentProps.label && <label className="block mb-1 text-sm font-medium">{control.componentProps.label}</label>}
+      {control.componentProps.label && control.component !== Checkbox && <label className="block mb-1 text-sm font-medium">{control.componentProps.label}</label>}
 
       <Component
         value={safeValue}

@@ -1,19 +1,61 @@
-/**
- * PassportDataForm
- *
- * Переиспользуемый компонент для ввода паспортных данных.
- * Работает с DeepFormStore через GroupProxy.
- *
- * Использование:
- * <PassportDataForm control={form.controls.passportData} />
- */
-
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
+import { Input, InputMask, Textarea } from '@/lib/forms/components';
 
 interface PassportDataFormProps {
   // GroupProxy для вложенной формы passportData (используем any для обхода ограничений TypeScript)
   control: any;
+}
+
+export const passportDataSchema = {
+  series: {
+    value: '',
+    component: InputMask,
+    componentProps: {
+      label: 'Серия паспорта',
+      placeholder: '00 00',
+      mask: '99 99',
+    },
+  },
+
+  number: {
+    value: '',
+    component: InputMask,
+    componentProps: {
+      label: 'Номер паспорта',
+      placeholder: '000000',
+      mask: '999999',
+    },
+  },
+
+  issueDate: {
+    value: '',
+    component: Input,
+    componentProps: {
+      label: 'Дата выдачи',
+      type: 'date',
+    },
+  },
+
+  issuedBy: {
+    value: '',
+    component: Textarea,
+    componentProps: {
+      label: 'Кем выдан',
+      placeholder: 'Введите наименование органа',
+      rows: 3,
+    },
+  },
+
+  departmentCode: {
+    value: '',
+    component: InputMask,
+    componentProps: {
+      label: 'Код подразделения',
+      placeholder: '000-000',
+      mask: '999-999',
+    },
+  },
 }
 
 export function PassportDataForm({ control }: PassportDataFormProps) {
@@ -21,19 +63,12 @@ export function PassportDataForm({ control }: PassportDataFormProps) {
 
   return (
     <div className="space-y-4">
-      {/* Серия и номер */}
       <div className="grid grid-cols-2 gap-4">
         <FormField control={control.series} />
         <FormField control={control.number} />
       </div>
-
-      {/* Дата выдачи */}
       <FormField control={control.issueDate} />
-
-      {/* Кем выдан */}
       <FormField control={control.issuedBy} />
-
-      {/* Код подразделения */}
       <FormField control={control.departmentCode} />
     </div>
   );

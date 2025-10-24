@@ -6,7 +6,8 @@
       "Bash(npm run build)",
       "Bash(npm run dev)",
       "Bash(find \"src/domains/credit-applications/form/components/steps\" -name \"*.tsx\" -type f -exec sed -i \"s|from ''../../_shared|from ''../../../_shared|g\" {} +)",
-      "Bash(del \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\CreditApplicationFormV5.tsx\" \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\steps\\step2\\PersonalInfoFormV5.tsx\" \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\steps\\step3\\ContactInfoFormV5.tsx\" \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\steps\\step5\\AdditionalInfoFormV5.tsx\")"
+      "Bash(del \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\CreditApplicationFormV5.tsx\" \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\steps\\step2\\PersonalInfoFormV5.tsx\" \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\steps\\step3\\ContactInfoFormV5.tsx\" \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\steps\\step5\\AdditionalInfoFormV5.tsx\")",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
