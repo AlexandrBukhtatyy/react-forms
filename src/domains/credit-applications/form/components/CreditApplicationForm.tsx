@@ -30,20 +30,6 @@ function CreditApplicationForm() {
 
   // Доступ к полям через DeepFormStore API
   const currentStep = form.controls.currentStep.value;
-  const completedSteps = form.controls.completedSteps.value;
-
-  // ============================================================================
-  // Навигация по клику на индикатор шагов
-  // ============================================================================
-
-  const goToStep = (step: number) => {
-    const canGoTo = step === 1 || completedSteps.includes(step - 1);
-
-    if (canGoTo) {
-      form.controls.currentStep.value = step;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
 
   // ============================================================================
   // Отправка формы
@@ -81,12 +67,7 @@ function CreditApplicationForm() {
   return (
     <div className="w-full">
       {/* Индикатор шагов */}
-      <StepIndicator
-      steps={STEPS}
-        currentStep={currentStep}
-        completedSteps={completedSteps}
-        onStepClick={goToStep}
-      />
+      <StepIndicator steps={STEPS} form={form}/>
 
       {/* Форма текущего шага */}
       <div className="bg-white p-8 rounded-lg shadow-md">

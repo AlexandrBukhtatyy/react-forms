@@ -1,8 +1,7 @@
 import { memo } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
-import { Input, InputMask } from '@/lib/forms/components';
-import { Select } from '@radix-ui/react-select';
+import { Input, InputMask, Select } from '@/lib/forms/components';
 import { RELATIONSHIPS } from '../../constants/credit-application';
 
     export const coBorrowersFormSchema = {
@@ -68,7 +67,7 @@ import { RELATIONSHIPS } from '../../constants/credit-application';
         },
       },
       monthlyIncome: {
-        value: 0,
+        value: undefined,
         component: Input,
         componentProps: {
           label: 'Ежемесячный доход (₽)',

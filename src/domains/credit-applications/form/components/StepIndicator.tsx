@@ -1,11 +1,25 @@
+import type { DeepFormStore } from "@/lib/forms";
+
 export interface StepIndicatorProps {
   steps: Array<{number: number, title: string, icon: string}>;
-  currentStep: number;
-  completedSteps: number[];
-  onStepClick: (step: number) => void;
+  form: DeepFormStore<any>;
 }
 
-export function StepIndicator({ steps, currentStep, completedSteps, onStepClick }: StepIndicatorProps) {
+export function StepIndicator({ steps, form }: StepIndicatorProps) {
+  // Доступ к полям через DeepFormStore API
+  const currentStep = form.controls.currentStep.value;
+  const completedSteps = form.controls.completedSteps.value;
+
+  // Навигация по клику на индикатор шагов
+  const goToStep = (step: number) => {
+    const canGoTo = step === 1 || completedSteps.includes(step - 1);
+
+    if (canGoTo) {
+      form.controls.currentStep.value = step;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="flex items-center justify-between mb-8 p-4 bg-gray-100 rounded-lg">
       {steps.map((step, index) => {
@@ -21,7 +35,7 @@ export function StepIndicator({ steps, currentStep, completedSteps, onStepClick 
                 ${isCompleted ? 'text-green-500' : ''}
                 ${canClick ? 'hover:bg-gray-200' : 'cursor-not-allowed opacity-50'}
               `}
-              onClick={() => canClick && onStepClick(step.number)}
+              onClick={() => canClick && goToStep(step.number)}
             >
               <div className="text-2xl">{isCompleted ? '✓' : step.icon}</div>
               <div className="text-xs font-medium">{step.title}</div>
