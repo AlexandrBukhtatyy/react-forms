@@ -9,11 +9,17 @@ export interface FormFieldProps {
   label?: string;
 }
 
-export const FormField: React.FC<FormFieldProps> = ({
+const FormFieldComponent: React.FC<FormFieldProps> = ({
   control,
   className
 }) => {
   useSignals();
+
+  // Отладка: выводим в консоль, когда компонент рендерится
+  // УДАЛИТЬ ПОСЛЕ ТЕСТИРОВАНИЯ
+  if (process.env.NODE_ENV === 'development') {
+    console.log('FormField render:', control.componentProps?.label || 'unknown');
+  }
 
   const Component = control.component;
 
@@ -31,11 +37,11 @@ export const FormField: React.FC<FormFieldProps> = ({
         }}
         onBlur={() => control.markAsTouched()}
         disabled={control.status === 'disabled'}
-        aria-invalid={control.invalid}
+        aria-invalid={control.invalid.value}
         {...control.componentProps}
       />
 
-      {control.shouldShowError && (
+      {control.shouldShowError.value && (
         <span className="text-red-500 text-sm mt-1 block">
           {control.errors[0]?.message}
         </span>
@@ -49,3 +55,10 @@ export const FormField: React.FC<FormFieldProps> = ({
     </div>
   );
 };
+
+// Мемоизируем компонент, чтобы предотвратить ререндер при изменении других полей
+// Компонент ререндерится только если изменился control или className
+export const FormField = React.memo(FormFieldComponent, (prevProps, nextProps) => {
+  // Возвращаем true, если пропсы НЕ изменились (пропустить ререндер)
+  return prevProps.control === nextProps.control && prevProps.className === nextProps.className;
+});

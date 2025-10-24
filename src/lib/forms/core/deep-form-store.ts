@@ -205,7 +205,7 @@ export class DeepFormStore<T extends Record<string, any>> {
 
   get valid(): boolean {
     // Проверяем все поля
-    const fieldsValid = Array.from(this.fields.values()).every(field => field.valid);
+    const fieldsValid = Array.from(this.fields.values()).every(field => field.valid.value);
 
     // Проверяем все массивы
     const arraysValid = Array.from(this.arrayProxies.values()).every(arr => arr.valid);
@@ -261,7 +261,7 @@ export class DeepFormStore<T extends Record<string, any>> {
     // Проверяем: поле?
     const field = this.fields.get(flatKey);
     if (field) {
-      return field.valid;
+      return field.valid.value;
     }
 
     // Проверяем: массив?
@@ -280,7 +280,7 @@ export class DeepFormStore<T extends Record<string, any>> {
       // Проверяем все дочерние поля
       const childFieldsValid = Array.from(this.fields.entries())
         .filter(([key]) => key.startsWith(flatKey + '.'))
-        .every(([_, field]) => field.valid);
+        .every(([_, field]) => field.valid.value);
 
       // Проверяем все дочерние массивы
       const childArraysValid = Array.from(this.arrayProxies.entries())

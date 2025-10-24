@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
 import { Input, InputMask, Textarea } from '@/lib/forms/components';
@@ -58,7 +59,7 @@ export const passportDataSchema = {
   },
 }
 
-export function PassportDataForm({ control }: PassportDataFormProps) {
+const PassportDataFormComponent = ({ control }: PassportDataFormProps) => {
   useSignals();
 
   return (
@@ -72,4 +73,7 @@ export function PassportDataForm({ control }: PassportDataFormProps) {
       <FormField control={control.departmentCode} />
     </div>
   );
-}
+};
+
+// Мемоизируем компонент, чтобы предотвратить ререндер при изменении других полей
+export const PassportDataForm = memo(PassportDataFormComponent);

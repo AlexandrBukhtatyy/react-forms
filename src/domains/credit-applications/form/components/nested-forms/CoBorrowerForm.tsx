@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
 import { Input, InputMask } from '@/lib/forms/components';
@@ -84,7 +85,7 @@ interface CoBorrowerFormProps {
   control: any;
 }
 
-export function CoBorrowerForm({ control }: CoBorrowerFormProps) {
+const CoBorrowerFormComponent = ({ control }: CoBorrowerFormProps) => {
   useSignals();
 
   return (
@@ -113,4 +114,7 @@ export function CoBorrowerForm({ control }: CoBorrowerFormProps) {
       </div>
     </div>
   );
-}
+};
+
+// Мемоизируем компонент, чтобы предотвратить ререндер при изменении других полей
+export const CoBorrowerForm = memo(CoBorrowerFormComponent);

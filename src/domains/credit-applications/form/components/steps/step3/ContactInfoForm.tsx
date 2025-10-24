@@ -61,7 +61,6 @@ export function ContactInfoForm({ form }: ContactInfoFormProps) {
             <h3 className="text-lg font-semibold">Адрес проживания</h3>
             <Button
               type="button"
-              variant="outline"
               size="sm"
               onClick={copyRegistrationAddress}
             >
@@ -73,7 +72,6 @@ export function ContactInfoForm({ form }: ContactInfoFormProps) {
 
           <Button
             type="button"
-            variant="ghost"
             size="sm"
             onClick={clearResidenceAddress}
           >

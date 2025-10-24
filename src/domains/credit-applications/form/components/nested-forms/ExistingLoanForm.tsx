@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
 import { Input, Select } from '@/lib/forms/components';
@@ -69,7 +70,7 @@ interface ExistingLoanFormProps {
   control: any;
 }
 
-export function ExistingLoanForm({ control }: ExistingLoanFormProps) {
+const ExistingLoanFormComponent = ({ control }: ExistingLoanFormProps) => {
   useSignals();
 
   return (
@@ -88,4 +89,7 @@ export function ExistingLoanForm({ control }: ExistingLoanFormProps) {
       </div>
     </div>
   );
-}
+};
+
+// Мемоизируем компонент, чтобы предотвратить ререндер при изменении других полей
+export const ExistingLoanForm = memo(ExistingLoanFormComponent);

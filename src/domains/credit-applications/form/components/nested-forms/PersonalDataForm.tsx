@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
 import { Input, RadioGroup } from '@/lib/forms/components';
@@ -64,7 +65,7 @@ interface PersonalDataFormProps {
   control: any;
 }
 
-export function PersonalDataForm({ control }: PersonalDataFormProps) {
+const PersonalDataFormComponent = ({ control }: PersonalDataFormProps) => {
   useSignals();
 
   return (
@@ -81,4 +82,7 @@ export function PersonalDataForm({ control }: PersonalDataFormProps) {
       <FormField control={control.birthPlace} />
     </div>
   );
-}
+};
+
+// Мемоизируем компонент, чтобы предотвратить ререндер при изменении других полей
+export const PersonalDataForm = memo(PersonalDataFormComponent);

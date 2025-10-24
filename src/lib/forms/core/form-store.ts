@@ -50,7 +50,7 @@ export class FormStore<T extends Record<string, any>> {
   // ============================================================================
 
   get valid(): boolean {
-    return Array.from(this.fields.values()).every(field => field.valid);
+    return Array.from(this.fields.values()).every(field => field.valid.value);
   }
 
   get invalid(): boolean {
@@ -90,7 +90,7 @@ export class FormStore<T extends Record<string, any>> {
     }
 
     // Проверяем, все ли поля валидны
-    return Array.from(this.fields.values()).every(field => field.valid);
+    return Array.from(this.fields.values()).every(field => field.valid.value);
   }
 
   /**

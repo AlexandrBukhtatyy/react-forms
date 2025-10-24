@@ -109,7 +109,7 @@ export class GroupProxy<T extends Record<string, any>> {
     const fields = Array.from((this.store as any)['fields'].entries())
       .filter((entry: any) => this.isInGroup(entry[0], prefix));
 
-    return fields.every((entry: any) => entry[1].valid);
+    return fields.every((entry: any) => entry[1].valid.value);
   }
 
   /**

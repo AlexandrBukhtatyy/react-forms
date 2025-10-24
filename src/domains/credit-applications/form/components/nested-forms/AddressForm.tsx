@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
 import { Input, InputMask } from '@/lib/forms/components';
@@ -68,7 +69,7 @@ interface AddressFormProps {
   control: any;
 }
 
-export function AddressForm({ control }: AddressFormProps) {
+const AddressFormComponent = ({ control }: AddressFormProps) => {
   useSignals();
 
   return (
@@ -87,4 +88,7 @@ export function AddressForm({ control }: AddressFormProps) {
       </div>
     </div>
   );
-}
+};
+
+// Мемоизируем компонент, чтобы предотвратить ререндер при изменении других полей
+export const AddressForm = memo(AddressFormComponent);

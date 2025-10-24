@@ -1,5 +1,5 @@
-import { signal } from "@preact/signals-react";
-import type { Signal } from "@preact/signals-react";
+import { signal, computed } from "@preact/signals-react";
+import type { Signal, ReadonlySignal } from "@preact/signals-react";
 import type { ValidatorFn, AsyncValidatorFn, ValidationError, FieldStatus, FieldConfig } from "../types";
 
 export class FieldController<T = any> {
@@ -10,6 +10,11 @@ export class FieldController<T = any> {
   private _dirty: Signal<boolean>;
   private _status: Signal<FieldStatus>;
   private _pending: Signal<boolean>;
+
+  // Публичные computed signals для производных значений
+  public readonly valid: ReadonlySignal<boolean>;
+  public readonly invalid: ReadonlySignal<boolean>;
+  public readonly shouldShowError: ReadonlySignal<boolean>;
 
   // Конфигурация
   private validators: ValidatorFn<T>[];
@@ -26,6 +31,15 @@ export class FieldController<T = any> {
     this._dirty = signal(false);
     this._status = signal<FieldStatus>(config.disabled ? 'disabled' : 'valid');
     this._pending = signal(false);
+
+    // Создаем computed signals для производных значений
+    // Они автоматически пересчитываются при изменении зависимостей
+    this.valid = computed(() => this._status.value === 'valid');
+    this.invalid = computed(() => this._status.value === 'invalid');
+    this.shouldShowError = computed(() =>
+      this._status.value === 'invalid' &&
+      (this._touched.value || this._dirty.value)
+    );
 
     this.validators = config.validators || [];
     this.asyncValidators = config.asyncValidators || [];
@@ -67,22 +81,13 @@ export class FieldController<T = any> {
     return this._status.value;
   }
 
-  get valid(): boolean {
-    return this._status.value === 'valid';
-  }
-
-  get invalid(): boolean {
-    return this._status.value === 'invalid';
-  }
-
   get pending(): boolean {
     return this._pending.value;
   }
 
-  // Computed: показывать ли ошибку
-  get shouldShowError(): boolean {
-    return this.invalid && (this.touched || this.dirty);
-  }
+  // ПРИМЕЧАНИЕ: valid, invalid, shouldShowError теперь являются
+  // readonly computed signals, определенными в конструкторе.
+  // Используйте их как: control.valid.value, control.invalid.value, control.shouldShowError.value
 
   // ============================================================================
   // Методы управления

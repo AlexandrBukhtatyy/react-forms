@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/form-field';
 import { Checkbox, Input, Select, Textarea } from '@/lib/forms/components';
@@ -53,7 +54,7 @@ interface PropertyFormProps {
   control: any;
 }
 
-export function PropertyForm({ control }: PropertyFormProps) {
+const PropertyFormComponent = ({ control }: PropertyFormProps) => {
   useSignals();
 
   return (
@@ -64,4 +65,7 @@ export function PropertyForm({ control }: PropertyFormProps) {
       <FormField control={control.hasEncumbrance} />
     </div>
   );
-}
+};
+
+// Мемоизируем компонент, чтобы предотвратить ререндер при изменении других полей
+export const PropertyForm = memo(PropertyFormComponent);
