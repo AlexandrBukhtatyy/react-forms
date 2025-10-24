@@ -82,51 +82,34 @@ import { RELATIONSHIPS } from '../../constants/credit-application';
 interface CoBorrowerFormProps {
   // GroupProxy для элемента массива coBorrowers
   control: any;
-  // Индекс элемента в массиве
-  index: number;
-  // Функция для удаления элемента
-  onRemove: () => void;
 }
 
-export function CoBorrowerForm({ control, index, onRemove }: CoBorrowerFormProps) {
+export function CoBorrowerForm({ control }: CoBorrowerFormProps) {
   useSignals();
 
   return (
-    <div className="mb-4 p-4 bg-white rounded border">
-      <div className="flex justify-between items-center mb-3">
-        <h4 className="font-medium">Созаемщик #{index + 1}</h4>
-        <button
-          type="button"
-          className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-          onClick={onRemove}
-        >
-          Удалить
-        </button>
+    <div className="space-y-4">
+      <div className="p-3 bg-gray-50 rounded">
+        <h5 className="text-sm font-medium mb-3">Личные данные</h5>
+        <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            <FormField control={control.personalData.lastName} />
+            <FormField control={control.personalData.firstName} />
+            <FormField control={control.personalData.middleName} />
+          </div>
+
+          <FormField control={control.personalData.birthDate} />
+        </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="p-3 bg-gray-50 rounded">
-          <h5 className="text-sm font-medium mb-3">Личные данные</h5>
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 gap-3">
-              <FormField control={control.personalData.lastName} />
-              <FormField control={control.personalData.firstName} />
-              <FormField control={control.personalData.middleName} />
-            </div>
+      <div className="grid grid-cols-2 gap-4">
+        <FormField control={control.phone} />
+        <FormField control={control.email} />
+      </div>
 
-            <FormField control={control.personalData.birthDate} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <FormField control={control.phone} />
-          <FormField control={control.email} />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <FormField control={control.relationship} />
-          <FormField control={control.monthlyIncome} />
-        </div>
+      <div className="grid grid-cols-2 gap-4">
+        <FormField control={control.relationship} />
+        <FormField control={control.monthlyIncome} />
       </div>
     </div>
   );

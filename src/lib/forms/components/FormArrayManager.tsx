@@ -1,11 +1,15 @@
-import React, { ComponentType } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
+import type { ComponentType } from 'react';
 
-interface FormArrayManagerProps<T> {
+interface FormArrayManagerProps {
   // ArrayProxy (из DeepFormStore)
   control: any;
   // Компонент для рендера одного элемента массива
-  component: ComponentType<{ control: any; index: number; onRemove: () => void }>;
+  component: ComponentType<{ control: any }>;
+  // Название элемента для заголовка (например, "Имущество", "Кредит", "Созаемщик")
+  itemLabel?: string;
+  // Кастомная функция для генерации заголовка (принимает индекс)
+  renderTitle?: (index: number) => string;
 }
 
 /**
@@ -13,35 +17,54 @@ interface FormArrayManagerProps<T> {
  *
  * Использует ArrayProxy.map() для итерации по элементам массива.
  * Работает с DeepFormStore через ArrayProxy.
+ * Отвечает за отрисовку обертки с заголовком и кнопкой удаления.
  *
  * @example
  * <FormArrayManager
  *   control={form.controls.properties}
  *   component={PropertyForm}
+ *   itemLabel="Имущество"
  * />
  *
- * // PropertyForm получит пропсы:
+ * // PropertyForm получит только пропс:
  * // - control: GroupProxy элемента массива
- * // - index: индекс элемента
- * // - onRemove: функция для удаления элемента
  */
-export function FormArrayManager<T>({
+export function FormArrayManager({
   control,
   component: ItemComponent,
-}: FormArrayManagerProps<T>) {
+  itemLabel = 'Элемент',
+  renderTitle,
+}: FormArrayManagerProps) {
   useSignals();
 
   // ArrayProxy имеет метод map, который возвращает массив proxy элементов
   return (
     <>
-      {control.map((itemControl: any, index: number) => (
-        <ItemComponent
-          key={index}
-          control={itemControl}
-          index={index}
-          onRemove={() => control.remove(index)}
-        />
-      ))}
+      {control.map((itemControl: any, index: number) => {
+        const title = renderTitle
+          ? renderTitle(index)
+          : `${itemLabel} #${index + 1}`;
+
+        // Используем уникальный ID из GroupProxy как key для избежания проблем при удалении
+        const key = itemControl._id || index;
+
+        return (
+          <div key={key} className="mb-4 p-4 bg-white rounded border">
+            <div className="flex justify-between items-center mb-3">
+              <h4 className="font-medium">{title}</h4>
+              <button
+                type="button"
+                className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                onClick={() => control.remove(index)}
+              >
+                Удалить
+              </button>
+            </div>
+
+            <ItemComponent control={itemControl} />
+          </div>
+        );
+      })}
     </>
   );
 }

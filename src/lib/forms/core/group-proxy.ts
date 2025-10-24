@@ -13,17 +13,23 @@
 import type { FormStore } from './form-store';
 import type { ValidationError } from '../types';
 
+// Счетчик для генерации уникальных ID
+let groupProxyIdCounter = 0;
+
 /**
  * Proxy для группы полей (вложенной формы)
  * Предоставляет доступ к вложенным полям через точку
  */
 export class GroupProxy<T extends Record<string, any>> {
   private controlsProxy: any;
+  // Уникальный идентификатор для использования в React key
+  public readonly _id: string;
 
   constructor(
     private store: FormStore<any>,
     private path: string[]
   ) {
+    this._id = `group-${++groupProxyIdCounter}`;
     this.controlsProxy = this.createControlsProxy();
   }
 
@@ -34,6 +40,11 @@ export class GroupProxy<T extends Record<string, any>> {
     return new Proxy({} as any, {
       get: (_, prop: string | symbol) => {
         if (typeof prop !== 'string') return undefined;
+
+        // Возвращаем уникальный ID для использования в React key
+        if (prop === '_id') {
+          return this._id;
+        }
 
         const currentPath = [...this.path, prop];
         const flatKey = currentPath.join('.');

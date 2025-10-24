@@ -157,8 +157,15 @@ export class ArrayProxy<T extends Record<string, any>> {
     const newItems = [...this._items.value];
     newItems.splice(index, 1);
 
-    // Переиндексируем оставшиеся элементы
+    // Переиндексируем оставшиеся элементы (переименовываем поля в FormStore)
     this.reindexItems(newItems, index);
+
+    // ВАЖНО: Пересоздаем GroupProxy объекты с правильными путями
+    // т.к. после переиндексации старые GroupProxy указывают на неправильные пути
+    for (let i = index; i < newItems.length; i++) {
+      const itemPath = [...this.path, String(i)];
+      newItems[i] = new GroupProxy<T>(this.store, itemPath);
+    }
 
     this._items.value = newItems;
   }
@@ -173,13 +180,20 @@ export class ArrayProxy<T extends Record<string, any>> {
       return;
     }
 
-    // Сдвигаем индексы
+    // Сдвигаем индексы в FormStore
     this.shiftIndices(index, 1);
 
     // Создаем элемент
     const itemProxy = this.createItem(index, initialValue);
     const newItems = [...this._items.value];
     newItems.splice(index, 0, itemProxy);
+
+    // ВАЖНО: Пересоздаем GroupProxy объекты после вставки
+    // т.к. после сдвига индексов старые GroupProxy указывают на неправильные пути
+    for (let i = index + 1; i < newItems.length; i++) {
+      const itemPath = [...this.path, String(i)];
+      newItems[i] = new GroupProxy<T>(this.store, itemPath);
+    }
 
     this._items.value = newItems;
   }

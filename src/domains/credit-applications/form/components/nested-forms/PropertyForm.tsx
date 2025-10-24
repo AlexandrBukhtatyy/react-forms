@@ -51,34 +51,17 @@ export const propertyFormSchema = {
 interface PropertyFormProps {
   // GroupProxy для элемента массива properties
   control: any;
-  // Индекс элемента в массиве
-  index: number;
-  // Функция для удаления элемента
-  onRemove: () => void;
 }
 
-export function PropertyForm({ control, index, onRemove }: PropertyFormProps) {
+export function PropertyForm({ control }: PropertyFormProps) {
   useSignals();
 
   return (
-    <div className="mb-4 p-4 bg-white rounded border">
-      <div className="flex justify-between items-center mb-3">
-        <h4 className="font-medium">Имущество #{index + 1}</h4>
-        <button
-          type="button"
-          className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-          onClick={onRemove}
-        >
-          Удалить
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        <FormField control={control.type} />
-        <FormField control={control.description} />
-        <FormField control={control.estimatedValue} />
-        <FormField control={control.hasEncumbrance} />
-      </div>
+    <div className="space-y-3">
+      <FormField control={control.type} />
+      <FormField control={control.description} />
+      <FormField control={control.estimatedValue} />
+      <FormField control={control.hasEncumbrance} />
     </div>
   );
 }

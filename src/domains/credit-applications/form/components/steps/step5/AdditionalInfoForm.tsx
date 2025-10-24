@@ -61,6 +61,7 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
             <FormArrayManager
               control={form.controls.properties as any}
               component={PropertyForm}
+              itemLabel="Имущество"
             />
 
             {(form.controls.properties as any).length.value === 0 && (
@@ -91,6 +92,7 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
             <FormArrayManager
               control={form.controls.existingLoans as any}
               component={ExistingLoanForm}
+              itemLabel="Кредит"
             />
 
             {(form.controls.existingLoans as any).length.value === 0 && (
@@ -121,6 +123,7 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
             <FormArrayManager
               control={form.controls.coBorrowers as any}
               component={CoBorrowerForm}
+              itemLabel="Созаемщик"
             />
 
             {(form.controls.coBorrowers as any).length.value === 0 && (
