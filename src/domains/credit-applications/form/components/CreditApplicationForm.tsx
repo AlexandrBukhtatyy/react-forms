@@ -33,31 +33,14 @@ function CreditApplicationForm() {
   const completedSteps = form.controls.completedSteps.value;
 
   // ============================================================================
-  // Навигация между шагами
+  // Навигация по клику на индикатор шагов
   // ============================================================================
-
-  const goToNextStep = async () => {
-    const nextStep = Math.min(currentStep + 1, 6);
-    form.controls.currentStep.setValue(nextStep);
-
-    if (!completedSteps.includes(currentStep)) {
-      form.controls.completedSteps.setValue([...completedSteps, currentStep]);
-    }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const goToPreviousStep = () => {
-    const previousStep = Math.max(currentStep - 1, 1);
-    form.controls.currentStep.setValue(previousStep);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   const goToStep = (step: number) => {
     const canGoTo = step === 1 || completedSteps.includes(step - 1);
 
     if (canGoTo) {
-      form.controls.currentStep.setValue(step);
+      form.controls.currentStep.value = step;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -117,11 +100,8 @@ function CreditApplicationForm() {
 
       {/* Кнопки навигации */}
       <NavigationButtons
-        currentStep={currentStep}
-        onPrevious={goToPreviousStep}
-        onNext={goToNextStep}
+        form={form}
         onSubmit={submitApplication}
-        isSubmitting={form.submitting}
       />
 
       {/* Информация о прогрессе */}

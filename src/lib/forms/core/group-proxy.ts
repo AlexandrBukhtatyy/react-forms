@@ -46,6 +46,40 @@ export class GroupProxy<T extends Record<string, any>> {
           return this._id;
         }
 
+        // Экспонируем методы GroupProxy
+        if (prop === 'getValue') {
+          return this.getValue.bind(this);
+        }
+        if (prop === 'setValue') {
+          return this.setValue.bind(this);
+        }
+        if (prop === 'reset') {
+          return this.reset.bind(this);
+        }
+        if (prop === 'validate') {
+          return this.validate.bind(this);
+        }
+        if (prop === 'markAsTouched') {
+          return this.markAsTouched.bind(this);
+        }
+
+        // Экспонируем геттеры GroupProxy
+        if (prop === 'valid') {
+          return this.valid;
+        }
+        if (prop === 'invalid') {
+          return this.invalid;
+        }
+        if (prop === 'errors') {
+          return this.errors;
+        }
+        if (prop === 'touched') {
+          return this.touched;
+        }
+        if (prop === 'dirty') {
+          return this.dirty;
+        }
+
         const currentPath = [...this.path, prop];
         const flatKey = currentPath.join('.');
 

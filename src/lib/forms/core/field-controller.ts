@@ -20,11 +20,13 @@ export class FieldController<T = any> {
   private validators: ValidatorFn<T>[];
   private asyncValidators: AsyncValidatorFn<T>[];
   private updateOn: 'change' | 'blur' | 'submit';
+  private initialValue: T; // Сохраняем начальное значение для reset()
 
   public readonly component: FieldConfig<T>['component'];
   public readonly componentProps: Record<string, any>;
 
   constructor(config: FieldConfig<T>) {
+    this.initialValue = config.value; // Сохраняем начальное значение
     this._value = signal(config.value);
     this._errors = signal<ValidationError[]>([]);
     this._touched = signal(false);
@@ -183,7 +185,7 @@ export class FieldController<T = any> {
   }
 
   reset(value?: T): void {
-    this._value.value = value !== undefined ? value : this._value.peek();
+    this._value.value = value !== undefined ? value : this.initialValue;
     this._errors.value = [];
     this._touched.value = false;
     this._dirty.value = false;
