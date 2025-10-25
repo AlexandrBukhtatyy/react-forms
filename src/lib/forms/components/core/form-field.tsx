@@ -24,7 +24,7 @@ const FormFieldComponent: React.FC<FormFieldProps> = ({
   const Component = control.component;
 
   // Конвертируем null в пустую строку для избежания React warning
-  const safeValue = control.value ?? '';
+  const safeValue = control.value.value ?? '';
 
   return (
     <div className={className}>
@@ -33,10 +33,10 @@ const FormFieldComponent: React.FC<FormFieldProps> = ({
       <Component
         value={safeValue}
         onChange={(e: any) => {
-          control.value = e?.target?.value ?? e;
+          control.setValue(e?.target?.value ?? e);
         }}
         onBlur={() => control.markAsTouched()}
-        disabled={control.status === 'disabled'}
+        disabled={control.status.value === 'disabled'}
         aria-invalid={control.invalid.value}
         {...control.componentProps}
       />
@@ -47,7 +47,7 @@ const FormFieldComponent: React.FC<FormFieldProps> = ({
         </span>
       )}
 
-      {control.pending && (
+      {control.pending.value && (
         <span className="text-gray-500 text-sm mt-1 block">
           Проверка...
         </span>
