@@ -72,6 +72,8 @@ export class FieldNode<T = any> extends FormNode<T> {
   private updateOn: 'change' | 'blur' | 'submit';
   private initialValue: T;
   private currentValidationId = 0;
+  private debounceMs: number;
+  private validateDebounceTimer?: ReturnType<typeof setTimeout>;
 
   public readonly component: FieldConfig<T>['component'];
   public readonly componentProps: Record<string, any>;
@@ -88,6 +90,7 @@ export class FieldNode<T = any> extends FormNode<T> {
     this.validators = config.validators || [];
     this.asyncValidators = config.asyncValidators || [];
     this.updateOn = config.updateOn || 'change';
+    this.debounceMs = config.debounce || 0;
     this.component = config.component;
     this.componentProps = config.componentProps || {};
 
@@ -144,7 +147,28 @@ export class FieldNode<T = any> extends FormNode<T> {
     this._status.value = 'valid';
   }
 
-  async validate(): Promise<boolean> {
+  async validate(options?: { debounce?: number }): Promise<boolean> {
+    const debounce = options?.debounce ?? this.debounceMs;
+
+    // Если задан debounce, откладываем валидацию
+    if (debounce > 0 && this.asyncValidators.length > 0) {
+      return new Promise((resolve) => {
+        // Отменяем предыдущий таймер
+        if (this.validateDebounceTimer) {
+          clearTimeout(this.validateDebounceTimer);
+        }
+
+        this.validateDebounceTimer = setTimeout(async () => {
+          const result = await this.validateImmediate();
+          resolve(result);
+        }, debounce);
+      });
+    }
+
+    return this.validateImmediate();
+  }
+
+  private async validateImmediate(): Promise<boolean> {
     const validationId = ++this.currentValidationId;
 
     // Синхронная валидация

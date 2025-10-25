@@ -27,6 +27,8 @@ export interface FieldConfig<T = any> {
   asyncValidators?: AsyncValidatorFn<T>[];
   disabled?: boolean;
   updateOn?: 'change' | 'blur' | 'submit';
+  /** Задержка (в мс) перед запуском асинхронной валидации */
+  debounce?: number;
 }
 
 /**

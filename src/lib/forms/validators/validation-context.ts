@@ -28,16 +28,51 @@ export class ValidationContextImpl<TForm = any, TField = any>
   getField<K extends keyof TForm>(path: K): TForm[K];
   getField(path: string): any;
   getField(path: any): any {
-    // Простая поддержка путей вида 'field' или 'nested.field'
-    if (typeof path === 'string') {
-      const keys = path.split('.');
-      if (keys.length === 1) {
-        return this.form.controls[path as keyof TForm]?.value;
-      }
-      // TODO: Поддержка вложенных путей
-      return this.form.controls[keys[0] as keyof TForm]?.value;
+    if (typeof path !== 'string') {
+      return this.form.controls[path]?.value.value;
     }
-    return this.form.controls[path]?.value;
+
+    const keys = path.split('.');
+    let current: any = this.form;
+
+    for (const key of keys) {
+      if (current && current[key]) {
+        current = current[key];
+      } else {
+        return undefined;
+      }
+    }
+
+    // Если это FormNode, вернуть значение
+    return current?.value?.value ?? current;
+  }
+
+  setField(path: string, value: any): void;
+  setField<K extends keyof TForm>(path: K, value: TForm[K]): void;
+  setField(path: any, value: any): void {
+    if (typeof path !== 'string') {
+      const control = this.form[path];
+      if (control) {
+        control.setValue(value);
+      }
+      return;
+    }
+
+    const keys = path.split('.');
+    let current: any = this.form;
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (current && current[keys[i]]) {
+        current = current[keys[i]];
+      } else {
+        return;
+      }
+    }
+
+    const lastKey = keys[keys.length - 1];
+    if (current && current[lastKey]) {
+      current[lastKey].setValue(value);
+    }
   }
 
   formValue(): TForm {
@@ -64,15 +99,23 @@ export class TreeValidationContextImpl<TForm = any>
   getField<K extends keyof TForm>(path: K): TForm[K];
   getField(path: string): any;
   getField(path: any): any {
-    if (typeof path === 'string') {
-      const keys = path.split('.');
-      if (keys.length === 1) {
-        return this.form.controls[path as keyof TForm]?.value;
-      }
-      // TODO: Поддержка вложенных путей
-      return this.form.controls[keys[0] as keyof TForm]?.value;
+    if (typeof path !== 'string') {
+      return this.form.controls[path]?.value.value;
     }
-    return this.form.controls[path]?.value;
+
+    const keys = path.split('.');
+    let current: any = this.form;
+
+    for (const key of keys) {
+      if (current && current[key]) {
+        current = current[key];
+      } else {
+        return undefined;
+      }
+    }
+
+    // Если это FormNode, вернуть значение
+    return current?.value?.value ?? current;
   }
 
   formValue(): TForm {

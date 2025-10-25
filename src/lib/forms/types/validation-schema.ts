@@ -37,6 +37,14 @@ export interface ValidationContext<TForm = any, TField = any> {
   getField(path: string): any;
 
   /**
+   * Установить значение другого поля по пути
+   * @param path - Путь к полю (например, 'loanType', 'personalData.firstName')
+   * @param value - Новое значение поля
+   */
+  setField<K extends keyof TForm>(path: K, value: TForm[K]): void;
+  setField(path: string, value: any): void;
+
+  /**
    * Получить значения всей формы
    */
   formValue(): TForm;

@@ -168,29 +168,6 @@ export function applyWhen<TForm = any, TField = any>(
 }
 
 // ============================================================================
-// updateOn - Управление триггерами валидации
-// ============================================================================
-
-/**
- * Установить триггер валидации для поля
- *
- * @example
- * ```typescript
- * updateOn(path.email, 'blur'); // Валидировать только при потере фокуса
- * ```
- */
-export function updateOn<TForm = any, TField = any>(
-  fieldPath: FieldPathNode<TForm, TField>,
-  trigger: 'change' | 'blur' | 'submit'
-): void {
-  const path = extractPath(fieldPath);
-
-  // TODO: Реализовать применение updateOn к полю
-  // Пока просто логируем
-  console.log(`Set updateOn for ${path} to ${trigger}`);
-}
-
-// ============================================================================
 // Переиспользуемые валидаторы (адаптеры для old-style validators)
 // ============================================================================
 

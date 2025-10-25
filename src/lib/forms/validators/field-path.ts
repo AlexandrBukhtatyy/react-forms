@@ -112,6 +112,30 @@ export function extractPath(node: FieldPathNode<any, any> | any): string {
 }
 
 /**
+ * Преобразовать FieldPathNode в FieldPath для переиспользования схем
+ *
+ * Позволяет композировать validation schemas:
+ *
+ * @example
+ * ```typescript
+ * const personalDataValidation = (path: FieldPath<PersonalData>) => {
+ *   required(path.firstName, { message: 'Имя обязательно' });
+ *   required(path.lastName, { message: 'Фамилия обязательна' });
+ * };
+ *
+ * const mainValidation = (path: FieldPath<MyForm>) => {
+ *   // ✅ Переиспользуем схему
+ *   personalDataValidation(toFieldPath(path.personalData));
+ *   required(path.email);
+ * };
+ * ```
+ */
+export function toFieldPath<T>(node: FieldPathNode<any, T>): FieldPath<T> {
+  const basePath = extractPath(node);
+  return createFieldPathProxy<T>(basePath);
+}
+
+/**
  * Извлечь ключ поля из FieldPathNode
  */
 export function extractKey(node: FieldPathNode<any, any> | any): string {

@@ -11,7 +11,6 @@ export {
   validateAsync,
   validateTree,
   applyWhen,
-  updateOn,
   // Переиспользуемые валидаторы
   required,
   min,
@@ -23,7 +22,7 @@ export {
 } from './schema-validators';
 
 // Утилиты для FieldPath
-export { createFieldPath, extractPath, extractKey } from './field-path';
+export { createFieldPath, extractPath, extractKey, toFieldPath } from './field-path';
 
 // ValidationRegistry (для внутреннего использования)
 export { ValidationRegistry } from './validation-registry';
