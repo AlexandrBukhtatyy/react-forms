@@ -9,9 +9,7 @@
 
 import { useState } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
-import { StepIndicator } from './StepIndicator';
-import { NavigationButtons } from './NavigationButtons';
-import { createCreditApplicationForm } from './create-credit-application-form';
+import { createCreditApplicationForm } from '../schemas/create-credit-application-form';
 import { BasicInfoForm } from './steps/step1/BasicInfoForm';
 import { PersonalInfoForm } from './steps/step2/PersonalInfoForm';
 import { ContactInfoForm } from './steps/step3/ContactInfoForm';
@@ -19,6 +17,7 @@ import { EmploymentForm } from './steps/step4/EmploymentForm';
 import { AdditionalInfoForm } from './steps/step5/AdditionalInfoForm';
 import { ConfirmationForm } from './steps/step6/ConfirmationForm';
 import { STEPS } from '../constants/credit-application';
+import { NavigationButtons, StepIndicator } from '@/lib/forms/components';
 
 // ============================================================================
 // Компонент формы

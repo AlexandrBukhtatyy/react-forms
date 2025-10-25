@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form } from '@/lib/forms/components/form';
+import { Form } from '@/lib/forms/components/core/form';
 import { cn } from '@/lib/utils';
 import { Input } from '@/lib/forms/components/input';
 import { InputSearch } from '@/lib/forms/components/input-search';

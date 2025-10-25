@@ -11,7 +11,7 @@
 
 import { signal, computed } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
-import { FormNode, SetValueOptions } from './form-node';
+import { FormNode, type SetValueOptions } from './form-node';
 import { FieldNode } from './field-node';
 import { ArrayNode } from './array-node';
 import type {

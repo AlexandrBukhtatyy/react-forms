@@ -6,7 +6,7 @@ import { InputPassword } from '@/lib/forms/components/input-password';
 import { InputSearch } from '@/lib/forms/components/input-search';
 import { InputFiles } from '@/lib/forms/components/input-files';
 import { Select } from '@/lib/forms/components/select';
-import { Form } from '@/lib/forms/components/form';
+import { Form } from '@/lib/forms/components/core/form';
 import type { FormSchema } from '@/lib/forms/types';
 import { searchResource } from '../resources/search.resource';
 import { selectResource } from '../resources/select.resource';

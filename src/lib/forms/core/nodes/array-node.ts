@@ -9,9 +9,9 @@
 
 import { signal, computed } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
-import { FormNode, FieldStatus, SetValueOptions } from './form-node';
+import { FormNode,  type SetValueOptions } from './form-node';
 import { GroupNode } from './group-node';
-import type { ValidationError } from '../../types';
+import type { FieldStatus, ValidationError } from '../../types';
 import type { DeepFormSchema } from '../../types/deep-schema';
 
 /**

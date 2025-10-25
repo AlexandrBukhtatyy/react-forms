@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
-import { FormField } from '@/lib/forms/components/form-field';
+import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, Select } from '@/lib/forms/components';
 import { EXISTING_LOAN_TYPES } from '../../constants/credit-application';
 

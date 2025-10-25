@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
-import { FormField } from '@/lib/forms/components/form-field';
+import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, RadioGroup } from '@/lib/forms/components';
 import { GENDERS } from '../../constants/credit-application';
 

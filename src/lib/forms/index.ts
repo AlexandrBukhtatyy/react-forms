@@ -34,8 +34,8 @@ export type { SetValueOptions } from './core/nodes/form-node';
 // Components
 // ============================================================================
 
-export { FormField } from './components/form-field';
-export { Form } from './components/form';
+export { FormField } from './components/core/form-field';
+export { Form } from './components/core/form';
 
 // ============================================================================
 // Validators

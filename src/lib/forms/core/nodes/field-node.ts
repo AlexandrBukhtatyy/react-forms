@@ -7,7 +7,8 @@
 
 import { signal, computed } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
-import { FormNode, SetValueOptions } from './form-node';
+import { FormNode } from './form-node';
+import type { SetValueOptions }  from "./form-node"
 import type {
   FieldConfig,
   ValidationError,
