@@ -13,11 +13,13 @@ import { signal, computed } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
 import { FormNode, SetValueOptions } from './form-node';
 import { FieldNode } from './field-node';
+import { ArrayNode } from './array-node';
 import type {
   FormSchema,
   ValidationError,
   FieldStatus,
   ValidationSchemaFn,
+  DeepFormSchema,
 } from '../../types';
 import { ValidationRegistry, createFieldPath } from '../../validators';
 
@@ -63,17 +65,16 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   // Конструктор
   // ============================================================================
 
-  constructor(schema: FormSchema<T>) {
+  constructor(schema: DeepFormSchema<T>) {
     super();
 
     this.fields = new Map();
     this._submitting = signal(false);
 
-    // Создать поля из схемы
+    // Создать поля из схемы с поддержкой вложенности
     for (const [key, config] of Object.entries(schema)) {
-      // Пока создаем только FieldNode
-      // ArrayNode и вложенные GroupNode будут добавлены в Фазе 5
-      this.fields.set(key as keyof T, new FieldNode(config as any));
+      const node = this.createNode(config);
+      this.fields.set(key as keyof T, node);
     }
 
     // Создать computed signals
@@ -394,5 +395,41 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
         console.error('Error in tree validator:', e);
       }
     }
+  }
+
+  // ============================================================================
+  // Private методы для создания узлов
+  // ============================================================================
+
+  /**
+   * Создать узел на основе конфигурации
+   * Автоматически определяет тип: FieldNode, GroupNode или ArrayNode
+   */
+  private createNode(config: any): FormNode<any> {
+    // Проверка 1: Массив?
+    if (Array.isArray(config) && config.length === 1) {
+      const [itemSchema] = config;
+      return new ArrayNode(itemSchema);
+    }
+
+    // Проверка 2: Группа?
+    if (this.isGroupConfig(config)) {
+      return new GroupNode(config);
+    }
+
+    // Проверка 3: Поле
+    return new FieldNode(config);
+  }
+
+  /**
+   * Проверить, является ли конфигурация групповой (объект полей)
+   */
+  private isGroupConfig(config: any): boolean {
+    return (
+      typeof config === 'object' &&
+      config !== null &&
+      !('component' in config) &&
+      !Array.isArray(config)
+    );
   }
 }
