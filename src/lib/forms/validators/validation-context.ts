@@ -3,7 +3,7 @@
  */
 
 import type { FormStore } from '../core/form-store';
-import type { FieldController } from '../core/field-controller';
+import type { FieldNode } from '../core/nodes/field-node';
 import type {
   ValidationContext,
   TreeValidationContext,
@@ -18,7 +18,7 @@ export class ValidationContextImpl<TForm = any, TField = any>
   constructor(
     private form: FormStore<TForm>,
     private fieldKey: keyof TForm,
-    private control: FieldController<TField>
+    private control: FieldNode<TField>
   ) {}
 
   value(): TField {
@@ -44,7 +44,7 @@ export class ValidationContextImpl<TForm = any, TField = any>
     return this.form.getValue();
   }
 
-  getControl(): FieldController<TField> {
+  getControl(): FieldNode<TField> {
     return this.control;
   }
 

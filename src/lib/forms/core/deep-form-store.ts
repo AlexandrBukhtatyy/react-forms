@@ -10,7 +10,7 @@
 
 import { signal, computed } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
-import { FieldController } from './field-controller';
+import { FieldNode } from './nodes/field-node';
 import { GroupProxy } from './group-proxy';
 import { ArrayProxy } from './array-proxy';
 import type {
@@ -61,7 +61,7 @@ import { ValidationRegistry, createFieldPath } from '../validators';
  */
 export class DeepFormStore<T extends Record<string, any>> {
   // Flat хранилище с dot notation
-  private fields: Map<string, FieldController<any>>;
+  private fields: Map<string, FieldNode<any>>;
   private arrayConfigs: Map<string, ArrayConfig<any>>;
   private arrayProxies: Map<string, ArrayProxy<any>>;
 
@@ -158,7 +158,7 @@ export class DeepFormStore<T extends Record<string, any>> {
 
       // Проверка 2: Поле? (имеет value и component)
       if (this.isFieldConfig(config)) {
-        this.fields.set(flatKey, new FieldController(config));
+        this.fields.set(flatKey, new FieldNode(config));
         continue;
       }
 

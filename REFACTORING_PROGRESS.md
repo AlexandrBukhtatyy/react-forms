@@ -176,3 +176,95 @@ _Пока нет_
 ---
 
 **Последнее обновление:** 2025-10-25
+---
+
+## Фаза 2: Архитектура FormNode (ЗАВЕРШЕНА 2025-10-25)
+
+### Что сделано:
+
+#### ✅ Шаг 2.1: Создать абстрактный класс FormNode
+- [x] Создан файл `src/lib/forms/core/nodes/form-node.ts`
+- [x] Определены все абстрактные методы: getValue, setValue, validate, etc.
+- [x] Добавлены типы SetValueOptions
+- [x] Полная документация с JSDoc
+
+**Файл:** [src/lib/forms/core/nodes/form-node.ts](src/lib/forms/core/nodes/form-node.ts)
+
+#### ✅ Шаг 2.2: Создать FieldNode
+- [x] Создан файл `src/lib/forms/core/nodes/field-node.ts`
+- [x] Перенесена вся логика из FieldController
+- [x] Наследует от FormNode
+- [x] Все абстрактные методы реализованы
+- [x] Computed signals для valid, invalid, touched, dirty, pending
+- [x] Параллельные async валидаторы (из Фазы 1)
+
+**Файл:** [src/lib/forms/core/nodes/field-node.ts](src/lib/forms/core/nodes/field-node.ts)
+
+#### ✅ Шаг 2.3: Создать GroupNode
+- [x] Создан файл `src/lib/forms/core/nodes/group-node.ts`
+- [x] Перенесена вся логика из FormStore
+- [x] Computed signals для состояния группы
+- [x] Proxy для прямого доступа к полям (form.email вместо form.controls.email)
+- [x] Методы submit(), applyValidationSchema()
+- [x] Обратная совместимость через геттер controls
+
+**Файл:** [src/lib/forms/core/nodes/group-node.ts](src/lib/forms/core/nodes/group-node.ts)
+
+#### ✅ Шаг 2.4: Создать алиасы
+- [x] FormStore переименован в legacy/form-store.old.ts
+- [x] FieldController переименован в legacy/field-controller.old.ts
+- [x] Созданы новые файлы-алиасы:
+  - form-store.ts → экспортирует GroupNode как FormStore
+  - field-controller.ts → экспортирует FieldNode как FieldController
+- [x] Добавлены @deprecated комментарии
+
+**Файлы:**
+- [src/lib/forms/core/form-store.ts](src/lib/forms/core/form-store.ts)
+- [src/lib/forms/core/field-controller.ts](src/lib/forms/core/field-controller.ts)
+
+#### ✅ Шаг 2.5: Обновить экспорты
+- [x] Обновлен `src/lib/forms/index.ts`
+- [x] Новая секция "New Architecture" с FormNode, FieldNode, GroupNode
+- [x] Legacy секция с deprecated экспортами
+- [x] Обновлены импорты в DeepFormStore, ArrayProxy, ValidationContext
+
+**Файл:** [src/lib/forms/index.ts](src/lib/forms/index.ts)
+
+### Результат Фазы 2:
+
+✅ **Единая архитектура FormNode создана**
+- Все узлы формы наследуют от FormNode
+- Единый интерфейс для полей, групп и массивов (будущее)
+- Рекурсивная композиция готова
+
+✅ **Обратная совместимость сохранена**
+- FormStore и FieldController работают как раньше
+- Старый код не требует изменений
+
+✅ **Прямой доступ через Proxy**
+- Можно писать `form.email` вместо `form.controls.email`
+- Старый синтаксис также работает
+
+### Статистика:
+
+**Файлов создано:** 5
+- form-node.ts (154 строки)
+- field-node.ts (223 строки)  
+- group-node.ts (387 строк)
+- form-store.ts (алиас, 17 строк)
+- field-controller.ts (алиас, 17 строк)
+
+**Файлов обновлено:** 5
+- index.ts
+- deep-form-store.ts
+- array-proxy.ts
+- validation-context.ts
+- REFACTORING_PROGRESS.md
+
+**Файлов перемещено в legacy:** 2
+- form-store.old.ts (315 строк)
+- field-controller.old.ts (211 строк)
+
+**Всего строк кода:** ~1400 строк новой архитектуры
+
+---

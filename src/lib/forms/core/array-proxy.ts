@@ -13,7 +13,7 @@ import type { Signal, ReadonlySignal } from '@preact/signals-react';
 import type { FormStore } from './form-store';
 import type { DeepFormSchema, ArrayConfig, ValidationError } from '../types';
 import { GroupProxy } from './group-proxy';
-import { FieldController } from './field-controller';
+import { FieldNode } from './nodes/field-node';
 
 /**
  * Proxy для массива форм
@@ -328,7 +328,7 @@ export class ArrayProxy<T extends Record<string, any>> {
           const value = values?.[key] ?? (config as any).value;
           (this.store as any)['fields'].set(
             flatKey,
-            new FieldController({ ...config, value })
+            new FieldNode({ ...config, value })
           );
         } else {
           // Вложенная группа
@@ -391,7 +391,7 @@ export class ArrayProxy<T extends Record<string, any>> {
     const oldPrefix = [...this.path, String(oldIndex)].join('.');
     const newPrefix = [...this.path, String(newIndex)].join('.');
 
-    const fieldsToRename: Array<[string, FieldController<any>]> = [];
+    const fieldsToRename: Array<[string, FieldNode<any>]> = [];
 
     (this.store as any)['fields'].forEach((field: any, key: string) => {
       if (key.startsWith(oldPrefix)) {

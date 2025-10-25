@@ -21,10 +21,26 @@ export type {
 } from './types';
 
 // ============================================================================
-// Core
+// Core - New Architecture (рекомендуется)
 // ============================================================================
 
+export { FormNode } from './core/nodes/form-node';
+export { FieldNode } from './core/nodes/field-node';
+export { GroupNode } from './core/nodes/group-node';
+export type { SetValueOptions } from './core/nodes/form-node';
+
+// ============================================================================
+// Core - Legacy (для обратной совместимости)
+// ============================================================================
+
+/**
+ * @deprecated Используйте FieldNode вместо FieldController
+ */
 export { FieldController } from './core/field-controller';
+
+/**
+ * @deprecated Используйте GroupNode вместо FormStore
+ */
 export { FormStore } from './core/form-store';
 
 // Variant 5 core
