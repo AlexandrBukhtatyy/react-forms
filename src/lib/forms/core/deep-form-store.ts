@@ -67,7 +67,15 @@ export class DeepFormStore<T extends Record<string, any>> {
 
   private _submitting: Signal<boolean>;
   private controlsProxy: any;
-  public value: ReadonlySignal<T>;
+
+  // Публичные computed signals
+  public readonly value: ReadonlySignal<T>;
+  public readonly valid: ReadonlySignal<boolean>;
+  public readonly invalid: ReadonlySignal<boolean>;
+  public readonly pending: ReadonlySignal<boolean>;
+  public readonly touched: ReadonlySignal<boolean>;
+  public readonly dirty: ReadonlySignal<boolean>;
+  public readonly submitting: ReadonlySignal<boolean>;
 
   constructor(schema: DeepFormSchema<T>) {
     this.fields = new Map();
@@ -85,6 +93,45 @@ export class DeepFormStore<T extends Record<string, any>> {
     this.value = computed(() => {
       return this.getValue();
     });
+
+    // Создаем computed signals для состояния формы
+    this.valid = computed(() => {
+      const fieldsValid = Array.from(this.fields.values()).every(
+        field => field.valid.value
+      );
+      const arraysValid = Array.from(this.arrayProxies.values()).every(
+        arr => arr.valid
+      );
+      return fieldsValid && arraysValid;
+    });
+
+    this.invalid = computed(() => !this.valid.value);
+
+    this.pending = computed(() =>
+      Array.from(this.fields.values()).some(field => field.pending.value)
+    );
+
+    this.touched = computed(() => {
+      const fieldsTouched = Array.from(this.fields.values()).some(
+        field => field.touched.value
+      );
+      const arraysTouched = Array.from(this.arrayProxies.values()).some(
+        arr => arr.touched
+      );
+      return fieldsTouched || arraysTouched;
+    });
+
+    this.dirty = computed(() => {
+      const fieldsDirty = Array.from(this.fields.values()).some(
+        field => field.dirty.value
+      );
+      const arraysDirty = Array.from(this.arrayProxies.values()).some(
+        arr => arr.dirty
+      );
+      return fieldsDirty || arraysDirty;
+    });
+
+    this.submitting = computed(() => this._submitting.value);
   }
 
   // ============================================================================
@@ -199,47 +246,6 @@ export class DeepFormStore<T extends Record<string, any>> {
     return this.controlsProxy;
   }
 
-  // ============================================================================
-  // Computed значения
-  // ============================================================================
-
-  get valid(): boolean {
-    // Проверяем все поля
-    const fieldsValid = Array.from(this.fields.values()).every(field => field.valid.value);
-
-    // Проверяем все массивы
-    const arraysValid = Array.from(this.arrayProxies.values()).every(arr => arr.valid);
-
-    return fieldsValid && arraysValid;
-  }
-
-  get invalid(): boolean {
-    return !this.valid;
-  }
-
-  get pending(): boolean {
-    return Array.from(this.fields.values()).some(field => field.pending);
-  }
-
-  get touched(): boolean {
-    // Хотя бы одно поле или массив touched
-    const fieldsTouched = Array.from(this.fields.values()).some(field => field.touched);
-    const arraysTouched = Array.from(this.arrayProxies.values()).some(arr => arr.touched);
-
-    return fieldsTouched || arraysTouched;
-  }
-
-  get dirty(): boolean {
-    // Хотя бы одно поле или массив dirty
-    const fieldsDirty = Array.from(this.fields.values()).some(field => field.dirty);
-    const arraysDirty = Array.from(this.arrayProxies.values()).some(arr => arr.dirty);
-
-    return fieldsDirty || arraysDirty;
-  }
-
-  get submitting(): boolean {
-    return this._submitting.value;
-  }
 
   // ============================================================================
   // Проверка валидности по пути

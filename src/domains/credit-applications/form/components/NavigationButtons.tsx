@@ -12,7 +12,7 @@ export function NavigationButtons({ form, onSubmit }: NavigationButtonsProps) {
   // Доступ к полям формы через DeepFormStore
   const currentStep = form.controls.currentStep.value;
   const completedSteps = form.controls.completedSteps.value;
-  const isSubmitting = form.submitting;
+  const isSubmitting = form.submitting.value;
 
   // ============================================================================
   // Логика навигации между шагами

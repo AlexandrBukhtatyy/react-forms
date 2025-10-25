@@ -21,6 +21,7 @@ export class FieldController<T = any> {
   private asyncValidators: AsyncValidatorFn<T>[];
   private updateOn: 'change' | 'blur' | 'submit';
   private initialValue: T; // Сохраняем начальное значение для reset()
+  private currentValidationId = 0; // Для отслеживания актуальности валидации
 
   public readonly component: FieldConfig<T>['component'];
   public readonly componentProps: Record<string, any>;
@@ -129,6 +130,8 @@ export class FieldController<T = any> {
   // ============================================================================
 
   async validate(): Promise<boolean> {
+    const validationId = ++this.currentValidationId;
+
     // Синхронная валидация
     const syncErrors: ValidationError[] = [];
     for (const validator of this.validators) {
@@ -142,19 +145,24 @@ export class FieldController<T = any> {
       return false;
     }
 
-    // Асинхронная валидация
+    // Асинхронная валидация - ПАРАЛЛЕЛЬНО
     if (this.asyncValidators.length > 0) {
       this._pending.value = true;
       this._status.value = 'pending';
 
-      const asyncErrors: ValidationError[] = [];
-      for (const validator of this.asyncValidators) {
-        const error = await validator(this.value);
-        if (error) asyncErrors.push(error);
+      // Выполняем все async валидаторы параллельно
+      const asyncResults = await Promise.all(
+        this.asyncValidators.map(validator => validator(this.value))
+      );
+
+      // Проверяем, не была ли запущена новая валидация
+      if (validationId !== this.currentValidationId) {
+        return false; // Эта валидация устарела
       }
 
       this._pending.value = false;
 
+      const asyncErrors = asyncResults.filter(Boolean) as ValidationError[];
       if (asyncErrors.length > 0) {
         this._errors.value = asyncErrors;
         this._status.value = 'invalid';

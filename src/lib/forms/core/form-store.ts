@@ -7,7 +7,15 @@ import { ValidationRegistry, createFieldPath } from "../validators";
 export class FormStore<T extends Record<string, any>> {
   private fields: Map<keyof T, FieldController<any>>;
   private _submitting: Signal<boolean>;
-  public value: ReadonlySignal<T>;
+
+  // Публичные computed signals
+  public readonly value: ReadonlySignal<T>;
+  public readonly valid: ReadonlySignal<boolean>;
+  public readonly invalid: ReadonlySignal<boolean>;
+  public readonly pending: ReadonlySignal<boolean>;
+  public readonly touched: ReadonlySignal<boolean>;
+  public readonly dirty: ReadonlySignal<boolean>;
+  public readonly submitting: ReadonlySignal<boolean>;
 
   constructor(schema: FormSchema<T>) {
     this.fields = new Map();
@@ -26,6 +34,27 @@ export class FormStore<T extends Record<string, any>> {
       });
       return result;
     });
+
+    // Создаем computed signals для состояния формы
+    this.valid = computed(() =>
+      Array.from(this.fields.values()).every(field => field.valid.value)
+    );
+
+    this.invalid = computed(() => !this.valid.value);
+
+    this.pending = computed(() =>
+      Array.from(this.fields.values()).some(field => field.pending.value)
+    );
+
+    this.touched = computed(() =>
+      Array.from(this.fields.values()).some(field => field.touched.value)
+    );
+
+    this.dirty = computed(() =>
+      Array.from(this.fields.values()).some(field => field.dirty.value)
+    );
+
+    this.submitting = computed(() => this._submitting.value);
   }
 
   // ============================================================================
@@ -43,34 +72,6 @@ export class FormStore<T extends Record<string, any>> {
 
   get controls(): Record<keyof T, FieldController> {
     return this.fieldProxy;
-  }
-
-  // ============================================================================
-  // Computed значения
-  // ============================================================================
-
-  get valid(): boolean {
-    return Array.from(this.fields.values()).every(field => field.valid.value);
-  }
-
-  get invalid(): boolean {
-    return !this.valid;
-  }
-
-  get pending(): boolean {
-    return Array.from(this.fields.values()).some(field => field.pending);
-  }
-
-  get touched(): boolean {
-    return Array.from(this.fields.values()).some(field => field.touched);
-  }
-
-  get dirty(): boolean {
-    return Array.from(this.fields.values()).some(field => field.dirty);
-  }
-
-  get submitting(): boolean {
-    return this._submitting.value;
   }
 
   // ============================================================================
@@ -121,6 +122,13 @@ export class FormStore<T extends Record<string, any>> {
       const control = this.fields.get(fieldKey);
 
       if (!control) {
+        if (import.meta.env.DEV) {
+          const availableFields = Array.from(this.fields.keys()).join(', ');
+          throw new Error(
+            `Field "${fieldPath}" not found in FormStore.\n` +
+            `Available fields: ${availableFields}`
+          );
+        }
         console.warn(`Field ${fieldPath} not found in FormStore`);
         continue;
       }
