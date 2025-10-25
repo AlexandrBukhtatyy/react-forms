@@ -50,16 +50,6 @@ export { FormStore } from './core/form-store';
  */
 export { DeepFormStore } from './core/deep-form-store';
 
-/**
- * @deprecated GroupProxy больше не нужен, используйте GroupNode напрямую
- */
-export { GroupProxy } from './core/group-proxy';
-
-/**
- * @deprecated ArrayProxy больше не нужен, используйте ArrayNode напрямую
- */
-export { ArrayProxy } from './core/array-proxy';
-
 // ============================================================================
 // Components
 // ============================================================================

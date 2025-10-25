@@ -4,17 +4,7 @@
   },
   "permissions": {
     "allow": [
-      "Bash(git mv:*)",
-      "Bash(npx tsc:*)",
-      "Bash(npm run build)",
-      "Bash(npm run dev)",
-      "Bash(find \"src/domains/credit-applications/form/components/steps\" -name \"*.tsx\" -type f -exec sed -i \"s|from ''../../_shared|from ''../../../_shared|g\" {} +)",
-      "Bash(del \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\CreditApplicationFormV5.tsx\" \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\steps\\step2\\PersonalInfoFormV5.tsx\" \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\steps\\step3\\ContactInfoFormV5.tsx\" \"d:\\Work\\react-forms\\src\\domains\\credit-applications\\form\\components\\steps\\step5\\AdditionalInfoFormV5.tsx\")",
-      "Bash(cat:*)",
-      "Bash(git checkout:*)",
-      "Bash(mkdir:*)",
-      "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nPhase 1: Critical performance fixes completed\n\nChanges:\n- Replace getters with computed signals in FormStore and DeepFormStore\n  - valid, invalid, pending, touched, dirty, submitting now use computed()\n  - Improves performance: O(1) cached access instead of O(n) iteration\n  - Adds reactivity: components will re-render on changes\n\n- Parallelize async validators in FieldController\n  - Use Promise.all() instead of sequential await\n  - Add validation tracking with currentValidationId\n  - Cancel obsolete validations automatically\n\n- Add dev-mode field existence checks in FormStore\n  - Throw informative errors in development\n  - Show available fields when field not found\n\n- Update NavigationButtons.tsx to use .value accessor\n\nFiles modified:\n- src/lib/forms/core/form-store.ts\n- src/lib/forms/core/field-controller.ts\n- src/lib/forms/core/deep-form-store.ts\n- src/domains/credit-applications/form/components/NavigationButtons.tsx\n\nFiles created:\n- src/lib/forms/MIGRATION.md\n- REFACTORING_PROGRESS.md\n\n🤖 Generated with Claude Code\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
