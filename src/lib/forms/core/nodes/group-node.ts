@@ -241,29 +241,6 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   }
 
   /**
-   * Получить поле по ключу
-   */
-  getField(key: keyof T): FormNode<any> | undefined {
-    return this.fields.get(key);
-  }
-
-  /**
-   * Доступ к полям через .controls (deprecated)
-   * Для обратной совместимости
-   */
-  get controls(): Record<keyof T, FormNode<any>> {
-    const proxy = new Proxy({} as Record<keyof T, FormNode>, {
-      get: (_, prop: string | symbol) => {
-        if (typeof prop === 'string') {
-          return this.fields.get(prop as keyof T);
-        }
-        return undefined;
-      },
-    });
-    return proxy;
-  }
-
-  /**
    * Применить validation schema к форме
    */
   applyValidationSchema(schemaFn: ValidationSchemaFn<T>): void {
