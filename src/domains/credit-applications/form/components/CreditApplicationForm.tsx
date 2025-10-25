@@ -1,7 +1,7 @@
 /**
  * CreditApplicationForm
  *
- * Использует DeepFormStore для элегантной работы с:
+ * Использует GroupNode для элегантной работы с:
  * - Вложенными формами (personalData, passportData, addresses)
  * - Массивами форм (properties, existingLoans, coBorrowers)
  * - Полной типизацией TypeScript
@@ -28,8 +28,8 @@ function CreditApplicationForm() {
 
   const [form] = useState(() => createCreditApplicationForm());
 
-  // Доступ к полям через DeepFormStore API
-  const currentStep = form.controls.currentStep.value;
+  // Доступ к полям через GroupNode API (прямой доступ через proxy)
+  const currentStep = (form as any).currentStep.value.value;
 
   // ============================================================================
   // Отправка формы
@@ -39,7 +39,7 @@ function CreditApplicationForm() {
     const isValid = await form.validate();
 
     if (!isValid) {
-      form.markAllAsTouched();
+      form.markAsTouched();
       alert('Пожалуйста, исправьте ошибки в форме');
       return;
     }
@@ -49,9 +49,9 @@ function CreditApplicationForm() {
       console.log('Отправка формы:', values);
 
       // Демонстрация доступа к вложенным данным
-      console.log('Personal Data:', form.controls.personalData.getValue());
-      console.log('Passport Data:', form.controls.passportData.getValue());
-      console.log('Registration Address:', form.controls.registrationAddress.getValue());
+      console.log('Personal Data:', (form as any).personalData.getValue());
+      console.log('Passport Data:', (form as any).passportData.getValue());
+      console.log('Registration Address:', (form as any).registrationAddress.getValue());
 
       alert('Заявка успешно отправлена!');
     } catch (error) {

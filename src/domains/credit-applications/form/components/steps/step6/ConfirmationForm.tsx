@@ -1,9 +1,9 @@
 import { useSignals } from '@preact/signals-react/runtime';
-import type { DeepFormStore } from '@/lib/forms/core/deep-form-store';
+import type { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { FormField } from '@/lib/forms/components';
 
 interface ConfirmationFormProps {
-  form: DeepFormStore<any>;
+  form: GroupNode<any>;
 }
 
 export function ConfirmationForm({ form }: ConfirmationFormProps) {
@@ -22,21 +22,21 @@ export function ConfirmationForm({ form }: ConfirmationFormProps) {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Обязательные согласия</h3>
         <div className="space-y-3">
-          <FormField control={form.controls.agreePersonalData} />
-          <FormField control={form.controls.agreeCreditHistory} />
-          <FormField control={form.controls.agreeTerms} />
-          <FormField control={form.controls.confirmAccuracy} />
+          <FormField control={(form as any).agreePersonalData} />
+          <FormField control={(form as any).agreeCreditHistory} />
+          <FormField control={(form as any).agreeTerms} />
+          <FormField control={(form as any).confirmAccuracy} />
         </div>
       </div>
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold mt-6">Опциональные согласия</h3>
-        <FormField control={form.controls.agreeMarketing} />
+        <FormField control={(form as any).agreeMarketing} />
       </div>
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold mt-6">Электронная подпись</h3>
-        <FormField control={form.controls.electronicSignature} />
+        <FormField control={(form as any).electronicSignature} />
         <p className="text-xs text-gray-500">
           Введите код из SMS, отправленный на ваш номер телефона
         </p>

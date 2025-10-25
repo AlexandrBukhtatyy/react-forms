@@ -1,39 +1,39 @@
 import { useSignals } from '@preact/signals-react/runtime';
-import type { DeepFormStore } from '@/lib/forms/core/deep-form-store';
+import type { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { FormField } from '@/lib/forms/components';
 
 interface EmploymentFormProps {
-  form: DeepFormStore<any>;
+  form: GroupNode<any>;
 }
 
 export function EmploymentForm({ form }: EmploymentFormProps) {
   useSignals();
 
-  const employmentStatus = form.controls.employmentStatus.value;
+  const employmentStatus = (form as any).employmentStatus.value.value;
 
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Информация о занятости</h2>
 
       <div className="space-y-4">
-        <FormField control={form.controls.employmentStatus} />
+        <FormField control={(form as any).employmentStatus} />
       </div>
 
       {employmentStatus === 'employed' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold mt-6">Информация о работодателе</h3>
-          <FormField control={form.controls.companyName!} />
+          <FormField control={(form as any).companyName!} />
           <div className="grid grid-cols-2 gap-4">
-            <FormField control={form.controls.companyInn!} />
-            <FormField control={form.controls.companyPhone!} />
+            <FormField control={(form as any).companyInn!} />
+            <FormField control={(form as any).companyPhone!} />
           </div>
-          <FormField control={form.controls.companyAddress!} />
+          <FormField control={(form as any).companyAddress!} />
 
           <h3 className="text-lg font-semibold mt-6">Должность и стаж</h3>
-          <FormField control={form.controls.position!} />
+          <FormField control={(form as any).position!} />
           <div className="grid grid-cols-2 gap-4">
-            <FormField control={form.controls.workExperienceTotal!} />
-            <FormField control={form.controls.workExperienceCurrent!} />
+            <FormField control={(form as any).workExperienceTotal!} />
+            <FormField control={(form as any).workExperienceCurrent!} />
           </div>
         </div>
       )}
@@ -41,19 +41,19 @@ export function EmploymentForm({ form }: EmploymentFormProps) {
       {employmentStatus === 'selfEmployed' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold mt-6">Информация о бизнесе</h3>
-          <FormField control={form.controls.businessType!} />
-          <FormField control={form.controls.businessInn!} />
-          <FormField control={form.controls.businessActivity!} />
+          <FormField control={(form as any).businessType!} />
+          <FormField control={(form as any).businessInn!} />
+          <FormField control={(form as any).businessActivity!} />
         </div>
       )}
 
       {employmentStatus !== 'unemployed' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold mt-6">Доход</h3>
-          <FormField control={form.controls.monthlyIncome} />
+          <FormField control={(form as any).monthlyIncome} />
           <div className="grid grid-cols-2 gap-4">
-            <FormField control={form.controls.additionalIncome!} />
-            <FormField control={form.controls.additionalIncomeSource!} />
+            <FormField control={(form as any).additionalIncome!} />
+            <FormField control={(form as any).additionalIncomeSource!} />
           </div>
         </div>
       )}

@@ -1,40 +1,40 @@
 import { useSignals } from '@preact/signals-react/runtime';
-import type { DeepFormStore } from '@/lib/forms/core/deep-form-store';
+import type { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { FormField } from '@/lib/forms/components';
 
 interface BasicInfoFormProps {
-  form: DeepFormStore<any>;
+  form: GroupNode<any>;
 }
 
 export function BasicInfoForm({ form }: BasicInfoFormProps) {
   useSignals();
 
-  const loanType = form.controls.loanType.value;
+  const loanType = (form as any).loanType.value.value;
 
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Основная информация о кредите</h2>
-      <FormField control={form.controls.loanType} />
-      <FormField control={form.controls.loanAmount} />
-      <FormField control={form.controls.loanTerm} />
-      <FormField control={form.controls.loanPurpose} />
+      <FormField control={(form as any).loanType} />
+      <FormField control={(form as any).loanAmount} />
+      <FormField control={(form as any).loanTerm} />
+      <FormField control={(form as any).loanPurpose} />
 
       {loanType === 'mortgage' && (
         <>
           <h3 className="text-lg font-semibold mt-4">Информация о недвижимости</h3>
-          <FormField control={form.controls.propertyValue!} />
-          <FormField control={form.controls.initialPayment!} />
+          <FormField control={(form as any).propertyValue!} />
+          <FormField control={(form as any).initialPayment!} />
         </>
       )}
 
       {loanType === 'car' && (
         <>
           <h3 className="text-lg font-semibold mt-4">Информация об автомобиле</h3>
-          <FormField control={form.controls.carBrand!} />
-          <FormField control={form.controls.carModel!} />
+          <FormField control={(form as any).carBrand!} />
+          <FormField control={(form as any).carModel!} />
           <div className="grid grid-cols-2 gap-4">
-            <FormField control={form.controls.carYear!} />
-            <FormField control={form.controls.carPrice!} />
+            <FormField control={(form as any).carYear!} />
+            <FormField control={(form as any).carPrice!} />
           </div>
         </>
       )}

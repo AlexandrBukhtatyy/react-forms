@@ -1,13 +1,13 @@
 /**
  * Создание формы кредитной заявки
  *
- * Функция создаёт DeepFormStore с полной схемой формы, включая:
+ * Функция создаёт GroupNode с полной схемой формы, включая:
  * - 6 шагов заполнения
  * - Вложенные формы (personalData, passportData, addresses)
  * - Массивы форм (properties, existingLoans, coBorrowers)
  */
 
-import { DeepFormStore } from '@/lib/forms/core/deep-form-store';
+import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { Input, Select, Textarea, Checkbox, RadioGroup, InputMask } from '@/lib/forms/components';
 import {
   LOAN_TYPES,
@@ -38,7 +38,7 @@ export const createCreditApplicationForm = () => {
     },
 
     completedSteps: {
-      value: [],
+      value: [] as number[],
       component: () => null,
     },
 
@@ -520,7 +520,7 @@ export const createCreditApplicationForm = () => {
     },
   };
 
-  const form = new DeepFormStore(schema);
+  const form = new GroupNode(schema as any);
 
   // TODO: Применить validation schema
   // form.applyValidationSchema(creditApplicationValidation);

@@ -10,22 +10,22 @@
  */
 
 import { useSignals } from '@preact/signals-react/runtime';
-import type { DeepFormStore } from '@/lib/forms/core/deep-form-store';
+import type { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { FormField, FormArrayManager } from '@/lib/forms/components';
 import { PropertyForm } from '../../nested-forms/PropertyForm';
 import { ExistingLoanForm } from '../../nested-forms/ExistingLoanForm';
 import { CoBorrowerForm } from '../../nested-forms/CoBorrowerForm';
 
 interface AdditionalInfoFormProps {
-  form: DeepFormStore<any>;
+  form: GroupNode<any>;
 }
 
 export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
   useSignals();
 
-  const hasProperty = form.controls.hasProperty.value;
-  const hasExistingLoans = form.controls.hasExistingLoans.value;
-  const hasCoBorrower = form.controls.hasCoBorrower.value;
+  const hasProperty = (form as any).hasProperty.value.value;
+  const hasExistingLoans = (form as any).hasExistingLoans.value.value;
+  const hasCoBorrower = (form as any).hasCoBorrower.value.value;
 
   return (
     <div className="space-y-6">
@@ -34,16 +34,16 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Общая информация</h3>
 
-        <FormField control={form.controls.maritalStatus} />
+        <FormField control={(form as any).maritalStatus} />
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.controls.dependents} />
-          <FormField control={form.controls.education} />
+          <FormField control={(form as any).dependents} />
+          <FormField control={(form as any).education} />
         </div>
       </div>
 
       <div className="space-y-4">
-        <FormField control={form.controls.hasProperty} />
+        <FormField control={(form as any).hasProperty} />
 
         {hasProperty && (
           <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -52,19 +52,19 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
               <button
                 type="button"
                 className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => (form.controls.properties as any).push()}
+                onClick={() => ((form as any).properties as any).push()}
               >
                 + Добавить имущество
               </button>
             </div>
 
             <FormArrayManager
-              control={form.controls.properties as any}
+              control={(form as any).properties as any}
               component={PropertyForm}
               itemLabel="Имущество"
             />
 
-            {(form.controls.properties as any).length.value === 0 && (
+            {((form as any).properties as any).length.value === 0 && (
               <div className="p-4 bg-gray-100 border border-gray-300 rounded text-center text-gray-600">
                 Нажмите "Добавить имущество" для добавления информации
               </div>
@@ -74,7 +74,7 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
       </div>
 
       <div className="space-y-4">
-        <FormField control={form.controls.hasExistingLoans} />
+        <FormField control={(form as any).hasExistingLoans} />
 
         {hasExistingLoans && (
           <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -83,19 +83,19 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
               <button
                 type="button"
                 className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => (form.controls.existingLoans as any).push()}
+                onClick={() => ((form as any).existingLoans as any).push()}
               >
                 + Добавить кредит
               </button>
             </div>
 
             <FormArrayManager
-              control={form.controls.existingLoans as any}
+              control={(form as any).existingLoans as any}
               component={ExistingLoanForm}
               itemLabel="Кредит"
             />
 
-            {(form.controls.existingLoans as any).length.value === 0 && (
+            {((form as any).existingLoans as any).length.value === 0 && (
               <div className="p-4 bg-gray-100 border border-gray-300 rounded text-center text-gray-600">
                 Нажмите "Добавить кредит" для добавления информации
               </div>
@@ -105,7 +105,7 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
       </div>
 
       <div className="space-y-4">
-        <FormField control={form.controls.hasCoBorrower} />
+        <FormField control={(form as any).hasCoBorrower} />
 
         {hasCoBorrower && (
           <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -114,19 +114,19 @@ export function AdditionalInfoForm({ form }: AdditionalInfoFormProps) {
               <button
                 type="button"
                 className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => (form.controls.coBorrowers as any).push()}
+                onClick={() => ((form as any).coBorrowers as any).push()}
               >
                 + Добавить созаемщика
               </button>
             </div>
 
             <FormArrayManager
-              control={form.controls.coBorrowers as any}
+              control={(form as any).coBorrowers as any}
               component={CoBorrowerForm}
               itemLabel="Созаемщик"
             />
 
-            {(form.controls.coBorrowers as any).length.value === 0 && (
+            {((form as any).coBorrowers as any).length.value === 0 && (
               <div className="p-4 bg-gray-100 border border-gray-300 rounded text-center text-gray-600">
                 Нажмите "Добавить созаемщика" для добавления информации
                 <div className="mt-2 text-xs text-gray-500">
