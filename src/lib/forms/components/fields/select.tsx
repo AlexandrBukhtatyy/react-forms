@@ -2,7 +2,7 @@ import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon, XIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { ResourceConfig } from '../resources/index'
+import type { ResourceConfig } from '../../resources'
 
 export interface SelectProps extends Omit<React.ComponentProps<typeof SelectPrimitive.Root>, 'value' | 'onValueChange'> {
   className?: string;

@@ -14,15 +14,13 @@ import {
   EMPLOYMENT_STATUSES,
   MARITAL_STATUSES,
   EDUCATIONS,
-  EXISTING_LOAN_TYPES,
-  RELATIONSHIPS,
 } from '../constants/credit-application';
-import { addressFormSchema } from './nested-forms/AddressForm';
-import { passportDataSchema } from './nested-forms/PassportDataForm';
-import { personalDataSchema } from './nested-forms/PersonalDataForm';
-import { propertyFormSchema } from './nested-forms/PropertyForm';
-import { existingLoansFormSchema } from './nested-forms/ExistingLoanForm';
-import { coBorrowersFormSchema } from './nested-forms/CoBorrowerForm';
+import { personalDataSchema } from '../components/nested-forms/PersonalDataForm';
+import { passportDataSchema } from '../components/nested-forms/PassportDataForm';
+import { addressFormSchema } from '../components/nested-forms/AddressForm';
+import { propertyFormSchema } from '../components/nested-forms/PropertyForm';
+import { existingLoansFormSchema } from '../components/nested-forms/ExistingLoanForm';
+import { coBorrowersFormSchema } from '../components/nested-forms/CoBorrowerForm';
 
 
 

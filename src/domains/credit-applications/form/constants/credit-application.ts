@@ -1,4 +1,4 @@
-import type { StepIndicatorProps } from '../../../../lib/forms/components/other/StepIndicator';
+import type { StepIndicatorProps } from "@/lib/forms/components";
 
 export const STEPS: StepIndicatorProps['steps'] = [
   { number: 1, title: 'Кредит', icon: '💰' },
@@ -26,7 +26,7 @@ export const EMPLOYMENT_STATUSES = [
 ];
 
 export const MARITAL_STATUSES = [
-  { value: 'single', label: 'Холост/Не замужем' },
+  { value: 'single', label: 'Холост/не замужем' },
   { value: 'married', label: 'Женат/Замужем' },
   { value: 'divorced', label: 'Разведен(а)' },
   { value: 'widowed', label: 'Вдовец/Вдова' },

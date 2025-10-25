@@ -1,12 +1,10 @@
 import React from 'react';
 import { Form } from '@/lib/forms/components/core/form';
 import { cn } from '@/lib/utils';
-import { Input } from '@/lib/forms/components/input';
-import { InputSearch } from '@/lib/forms/components/input-search';
-import { Select } from '@/lib/forms/components/select';
 import { statusResource } from '../resources/status.resource';
 import { roleResource } from '../resources/role.resource';
 import { FormField, GroupNode } from '@/lib/forms';
+import { Input, InputSearch, Select } from '@/lib/forms/components';
 
 interface UsersFilterModel {
   login: string | null;

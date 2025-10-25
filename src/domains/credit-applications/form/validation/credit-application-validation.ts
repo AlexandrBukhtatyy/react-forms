@@ -1,5 +1,5 @@
 import type { FieldPath, ValidationSchemaFn } from '@/lib/forms/types';
-import type { CreditApplicationForm } from '../../types/credit-application';
+import type { CreditApplicationForm } from '../types/credit-application';
 
 // Импортируем все схемы шагов
 import { basicInfoValidation } from './step1/basic-info-validation';
