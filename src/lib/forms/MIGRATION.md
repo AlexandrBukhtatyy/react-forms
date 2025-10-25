@@ -177,7 +177,61 @@ const items = form.role.resourceItems.value;
 const error = form.role.resourceError.value;
 ```
 
-### 4. Единый интерфейс FormNode
+### 4. Debounce для async валидаторов
+
+**Новое в v2:**
+```typescript
+const form = new GroupNode({
+  email: {
+    value: '',
+    component: Input,
+    debounce: 300,  // ✅ Задержка 300ms перед async валидацией
+    asyncValidators: [checkEmailExists],
+  },
+});
+
+// Или передать debounce напрямую
+await form.email.validate({ debounce: 500 });
+```
+
+### 5. Вложенные пути в ValidationContext
+
+**Новое в v2:**
+```typescript
+import { validate } from '@/lib/forms/validators';
+
+validate(path.email, (ctx) => {
+  // ✅ Получить значение вложенного поля
+  const city = ctx.getField('address.city');
+
+  // ✅ Установить значение вложенного поля
+  ctx.setField('address.country', 'USA');
+
+  return null;
+});
+```
+
+### 6. Композиция validation схем
+
+**Новое в v2:**
+```typescript
+import { toFieldPath, required } from '@/lib/forms/validators';
+
+// Переиспользуемая схема
+const personalDataValidation = (path: FieldPath<PersonalData>) => {
+  required(path.firstName);
+  required(path.lastName);
+};
+
+// Главная схема
+const mainValidation = (path: FieldPath<MyForm>) => {
+  // ✅ Переиспользуем схему
+  personalDataValidation(toFieldPath(path.personalData));
+  required(path.email);
+};
+```
+
+### 7. Единый интерфейс FormNode
 
 Все узлы (FieldNode, GroupNode, ArrayNode) наследуют от FormNode:
 
