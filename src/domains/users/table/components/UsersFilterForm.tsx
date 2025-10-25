@@ -6,7 +6,7 @@ import { InputSearch } from '@/lib/forms/components/input-search';
 import { Select } from '@/lib/forms/components/select';
 import { statusResource } from '../resources/status.resource';
 import { roleResource } from '../resources/role.resource';
-import { FormField, FormStore } from '@/lib/forms';
+import { FormField, GroupNode } from '@/lib/forms';
 
 interface UsersFilterModel {
   login: string | null;
@@ -18,11 +18,11 @@ interface UsersFilterModel {
 
 interface FilterFormProps {
   className?: string;
-  control: FormStore<UsersFilterModel>;
+  control: GroupNode<UsersFilterModel>;
 }
 
-export const makeUsersFilterForm = (): FormStore<UsersFilterModel> => {
-  return new FormStore({
+export const makeUsersFilterForm = (): GroupNode<UsersFilterModel> => {
+  return new GroupNode({
       login: {
         value: null,
         component: InputSearch,
@@ -68,11 +68,11 @@ export const makeUsersFilterForm = (): FormStore<UsersFilterModel> => {
 const UsersFilterForm: React.FC<FilterFormProps> = ({ className, control }) => {
   return (
     <Form className={cn(className, "flex gap-4")}>
-      <FormField control={control.controls.login}/>
-      <FormField control={control.controls.email}/>
-      <FormField control={control.controls.status}/>
-      <FormField control={control.controls.role}/>
-      <FormField control={control.controls.registrationDate}/>
+      <FormField control={(control as any).login}/>
+      <FormField control={(control as any).email}/>
+      <FormField control={(control as any).status}/>
+      <FormField control={(control as any).role}/>
+      <FormField control={(control as any).registrationDate}/>
     </Form>
   );
 };

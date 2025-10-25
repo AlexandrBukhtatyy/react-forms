@@ -4,13 +4,13 @@
  * Автоматическое определение типов схемы на основе структуры:
  * - [{...}] → массив форм (ArrayProxy)
  * - {...} → вложенная форма (GroupProxy)
- * - {value, component} → поле (FieldController)
+ * - {value, component} → поле (FieldNode)
  */
 
 import type { ComponentType } from 'react';
 import type { ReadonlySignal } from '@preact/signals-react';
 import type { ValidatorFn, AsyncValidatorFn, ValidationError } from './index';
-import type { FieldController } from '../core/field-controller';
+import type { FieldNode } from '../core/nodes/field-node';
 
 // ============================================================================
 // Базовые типы
@@ -94,7 +94,7 @@ export type DeepFormSchema<T> = {
  * Типы контроллеров с учетом вложенности
  *
  * Предоставляет типобезопасный доступ к полям формы через Proxy:
- * - Поля → FieldController
+ * - Поля → FieldNode
  * - Группы → DeepControls + GroupControlProxy
  * - Массивы → ArrayControlProxy
  *
@@ -118,10 +118,10 @@ export type DeepControls<T> = {
   [K in keyof T]: T[K] extends Array<infer U>
     ? U extends Record<string, any>
       ? ArrayControlProxy<U>
-      : FieldController<T[K]>
+      : FieldNode<T[K]>
     : T[K] extends Record<string, any>
     ? DeepControls<T[K]> & GroupControlProxy<T[K]>
-    : FieldController<T[K]>;
+    : FieldNode<T[K]>;
 };
 
 /**

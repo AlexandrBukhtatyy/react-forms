@@ -8,8 +8,8 @@
  * - Асинхронная валидация с контекстом
  */
 
-import type { FormStore } from '../core/form-store';
-import type { FieldController } from '../core/field-controller';
+import type { GroupNode } from '../core/nodes/group-node';
+import type { FieldNode } from '../core/nodes/field-node';
 import type { ValidationError } from './index';
 
 // ============================================================================
@@ -52,12 +52,12 @@ export interface ValidationContext<TForm = any, TField = any> {
   /**
    * Получить контроллер поля
    */
-  getControl(): FieldController<TField>;
+  getControl(): FieldNode<TField>;
 
   /**
-   * Получить FormStore
+   * Получить GroupNode
    */
-  getForm(): FormStore<TForm>;
+  getForm(): GroupNode<TForm>;
 }
 
 /**
@@ -77,9 +77,9 @@ export interface TreeValidationContext<TForm = any> {
   formValue(): TForm;
 
   /**
-   * Получить FormStore
+   * Получить GroupNode
    */
-  getForm(): FormStore<TForm>;
+  getForm(): GroupNode<TForm>;
 }
 
 // ============================================================================

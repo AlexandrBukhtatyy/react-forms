@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
-import type { FieldController } from '../core/field-controller';
+import type { FieldNode } from '../core/nodes/field-node';
 import { Checkbox } from './checkbox';
 
 export interface FormFieldProps {
-  control: FieldController | any; // Поддержка DeepFormStore controls
+  control: FieldNode | any; // Поддержка любых узлов (FieldNode, GroupNode fields)
   className?: string;
   label?: string;
 }

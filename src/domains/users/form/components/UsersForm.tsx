@@ -11,7 +11,7 @@ import type { FormSchema } from '@/lib/forms/types';
 import { searchResource } from '../resources/search.resource';
 import { selectResource } from '../resources/select.resource';
 import { fileUploader } from '../resources/file-uploader.resource';
-import { FormField, FormStore } from '@/lib/forms';
+import { FormField, GroupNode } from '@/lib/forms';
 import { useDialog } from '@/context/DialogContext';
 import { createUser } from '@/domains/users/_shared/services/users';
 
@@ -31,7 +31,7 @@ interface UsersFormModel {
 // Создание формы
 // ============================================================================
 
-const createUsersForm = () => {
+const createUsersForm = (): GroupNode<UsersFormModel> => {
   const schema: FormSchema<UsersFormModel> = {
     input: {
       value: null,
@@ -80,7 +80,7 @@ const createUsersForm = () => {
     }
   };
 
-  return new FormStore(schema);
+  return new GroupNode(schema);
 };
 
 // ============================================================================
@@ -123,25 +123,25 @@ function UsersForm({ openInDialog = false }: UsersFormProps) {
     <div className="flex flex-col md:flex-row w-full gap-8">
       <div className="flex-1">
         <Form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <FormField control={form.controls.input}/>
-          <FormField control={form.controls.password}/>
-          <FormField control={form.controls.search}/>
-          <FormField control={form.controls.select}/>
-          <FormField control={form.controls.files}/>
+          <FormField control={(form as any).input}/>
+          <FormField control={(form as any).password}/>
+          <FormField control={(form as any).search}/>
+          <FormField control={(form as any).select}/>
+          <FormField control={(form as any).files}/>
 
           <div className="flex gap-2 mt-6">
             <Button
               type="submit"
-              disabled={form.invalid || form.submitting}
+              disabled={form.invalid.value || form.submitting.value}
               className="flex-1"
             >
-              {form.submitting ? 'Сохранение...' : 'Сохранить'}
+              {form.submitting.value ? 'Сохранение...' : 'Сохранить'}
             </Button>
 
             <Button
               type="button"
               onClick={() => form.reset()}
-              disabled={form.submitting}
+              disabled={form.submitting.value}
             >
               Сбросить
             </Button>

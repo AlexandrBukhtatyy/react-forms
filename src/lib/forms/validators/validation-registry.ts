@@ -4,10 +4,10 @@
  * Работает как стек контекстов:
  * 1. При вызове validation schema функции создается новый контекст
  * 2. Все вызовы validate(), applyWhen() и т.д. регистрируют валидаторы в текущем контексте
- * 3. После завершения схемы валидаторы применяются к FormStore
+ * 3. После завершения схемы валидаторы применяются к GroupNode
  */
 
-import type { FormStore } from '../core/form-store';
+import type { GroupNode } from '../core/nodes/group-node';
 import type {
   ValidatorRegistration,
   ContextualValidatorFn,
@@ -66,7 +66,7 @@ class RegistrationContext {
  */
 class ValidationRegistryClass {
   private contextStack: RegistrationContext[] = [];
-  private formStoreMap = new WeakMap<FormStore<any>, ValidatorRegistration[]>();
+  private formStoreMap = new WeakMap<GroupNode<any>, ValidatorRegistration[]>();
 
   /**
    * Начать регистрацию валидаторов для формы
@@ -78,9 +78,9 @@ class ValidationRegistryClass {
   }
 
   /**
-   * Завершить регистрацию и применить валидаторы к FormStore
+   * Завершить регистрацию и применить валидаторы к GroupNode
    */
-  endRegistration<T>(form: FormStore<T>): void {
+  endRegistration<T>(form: GroupNode<T>): void {
     const context = this.contextStack.pop();
     if (!context) {
       throw new Error('No active registration context');
@@ -195,17 +195,17 @@ class ValidationRegistryClass {
   }
 
   /**
-   * Получить зарегистрированные валидаторы для FormStore
+   * Получить зарегистрированные валидаторы для GroupNode
    */
-  getValidators<T>(form: FormStore<T>): ValidatorRegistration[] | undefined {
+  getValidators<T>(form: GroupNode<T>): ValidatorRegistration[] | undefined {
     return this.formStoreMap.get(form);
   }
 
   /**
-   * Применить зарегистрированные валидаторы к FormStore
+   * Применить зарегистрированные валидаторы к GroupNode
    * @private
    */
-  private applyValidators<T>(form: FormStore<T>, validators: ValidatorRegistration[]): void {
+  private applyValidators<T>(form: GroupNode<T>, validators: ValidatorRegistration[]): void {
     // Группируем валидаторы по полям
     const validatorsByField = new Map<string, ValidatorRegistration[]>();
 
@@ -221,8 +221,8 @@ class ValidationRegistryClass {
     }
 
     // Валидаторы сохранены в formStoreMap
-    // Они будут применяться при вызове FormStore.validate()
-    console.log(`Registered ${validators.length} validators for FormStore`);
+    // Они будут применяться при вызове GroupNode.validate()
+    console.log(`Registered ${validators.length} validators for GroupNode`);
   }
 }
 

@@ -2,7 +2,7 @@
  * Реализация контекста валидации
  */
 
-import type { FormStore } from '../core/form-store';
+import type { GroupNode } from '../core/nodes/group-node';
 import type { FieldNode } from '../core/nodes/field-node';
 import type {
   ValidationContext,
@@ -16,7 +16,7 @@ export class ValidationContextImpl<TForm = any, TField = any>
   implements ValidationContext<TForm, TField>
 {
   constructor(
-    private form: FormStore<TForm>,
+    private form: GroupNode<TForm>,
     private fieldKey: keyof TForm,
     private control: FieldNode<TField>
   ) {}
@@ -83,7 +83,7 @@ export class ValidationContextImpl<TForm = any, TField = any>
     return this.control;
   }
 
-  getForm(): FormStore<TForm> {
+  getForm(): GroupNode<TForm> {
     return this.form;
   }
 }
@@ -94,7 +94,7 @@ export class ValidationContextImpl<TForm = any, TField = any>
 export class TreeValidationContextImpl<TForm = any>
   implements TreeValidationContext<TForm>
 {
-  constructor(private form: FormStore<TForm>) {}
+  constructor(private form: GroupNode<TForm>) {}
 
   getField<K extends keyof TForm>(path: K): TForm[K];
   getField(path: string): any;
@@ -122,7 +122,7 @@ export class TreeValidationContextImpl<TForm = any>
     return this.form.getValue();
   }
 
-  getForm(): FormStore<TForm> {
+  getForm(): GroupNode<TForm> {
     return this.form;
   }
 }

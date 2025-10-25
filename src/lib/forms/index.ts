@@ -31,26 +31,6 @@ export { ArrayNode } from './core/nodes/array-node';
 export type { SetValueOptions } from './core/nodes/form-node';
 
 // ============================================================================
-// Core - Legacy (для обратной совместимости)
-// ============================================================================
-
-/**
- * @deprecated Используйте FieldNode вместо FieldController
- */
-export { FieldController } from './core/field-controller';
-
-/**
- * @deprecated Используйте GroupNode вместо FormStore
- */
-export { FormStore } from './core/form-store';
-
-/**
- * @deprecated Используйте GroupNode вместо DeepFormStore
- * GroupNode теперь нативно поддерживает вложенные формы и массивы
- */
-export { DeepFormStore } from './core/deep-form-store';
-
-// ============================================================================
 // Components
 // ============================================================================
 
