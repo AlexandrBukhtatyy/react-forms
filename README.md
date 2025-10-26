@@ -10,7 +10,6 @@
 - TanStack ???
 
 # TODO
-- хочется что бы <BasicInfoForm form={form} />} был <BasicInfoForm control={form} />}
 - Избавиться от completedSteps и currentStep
     Сделать вложенные свойства под каждый шаг а не отдельные поля формы
     По хорошему форма и валидация ничего не должна знать про шаги (индексы и тд)
