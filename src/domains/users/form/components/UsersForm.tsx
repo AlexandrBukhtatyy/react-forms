@@ -13,7 +13,7 @@ import type { FormSchema } from '@/lib/forms/types';
 import { searchResource } from '../resources/search.resource';
 import { selectResource } from '../resources/select.resource';
 import { fileUploader } from '../resources/file-uploader.resource';
-import { FormField, GroupNode } from '@/lib/forms';
+import { FormField, GroupNode, type GroupNodeWithControls } from '@/lib/forms';
 import { useDialog } from '@/context/DialogContext';
 import { createUser } from '@/domains/users/_shared/services/users';
 
@@ -33,7 +33,7 @@ interface UsersFormModel {
 // Создание формы
 // ============================================================================
 
-const createUsersForm = (): GroupNode<UsersFormModel> => {
+const createUsersForm = (): GroupNodeWithControls<UsersFormModel> => {
   const schema: FormSchema<UsersFormModel> = {
     input: {
       value: null,
@@ -125,11 +125,11 @@ function UsersForm({ openInDialog = false }: UsersFormProps) {
     <div className="flex flex-col md:flex-row w-full gap-8">
       <div className="flex-1">
         <Form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <FormField control={(form as any).input}/>
-          <FormField control={(form as any).password}/>
-          <FormField control={(form as any).search}/>
-          <FormField control={(form as any).select}/>
-          <FormField control={(form as any).files}/>
+          <FormField control={form.input}/>
+          <FormField control={form.password}/>
+          <FormField control={form.search}/>
+          <FormField control={form.select}/>
+          <FormField control={form.files}/>
 
           <div className="flex gap-2 mt-6">
             <Button

@@ -68,3 +68,13 @@ export type {
   ArrayControlProxy,
   ArrayConfig,
 } from './deep-schema';
+
+// ============================================================================
+// Re-exports from group-node-proxy (Typed Proxy Access)
+// ============================================================================
+
+export type {
+  FormNodeControls,
+  GroupNodeWithControls,
+  ArrayNodeWithControls,
+} from './group-node-proxy';

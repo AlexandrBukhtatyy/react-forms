@@ -13,6 +13,7 @@ import { FormNode,  type SetValueOptions } from './form-node';
 import { GroupNode } from './group-node';
 import type { FieldStatus, ValidationError } from '../../types';
 import type { DeepFormSchema } from '../../types/deep-schema';
+import type { GroupNodeWithControls } from '../../types/group-node-proxy';
 
 /**
  * ArrayNode - массив форм с реактивным состоянием
@@ -165,10 +166,10 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
   /**
    * Получить элемент по индексу
    * @param index - Индекс элемента
-   * @returns Элемент или undefined если индекс вне границ
+   * @returns Типизированный GroupNode или undefined если индекс вне границ
    */
-  at(index: number): FormNode<T> | undefined {
-    return this.items.value[index];
+  at(index: number): GroupNodeWithControls<T> | undefined {
+    return this.items.value[index] as GroupNodeWithControls<T> | undefined;
   }
 
   // ============================================================================
@@ -237,19 +238,23 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
 
   /**
    * Итерировать по элементам массива
-   * @param callback - Функция, вызываемая для каждого элемента
+   * @param callback - Функция, вызываемая для каждого элемента с типизированным GroupNode
    */
-  forEach(callback: (item: FormNode<T>, index: number) => void): void {
-    this.items.value.forEach(callback);
+  forEach(callback: (item: GroupNodeWithControls<T>, index: number) => void): void {
+    this.items.value.forEach((item, index) => {
+      callback(item as GroupNodeWithControls<T>, index);
+    });
   }
 
   /**
    * Маппинг элементов массива
-   * @param callback - Функция преобразования
+   * @param callback - Функция преобразования с типизированным GroupNode
    * @returns Новый массив результатов
    */
-  map<R>(callback: (item: FormNode<T>, index: number) => R): R[] {
-    return this.items.value.map(callback);
+  map<R>(callback: (item: GroupNodeWithControls<T>, index: number) => R): R[] {
+    return this.items.value.map((item, index) => {
+      return callback(item as GroupNodeWithControls<T>, index);
+    });
   }
 
   // ============================================================================

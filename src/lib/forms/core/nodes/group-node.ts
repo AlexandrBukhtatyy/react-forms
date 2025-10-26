@@ -21,6 +21,7 @@ import type {
   ValidationSchemaFn,
   DeepFormSchema,
 } from '../../types';
+import type { GroupNodeWithControls } from '../../types/group-node-proxy';
 import { ValidationRegistry, createFieldPath } from '../../validators';
 
 /**
@@ -122,6 +123,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
     // ✅ ВАЖНО: Возвращаем Proxy для прямого доступа к полям
     // Это позволяет писать form.email вместо form.controls.email
+    // Используем GroupNodeWithControls для правильной типизации вложенных форм и массивов
     return new Proxy(this, {
       get(target, prop: string | symbol) {
         // Если это поле формы
@@ -131,7 +133,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
         // Иначе - свойство/метод GroupNode
         return (target as any)[prop];
       },
-    }) as GroupNode<T> & { [K in keyof T]: FormNode<T[K]> };
+    }) as GroupNodeWithControls<T>;
   }
 
   // ============================================================================

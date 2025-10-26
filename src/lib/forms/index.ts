@@ -20,6 +20,13 @@ export type {
   ArrayConfig,
 } from './types';
 
+// Typed Proxy Access (решение проблемы типизации)
+export type {
+  FormNodeControls,
+  GroupNodeWithControls,
+  ArrayNodeWithControls,
+} from './types';
+
 // ============================================================================
 // Core - New Architecture (рекомендуется)
 // ============================================================================

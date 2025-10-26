@@ -1,9 +1,10 @@
 import { useSignals } from '@preact/signals-react/runtime';
-import type { GroupNode } from '@/lib/forms/core/nodes/group-node';
+import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField } from '@/lib/forms/components';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 
 interface ConfirmationFormProps {
-  form: GroupNode<any>;
+  form: GroupNodeWithControls<CreditApplicationForm>;
 }
 
 export function ConfirmationForm({ form }: ConfirmationFormProps) {
@@ -22,21 +23,21 @@ export function ConfirmationForm({ form }: ConfirmationFormProps) {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Обязательные согласия</h3>
         <div className="space-y-3">
-          <FormField control={(form as any).agreePersonalData} />
-          <FormField control={(form as any).agreeCreditHistory} />
-          <FormField control={(form as any).agreeTerms} />
-          <FormField control={(form as any).confirmAccuracy} />
+          <FormField control={form.agreePersonalData} />
+          <FormField control={form.agreeCreditHistory} />
+          <FormField control={form.agreeTerms} />
+          <FormField control={form.confirmAccuracy} />
         </div>
       </div>
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold mt-6">Опциональные согласия</h3>
-        <FormField control={(form as any).agreeMarketing} />
+        <FormField control={form.agreeMarketing} />
       </div>
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold mt-6">Электронная подпись</h3>
-        <FormField control={(form as any).electronicSignature} />
+        <FormField control={form.electronicSignature} />
         <p className="text-xs text-gray-500">
           Введите код из SMS, отправленный на ваш номер телефона
         </p>

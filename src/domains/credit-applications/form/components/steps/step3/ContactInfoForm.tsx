@@ -8,29 +8,30 @@
  */
 
 import { useSignals } from '@preact/signals-react/runtime';
-import type { GroupNode } from '@/lib/forms/core/nodes/group-node';
+import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField } from '@/lib/forms/components';
 import { Button } from '@/lib/ui/button';
 import { AddressForm } from '../../nested-forms/AddressForm';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 
 interface ContactInfoFormProps {
-  form: GroupNode<any>;
+  form: GroupNodeWithControls<CreditApplicationForm>;
 }
 
 export function ContactInfoForm({ form }: ContactInfoFormProps) {
   useSignals();
 
-  const sameAsRegistration = (form as any).sameAsRegistration.value.value;
+  const sameAsRegistration = form.sameAsRegistration.value.value;
 
   // Копировать адрес регистрации в адрес проживания
   const copyRegistrationAddress = () => {
-    const regAddress = (form as any).registrationAddress.getValue();
-    (form as any).residenceAddress.setValue(regAddress);
+    const regAddress = form.registrationAddress.getValue();
+    form.residenceAddress.setValue(regAddress);
   };
 
   // Очистить адрес проживания
   const clearResidenceAddress = () => {
-    (form as any).residenceAddress.reset();
+    form.residenceAddress.reset();
   };
 
   return (
@@ -40,21 +41,21 @@ export function ContactInfoForm({ form }: ContactInfoFormProps) {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Контакты</h3>
         <div className="grid grid-cols-2 gap-4">
-          <FormField control={(form as any).phoneMain} />
-          <FormField control={(form as any).phoneAdditional} />
+          <FormField control={form.phoneMain} />
+          <FormField control={form.phoneAdditional} />
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <FormField control={(form as any).email} />
-          <FormField control={(form as any).emailAdditional} />
+          <FormField control={form.email} />
+          <FormField control={form.emailAdditional} />
         </div>
       </div>
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Адрес регистрации</h3>
-        <AddressForm control={(form as any).registrationAddress} />
+        <AddressForm control={form.registrationAddress} />
       </div>
 
-      <FormField control={(form as any).sameAsRegistration} />
+      <FormField control={form.sameAsRegistration} />
       {!sameAsRegistration && (
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div className="flex justify-between items-center">
@@ -68,7 +69,7 @@ export function ContactInfoForm({ form }: ContactInfoFormProps) {
             </Button>
           </div>
 
-          <AddressForm control={(form as any).residenceAddress} />
+          <AddressForm control={form.residenceAddress} />
 
           <Button
             type="button"

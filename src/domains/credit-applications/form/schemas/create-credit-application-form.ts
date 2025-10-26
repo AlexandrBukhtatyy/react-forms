@@ -7,6 +7,7 @@
  * - Массивы форм (properties, existingLoans, coBorrowers)
  */
 
+import type { GroupNodeWithControls } from '@/lib/forms';
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { Input, Select, Textarea, Checkbox, RadioGroup, InputMask } from '@/lib/forms/components';
 import {
@@ -24,7 +25,9 @@ import { coBorrowersFormSchema } from '../components/nested-forms/CoBorrowerForm
 
 
 
-export const createCreditApplicationForm = () => {
+import type { CreditApplicationForm } from '../types/credit-application';
+
+export const createCreditApplicationForm = (): GroupNodeWithControls<CreditApplicationForm> => {
   const schema = {
     // ========================================================================
     // Мета-данные формы

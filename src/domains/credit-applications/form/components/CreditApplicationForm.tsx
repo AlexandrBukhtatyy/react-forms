@@ -28,7 +28,7 @@ function CreditApplicationForm() {
   const [form] = useState(() => createCreditApplicationForm());
 
   // Доступ к полям через GroupNode API (прямой доступ через proxy)
-  const currentStep = (form as any).currentStep.value.value;
+  const currentStep = form.currentStep.value.value;
 
   // ============================================================================
   // Отправка формы
@@ -48,9 +48,9 @@ function CreditApplicationForm() {
       console.log('Отправка формы:', values);
 
       // Демонстрация доступа к вложенным данным
-      console.log('Personal Data:', (form as any).personalData.getValue());
-      console.log('Passport Data:', (form as any).passportData.getValue());
-      console.log('Registration Address:', (form as any).registrationAddress.getValue());
+      console.log('Personal Data:', form.personalData.getValue());
+      console.log('Passport Data:', form.passportData.getValue());
+      console.log('Registration Address:', form.registrationAddress.getValue());
 
       alert('Заявка успешно отправлена!');
     } catch (error) {

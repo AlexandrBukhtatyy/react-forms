@@ -1,21 +1,19 @@
-import type { GroupNode } from "@/lib/forms/core/nodes/group-node";
-
 export interface StepIndicatorProps {
   steps: Array<{number: number, title: string, icon: string}>;
-  form: GroupNode<any>;
+  form: any; // Принимает любую форму с currentStep и completedSteps
 }
 
 export function StepIndicator({ steps, form }: StepIndicatorProps) {
   // Доступ к полям через GroupNode (прямой доступ через proxy)
-  const currentStep = (form as any).currentStep.value.value;
-  const completedSteps = (form as any).completedSteps.value.value;
+  const currentStep = form.currentStep.value.value;
+  const completedSteps = form.completedSteps.value.value;
 
   // Навигация по клику на индикатор шагов
   const goToStep = (step: number) => {
     const canGoTo = step === 1 || completedSteps.includes(step - 1);
 
     if (canGoTo) {
-      (form as any).currentStep.setValue(step);
+      form.currentStep.setValue(step);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
