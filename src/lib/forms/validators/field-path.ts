@@ -101,14 +101,21 @@ function createFieldPathProxy<T>(basePath: string): any {
  * Извлечь путь из FieldPathNode
  */
 export function extractPath(node: FieldPathNode<any, any> | any): string {
-  if (node && typeof node === 'object' && '__path' in node) {
-    return node.__path;
-  }
   // Fallback для строк
   if (typeof node === 'string') {
     return node;
   }
-  throw new Error('Invalid field path node');
+
+  // Проверка для Proxy и обычных объектов
+  if (node && typeof node === 'object') {
+    // Пытаемся получить __path напрямую (работает для Proxy)
+    const path = node.__path;
+    if (typeof path === 'string') {
+      return path;
+    }
+  }
+
+  throw new Error('Invalid field path node: ' + JSON.stringify(node));
 }
 
 /**

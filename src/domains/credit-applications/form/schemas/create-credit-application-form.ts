@@ -26,6 +26,7 @@ import { coBorrowersFormSchema } from '../components/nested-forms/CoBorrowerForm
 
 
 import type { CreditApplicationForm } from '../types/credit-application';
+import creditApplicationValidation from '../validation/credit-application-validation';
 
 export const createCreditApplicationForm = (): GroupNodeWithControls<CreditApplicationForm> => {
   const schema = {
@@ -523,8 +524,7 @@ export const createCreditApplicationForm = (): GroupNodeWithControls<CreditAppli
 
   const form = new GroupNode(schema as any);
 
-  // TODO: Применить validation schema
-  // form.applyValidationSchema(creditApplicationValidation);
+  form.applyValidationSchema(creditApplicationValidation);
 
   return form;
 };

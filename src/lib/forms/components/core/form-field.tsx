@@ -43,7 +43,7 @@ const FormFieldComponent: React.FC<FormFieldProps> = ({
 
       {control.shouldShowError.value && (
         <span className="text-red-500 text-sm mt-1 block">
-          {control.errors[0]?.message}
+          {control.errors.value[0]?.message}
         </span>
       )}
 

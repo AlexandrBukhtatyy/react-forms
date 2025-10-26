@@ -6,7 +6,6 @@ import {
   minLength,
   pattern,
   email,
-  updateOn,
 } from '@/lib/forms/validators';
 
 /**
@@ -22,7 +21,6 @@ export const contactInfoValidation = (path: FieldPath<CreditApplicationForm>) =>
   // Email
   required(path.email, { message: 'Email обязателен' });
   email(path.email);
-  updateOn(path.email, 'blur');
 
   // Валидация адреса регистрации
   required(path.registrationAddress.region, { message: 'Регион обязателен' });
