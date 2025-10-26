@@ -82,6 +82,16 @@ function CreditApplicationForm() {
       <div className="mt-4 text-center text-sm text-gray-600">
         Шаг {currentStep} из 6 • {Math.round((currentStep / 6) * 100)}% завершено
       </div>
+
+      {/* Значение формы */}
+      <hr />
+      loanTerm: {form.loanTerm.value}
+      <hr />
+      {/* Значение формы */}
+      <pre>
+        {JSON.stringify(form.value, null, '  ')}
+      </pre>
+
     </div>
   );
 }
