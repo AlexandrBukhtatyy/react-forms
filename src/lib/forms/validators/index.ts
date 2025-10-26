@@ -24,6 +24,9 @@ export {
 // Утилиты для FieldPath
 export { createFieldPath, extractPath, extractKey, toFieldPath } from './field-path';
 
+// Утилита для валидации формы по схеме
+export { validateForm } from './validate-form';
+
 // ValidationRegistry (для внутреннего использования)
 export { ValidationRegistry } from './validation-registry';
 

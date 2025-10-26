@@ -2,12 +2,12 @@ import type { FieldPath, ValidationSchemaFn } from '@/lib/forms/types';
 import type { CreditApplicationForm } from '../types/credit-application';
 
 // Импортируем все схемы шагов
-import { basicInfoValidation } from './step1/basic-info-validation';
-import { personalDataValidation } from './step2/personal-data-validation';
-import { contactInfoValidation } from './step3/contact-info-validation';
-import { employmentValidation } from './step4/employment-validation';
-import { additionalValidation } from './step5/additional-validation';
-import { confirmationValidation } from './step6/confirmation-validation';
+import { basicInfoValidation } from './basic-info-validation';
+import { personalDataValidation } from './personal-data-validation';
+import { contactInfoValidation } from './contact-info-validation';
+import { employmentValidation } from './employment-validation';
+import { additionalValidation } from './additional-validation';
+import { confirmationValidation } from './confirmation-validation';
 
 /**
  * Главная схема валидации формы заявки на кредит

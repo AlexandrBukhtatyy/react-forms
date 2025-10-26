@@ -48,6 +48,14 @@ export { Form } from './components/core/form';
 // ============================================================================
 
 export { Validators } from './validators/built-in';
+export { validateForm } from './validators/validate-form';
+
+// ============================================================================
+// Hooks
+// ============================================================================
+
+export { useStepForm } from './components/other/form-navigation/hooks';
+export type { StepFormConfig, UseStepFormResult } from './components/other/form-navigation/hooks';
 
 // ============================================================================
 // Resources

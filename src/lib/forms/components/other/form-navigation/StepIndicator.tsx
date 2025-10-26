@@ -1,20 +1,35 @@
+/**
+ * StepIndicator - индикатор прогресса для multi-step форм
+ *
+ * Работает с новым API (useStepForm хук)
+ */
+
 export interface StepIndicatorProps {
-  steps: Array<{number: number, title: string, icon: string}>;
-  control: any; // Принимает любую форму с currentStep и completedSteps
+  /** Массив шагов с метаданными */
+  steps: Array<{ number: number; title: string; icon: string }>;
+
+  /** Текущий шаг (1-based) */
+  currentStep: number;
+
+  /** Завершенные шаги */
+  completedSteps: number[];
+
+  /** Обработчик клика по шагу */
+  onStepClick: (step: number) => void;
 }
 
-export function StepIndicator({ steps, control }: StepIndicatorProps) {
-  // Доступ к полям через GroupNode (прямой доступ через proxy)
-  const currentStep = control.currentStep.value.value;
-  const completedSteps = control.completedSteps.value.value;
-
+export function StepIndicator({
+  steps,
+  currentStep,
+  completedSteps,
+  onStepClick,
+}: StepIndicatorProps) {
   // Навигация по клику на индикатор шагов
-  const goToStep = (step: number) => {
+  const handleStepClick = (step: number) => {
     const canGoTo = step === 1 || completedSteps.includes(step - 1);
 
     if (canGoTo) {
-      control.currentStep.setValue(step);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      onStepClick(step);
     }
   };
 
@@ -33,7 +48,7 @@ export function StepIndicator({ steps, control }: StepIndicatorProps) {
                 ${isCompleted ? 'text-green-500' : ''}
                 ${canClick ? 'hover:bg-gray-200' : 'cursor-not-allowed opacity-50'}
               `}
-              onClick={() => canClick && goToStep(step.number)}
+              onClick={() => handleStepClick(step.number)}
             >
               <div className="text-2xl">{isCompleted ? '✓' : step.icon}</div>
               <div className="text-xs font-medium">{step.title}</div>

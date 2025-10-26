@@ -88,10 +88,6 @@ export interface CoBorrower {
 // ============================================================================
 
 export interface CreditApplicationForm {
-  // Метаданные формы
-  currentStep: number;
-  completedSteps: number[];
-
   // Шаг 1: Основная информация
   loanType: LoanType;
   loanAmount: number;

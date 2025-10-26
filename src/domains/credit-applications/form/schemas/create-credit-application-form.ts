@@ -31,20 +31,6 @@ import creditApplicationValidation from '../validation/credit-application-valida
 export const createCreditApplicationForm = (): GroupNodeWithControls<CreditApplicationForm> => {
   const schema = {
     // ========================================================================
-    // Мета-данные формы
-    // ========================================================================
-
-    currentStep: {
-      value: 1,
-      component: () => null,
-    },
-
-    completedSteps: {
-      value: [] as number[],
-      component: () => null,
-    },
-
-    // ========================================================================
     // Шаг 1: Основная информация
     // ========================================================================
 
@@ -524,7 +510,8 @@ export const createCreditApplicationForm = (): GroupNodeWithControls<CreditAppli
 
   const form = new GroupNode(schema as any);
 
-  form.applyValidationSchema(creditApplicationValidation);
+  // Валидация применяется через useStepForm хук или validateForm()
+  // Полная схема creditApplicationValidation используется только при submit
 
   return form;
 };
