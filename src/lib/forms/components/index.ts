@@ -1,9 +1,9 @@
 export { Form } from './core/form';
 export { FormField } from './core/form-field';
 export { FormArrayManager } from './other/FormArrayManager';
-export { NavigationButtons } from './other/NavigationButtons';
-export { StepIndicator } from './other/StepIndicator';
-export { type StepIndicatorProps } from './other/StepIndicator';
+export { NavigationButtons } from './other/form-navigation/NavigationButtons';
+export { StepIndicator } from './other/form-navigation/StepIndicator';
+export { type StepIndicatorProps } from './other/form-navigation/StepIndicator';
 export { Input } from './fields/input';
 export { InputPassword } from './fields/input-password';
 export { InputSearch } from './fields/input-search';
