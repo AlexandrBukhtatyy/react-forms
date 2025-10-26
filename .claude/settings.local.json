@@ -10,7 +10,8 @@
       "Bash(npm run build:*)",
       "Bash(npx tsc:*)",
       "Bash(git add:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []
