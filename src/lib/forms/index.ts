@@ -8,7 +8,6 @@ export type {
   ValidationError,
   FieldStatus,
   FieldConfig,
-  FormSchema
 } from './types';
 
 // Variant 5 types

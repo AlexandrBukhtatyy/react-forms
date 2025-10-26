@@ -15,7 +15,6 @@ import { FormNode, type SetValueOptions } from './form-node';
 import { FieldNode } from './field-node';
 import { ArrayNode } from './array-node';
 import type {
-  FormSchema,
   ValidationError,
   FieldStatus,
   ValidationSchemaFn,

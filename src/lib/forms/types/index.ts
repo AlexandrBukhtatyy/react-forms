@@ -30,14 +30,6 @@ export type { FieldConfig } from './deep-schema';
 import type { FieldConfig } from './deep-schema';
 
 // ============================================================================
-// Form Schema
-// ============================================================================
-
-export type FormSchema<T extends Record<string, any>> = {
-  [K in keyof T]: FieldConfig<T[K]>;
-};
-
-// ============================================================================
 // Re-exports from validation-schema
 // ============================================================================
 
