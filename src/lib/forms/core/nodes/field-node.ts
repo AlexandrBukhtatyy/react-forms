@@ -131,7 +131,25 @@ export class FieldNode<T = any> extends FormNode<T> {
     this._value.value = value;
     this._dirty.value = true;
 
-    if (options?.emitEvent !== false && this.updateOn === 'change') {
+    if (options?.emitEvent === false) {
+      return;
+    }
+
+    const hasOwnValidators = this.validators.length > 0 || this.asyncValidators.length > 0;
+    const hasErrors = this._errors.value.length > 0;
+
+    // 1. Если updateOn === 'change' → всегда валидируем
+    if (this.updateOn === 'change') {
+      this.validate();
+      return;
+    }
+
+    // 2. Если у поля есть ошибки и собственные валидаторы
+    //    → валидируем при каждом изменении
+    //    Поведение:
+    //    - Если значение некорректно → обновляем/показываем ошибку
+    //    - Если значение корректно → скрываем ошибку
+    if (hasErrors && hasOwnValidators) {
       this.validate();
     }
   }
@@ -210,9 +228,18 @@ export class FieldNode<T = any> extends FormNode<T> {
       }
     }
 
-    this._errors.value = [];
-    this._status.value = 'valid';
-    return true;
+    // ✅ Очищаем ошибки только если у поля есть собственные валидаторы
+    // Если валидаторов нет, значит используется ValidationSchema на уровне формы
+    // и ошибки устанавливаются извне через setErrors()
+    const hasOwnValidators =
+      this.validators.length > 0 || this.asyncValidators.length > 0;
+
+    if (hasOwnValidators) {
+      this._errors.value = [];
+      this._status.value = 'valid';
+    }
+
+    return this._errors.value.length === 0;
   }
 
   setErrors(errors: ValidationError[]): void {

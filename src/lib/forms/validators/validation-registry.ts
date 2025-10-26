@@ -94,6 +94,18 @@ class ValidationRegistryClass {
   }
 
   /**
+   * Отменить регистрацию без применения валидаторов
+   * Используется для временной валидации (например, в validateForm)
+   */
+  cancelRegistration(): void {
+    const context = this.contextStack.pop();
+    if (!context) {
+      throw new Error('No active registration context to cancel');
+    }
+    // Просто выбрасываем контекст без сохранения
+  }
+
+  /**
    * Получить текущий контекст регистрации
    */
   getCurrentContext(): RegistrationContext | undefined {

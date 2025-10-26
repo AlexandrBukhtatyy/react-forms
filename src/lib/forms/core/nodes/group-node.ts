@@ -259,9 +259,9 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
   /**
    * Применить contextual валидаторы к полям
-   * @private
+   * Используется для временной валидации (например, в validateForm)
    */
-  private async applyContextualValidators(validators: any[]): Promise<void> {
+  async applyContextualValidators(validators: any[]): Promise<void> {
     const { ValidationContextImpl, TreeValidationContextImpl } = await import(
       '../../validators/validation-context'
     );

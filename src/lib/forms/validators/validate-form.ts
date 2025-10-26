@@ -49,7 +49,7 @@ export async function validateForm<T extends Record<string, any>>(
   form: GroupNode<T>,
   schema: ValidationSchemaFn<T>
 ): Promise<boolean> {
-  // Создаем временный контекст регистрации
+  // Начинаем регистрацию валидаторов
   ValidationRegistry.beginRegistration();
 
   try {
@@ -61,7 +61,7 @@ export async function validateForm<T extends Record<string, any>>(
     const context = ValidationRegistry.getCurrentContext();
     const tempValidators = context?.getValidators() || [];
 
-    // Очищаем стек контекстов (не сохраняем в formStoreMap)
+    // Отменяем регистрацию (не сохраняем в глобальный реестр)
     ValidationRegistry.cancelRegistration();
 
     // Очищаем текущие ошибки полей
@@ -75,7 +75,7 @@ export async function validateForm<T extends Record<string, any>>(
       )
     );
 
-    // Применяем contextual валидаторы (cross-field, conditional)
+    // Применяем contextual validators
     if (tempValidators.length > 0) {
       await form.applyContextualValidators(tempValidators);
     }
@@ -83,12 +83,8 @@ export async function validateForm<T extends Record<string, any>>(
     // Проверяем результат
     return form.valid.value;
   } catch (error) {
-    // В случае ошибки очищаем стек
-    try {
-      ValidationRegistry.cancelRegistration();
-    } catch {
-      // Игнорируем ошибку, если стек уже пустой
-    }
+    // В случае ошибки тоже отменяем регистрацию
+    ValidationRegistry.cancelRegistration();
     throw error;
   }
 }

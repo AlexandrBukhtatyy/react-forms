@@ -15,12 +15,6 @@ const FormFieldComponent: React.FC<FormFieldProps> = ({
 }) => {
   useSignals();
 
-  // Отладка: выводим в консоль, когда компонент рендерится
-  // УДАЛИТЬ ПОСЛЕ ТЕСТИРОВАНИЯ
-  if (process.env.NODE_ENV === 'development') {
-    console.log('FormField render:', control.componentProps?.label || 'unknown');
-  }
-
   const Component = control.component;
 
   // Конвертируем null в пустую строку для избежания React warning
@@ -35,7 +29,13 @@ const FormFieldComponent: React.FC<FormFieldProps> = ({
         onChange={(e: any) => {
           control.setValue(e?.target?.value ?? e);
         }}
-        onBlur={() => control.markAsTouched()}
+        onBlur={() => {
+          control.markAsTouched();
+          // Запускаем валидацию при blur (для updateOn: 'blur' и 'submit')
+          if (control.updateOn === 'blur' || control.updateOn === 'submit') {
+            control.validate();
+          }
+        }}
         disabled={control.status.value === 'disabled'}
         aria-invalid={control.invalid.value}
         {...control.componentProps}
