@@ -1,67 +1,85 @@
-# Задача: Интеграция валидации в форму кредитной заявки
+# Проблема: Разделение логики шагов и валидации формы
 
 ## Контекст
 
-Проект прошел через масштабный рефакторинг модуля работы с формами:
-- **Старая архитектура**: `FormStore` + `FieldController` (deprecated)
-- **Новая архитектура**: `FormNode` → `GroupNode`, `FieldNode`, `ArrayNode`
+**Текущая реализация**: [CreditApplicationForm](src/domains/credit-applications/form/components/CreditApplicationForm.tsx)
 
-Валидационные схемы уже написаны и готовы к использованию, но в текущей реализации формы валидация **закомментирована** и требует интеграции с новой архитектурой.
+В файле [create-credit-application-form.ts:37-45](src/domains/credit-applications/form/schemas/create-credit-application-form.ts#L37-L45) состояние шагов (`currentStep`, `completedSteps`) хранится внутри `GroupNode` формы как обычные поля.
 
-## Структура кода
+```typescript
+const schema = {
+  currentStep: { value: 1, component: () => null },
+  completedSteps: { value: [] as number[], component: () => null },
+  // ... остальные поля формы
+}
+```
 
-### Валидационные схемы (готовы)
-- **Главная схема**: [src/domains/credit-applications/form/validation/credit-application-validation.ts](src/domains/credit-applications/form/validation/credit-application-validation.ts)
-- **Схемы по шагам**:
-  - Шаг 1: [src/domains/credit-applications/form/validation/step1/basic-info-validation.ts](src/domains/credit-applications/form/validation/step1/basic-info-validation.ts)
-  - Шаг 2: [src/domains/credit-applications/form/validation/step2/personal-data-validation.ts](src/domains/credit-applications/form/validation/step2/personal-data-validation.ts)
-  - Шаг 3: [src/domains/credit-applications/form/validation/step3/contact-info-validation.ts](src/domains/credit-applications/form/validation/step3/contact-info-validation.ts)
-  - Шаг 4: [src/domains/credit-applications/form/validation/step4/employment-validation.ts](src/domains/credit-applications/form/validation/step4/employment-validation.ts)
-  - Шаг 5: [src/domains/credit-applications/form/validation/step5/additional-validation.ts](src/domains/credit-applications/form/validation/step5/additional-validation.ts)
-  - Шаг 6: [src/domains/credit-applications/form/validation/step6/confirmation-validation.ts](src/domains/credit-applications/form/validation/step6/confirmation-validation.ts)
+## Проблемы текущего подхода
 
-### Форма (требует доработки)
-- **Компонент**: [src/domains/credit-applications/form/components/CreditApplicationForm.tsx](src/domains/credit-applications/form/components/CreditApplicationForm.tsx)
-- **Схема формы**: [src/domains/credit-applications/form/schemas/create-credit-application-form.ts](src/domains/credit-applications/form/schemas/create-credit-application-form.ts#L526-L527) — валидация закомментирована
+1. **Нарушение Single Responsibility Principle**:
+   - `GroupNode` отвечает за данные формы И за UI-состояние навигации
+   - Смешение доменной модели (данные заявки) с UI-состоянием (шаги)
 
-## Что нужно сделать
+2. **Сложность переиспользования**:
+   - Невозможно использовать форму без логики шагов
+   - Схему валидации нельзя применить к отдельному шагу
 
-1. **Анализ совместимости**:
-   - Проверить, совместимы ли текущие валидационные схемы с новой архитектурой `FormNode`
-   - Выявить потенциальные проблемы с типизацией
-   - Проверить корректность путей к вложенным полям (`personalData`, `passportData`, `addresses`)
-   - Проверить работу с массивами форм (`properties`, `existingLoans`, `coBorrowers`)
+3. **Типизация**:
+   - `currentStep`/`completedSteps` попадают в тип `CreditApplicationForm`
+   - Эти поля отправляются на сервер при `getValue()`, хотя они не являются частью доменной модели
 
-2. **Интеграция валидации**:
-   - Раскомментировать и активировать `form.applyValidationSchema(creditApplicationValidation)` в [create-credit-application-form.ts:526-527](src/domains/credit-applications/form/schemas/create-credit-application-form.ts#L526-L527)
-   - Убедиться, что валидация применяется корректно для:
-     - Простых полей (`loanAmount`, `email`, и т.д.)
-     - Вложенных форм (`personalData.firstName`, `passportData.series`)
-     - Массивов форм (`properties[0].type`, `coBorrowers[0].personalData.lastName`)
-   - Протестировать условную валидацию (`applyWhen` для ипотеки/автокредита)
-   - Проверить кросс-полевую валидацию (`validateTree`)
+## Требования к решению
 
-3. **Тестирование**:
-   - Проверить отображение ошибок валидации в UI
-   - Убедиться, что `form.valid` корректно вычисляется
-   - Проверить срабатывание валидации при переходе между шагами
-   - Протестировать финальную отправку формы
+### 1. Разделение ответственности
+- **GroupNode** должен содержать только данные формы (поля заявки)
+- **Состояние шагов** должно храниться отдельно (React state, отдельный Store, или специальный класс)
 
-## Задание
+### 2. Валидация по шагам
+Нужна возможность создавать отдельные схемы валидации для каждого шага и передавать их в метод `validate()`:
 
-**Предложи 2-3 варианта решения** с описанием плюсов/минусов каждого подхода:
+```typescript
+// Схемы валидации для каждого шага
+const step1ValidationSchema = (path: FieldPath<CreditApplicationForm>) => {
+  required(path.loanType);
+  required(path.loanAmount);
+  // ... только поля шага 1
+};
 
-1. **Вариант с минимальными изменениями** — просто раскомментировать валидацию и исправить типы
-2. **Вариант с пошаговой валидацией** — использовать `STEP_VALIDATIONS` для валидации только текущего шага
-3. **Вариант с оптимизацией** — улучшить производительность через lazy-валидацию или другие техники
+const step2ValidationSchema = (path: FieldPath<CreditApplicationForm>) => {
+  required(path.personalData.firstName);
+  required(path.passportData.series);
+  // ... только поля шага 2
+};
 
-Сохрани каждый вариант в отдельный MD-файл в каталоге [docs/](docs/):
-- `docs/validation-solution-1-minimal.md`
-- `docs/validation-solution-2-step-by-step.md`
-- `docs/validation-solution-3-optimized.md`
+const fullValidationSchema = (path: FieldPath<CreditApplicationForm>) => {
+  // Вся валидация для всех шагов
+  step1ValidationSchema(path);
+  step2ValidationSchema(path);
+  // ...
+};
 
-Каждое решение должно содержать:
-- Описание подхода
-- Необходимые изменения кода (с примерами)
-- Плюсы и минусы
-- Рекомендации по использованию
+// Использование
+await form.validate(step1ValidationSchema); // Валидация только шага 1
+await form.validate(fullValidationSchema);  // Валидация всей формы при submit
+```
+
+### 3. Адаптация существующих компонентов
+- Компоненты `NavigationButtons`, `StepIndicator` будут адаптированы под новую архитектуру
+- Они должны работать с новым API управления шагами (React state / отдельный Store)
+- Минимальные изменения в компонентах шагов (BasicInfoForm, PersonalInfoForm, и т.д.)
+
+## Ожидаемые решения
+
+Предложи **2-3 варианта архитектуры**, каждый с:
+
+1. **Описание подхода** - как разделить состояние шагов и формы
+2. **Пример кода** - как будет выглядеть использование
+3. **Валидация по шагам** - как валидировать отдельный шаг
+4. **Плюсы/минусы** - trade-offs каждого решения
+5. **Миграционный путь** - как перейти от текущей реализации
+
+## Дополнительный контекст
+
+- **Архитектура**: GroupNode, FieldNode, ValidationSchema (см. [CLAUDE.md](CLAUDE.md))
+- **Компоненты**: [NavigationButtons.tsx](src/lib/forms/components/other/NavigationButtons.tsx), [StepIndicator.tsx](src/lib/forms/components/other/StepIndicator.tsx)
+- **Validation Schema**: [credit-application-validation.ts](src/domains/credit-applications/form/validation/credit-application-validation.ts)
