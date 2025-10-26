@@ -4,37 +4,37 @@ import { FormField } from '@/lib/forms/components';
 import type { CreditApplicationForm } from '../../../types/credit-application';
 
 interface EmploymentFormProps {
-  form: GroupNodeWithControls<CreditApplicationForm>;
+  control: GroupNodeWithControls<CreditApplicationForm>;
 }
 
-export function EmploymentForm({ form }: EmploymentFormProps) {
+export function EmploymentForm({ control }: EmploymentFormProps) {
   useSignals();
 
-  const employmentStatus = form.employmentStatus.value.value;
+  const employmentStatus = control.employmentStatus.value.value;
 
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Информация о занятости</h2>
 
       <div className="space-y-4">
-        <FormField control={form.employmentStatus} />
+        <FormField control={control.employmentStatus} />
       </div>
 
       {employmentStatus === 'employed' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold mt-6">Информация о работодателе</h3>
-          <FormField control={form.companyName} />
+          <FormField control={control.companyName} />
           <div className="grid grid-cols-2 gap-4">
-            <FormField control={form.companyInn} />
-            <FormField control={form.companyPhone} />
+            <FormField control={control.companyInn} />
+            <FormField control={control.companyPhone} />
           </div>
-          <FormField control={form.companyAddress} />
+          <FormField control={control.companyAddress} />
 
           <h3 className="text-lg font-semibold mt-6">Должность и стаж</h3>
-          <FormField control={form.position} />
+          <FormField control={control.position} />
           <div className="grid grid-cols-2 gap-4">
-            <FormField control={form.workExperienceTotal} />
-            <FormField control={form.workExperienceCurrent} />
+            <FormField control={control.workExperienceTotal} />
+            <FormField control={control.workExperienceCurrent} />
           </div>
         </div>
       )}
@@ -42,19 +42,19 @@ export function EmploymentForm({ form }: EmploymentFormProps) {
       {employmentStatus === 'selfEmployed' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold mt-6">Информация о бизнесе</h3>
-          <FormField control={form.businessType} />
-          <FormField control={form.businessInn} />
-          <FormField control={form.businessActivity} />
+          <FormField control={control.businessType} />
+          <FormField control={control.businessInn} />
+          <FormField control={control.businessActivity} />
         </div>
       )}
 
       {employmentStatus !== 'unemployed' && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold mt-6">Доход</h3>
-          <FormField control={form.monthlyIncome} />
+          <FormField control={control.monthlyIncome} />
           <div className="grid grid-cols-2 gap-4">
-            <FormField control={form.additionalIncome} />
-            <FormField control={form.additionalIncomeSource} />
+            <FormField control={control.additionalIncome} />
+            <FormField control={control.additionalIncomeSource} />
           </div>
         </div>
       )}

@@ -14,10 +14,10 @@ import { PassportDataForm } from '../../nested-forms/PassportDataForm';
 import type { CreditApplicationForm } from '../../../types/credit-application';
 
 interface PersonalInfoFormProps {
-  form: GroupNodeWithControls<CreditApplicationForm>;
+  control: GroupNodeWithControls<CreditApplicationForm>;
 }
 
-export function PersonalInfoForm({ form }: PersonalInfoFormProps) {
+export function PersonalInfoForm({ control }: PersonalInfoFormProps) {
   useSignals();
 
   return (
@@ -25,17 +25,17 @@ export function PersonalInfoForm({ form }: PersonalInfoFormProps) {
       <h2 className="text-xl font-bold">Персональные данные</h2>
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Личные данные</h3>
-        <PersonalDataForm control={form.personalData} />
+        <PersonalDataForm control={control.personalData} />
       </div>
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Паспортные данные</h3>
-        <PassportDataForm control={form.passportData} />
+        <PassportDataForm control={control.passportData} />
       </div>
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Дополнительные документы</h3>
         <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.inn} />
-          <FormField control={form.snils} />
+          <FormField control={control.inn} />
+          <FormField control={control.snils} />
         </div>
       </div>
     </div>

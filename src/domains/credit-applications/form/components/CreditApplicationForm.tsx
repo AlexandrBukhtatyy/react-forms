@@ -46,12 +46,6 @@ function CreditApplicationForm() {
     try {
       const values = form.getValue();
       console.log('Отправка формы:', values);
-
-      // Демонстрация доступа к вложенным данным
-      console.log('Personal Data:', form.personalData.getValue());
-      console.log('Passport Data:', form.passportData.getValue());
-      console.log('Registration Address:', form.registrationAddress.getValue());
-
       alert('Заявка успешно отправлена!');
     } catch (error) {
       alert('Произошла ошибка при отправке заявки');
@@ -66,21 +60,21 @@ function CreditApplicationForm() {
   return (
     <div className="w-full">
       {/* Индикатор шагов */}
-      <StepIndicator steps={STEPS} form={form}/>
+      <StepIndicator steps={STEPS} control={form}/>
 
       {/* Форма текущего шага */}
       <div className="bg-white p-8 rounded-lg shadow-md">
-        {currentStep === 1 && <BasicInfoForm form={form} />}
-        {currentStep === 2 && <PersonalInfoForm form={form} />}
-        {currentStep === 3 && <ContactInfoForm form={form} />}
-        {currentStep === 4 && <EmploymentForm form={form} />}
-        {currentStep === 5 && <AdditionalInfoForm form={form} />}
-        {currentStep === 6 && <ConfirmationForm form={form} />}
+        {currentStep === 1 && <BasicInfoForm control={form} />}
+        {currentStep === 2 && <PersonalInfoForm control={form} />}
+        {currentStep === 3 && <ContactInfoForm control={form} />}
+        {currentStep === 4 && <EmploymentForm control={form} />}
+        {currentStep === 5 && <AdditionalInfoForm control={form} />}
+        {currentStep === 6 && <ConfirmationForm control={form} />}
       </div>
 
       {/* Кнопки навигации */}
       <NavigationButtons
-        form={form}
+        control={form}
         onSubmit={submitApplication}
       />
 

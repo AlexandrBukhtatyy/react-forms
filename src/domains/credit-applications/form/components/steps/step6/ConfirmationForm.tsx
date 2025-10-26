@@ -4,10 +4,10 @@ import { FormField } from '@/lib/forms/components';
 import type { CreditApplicationForm } from '../../../types/credit-application';
 
 interface ConfirmationFormProps {
-  form: GroupNodeWithControls<CreditApplicationForm>;
+  control: GroupNodeWithControls<CreditApplicationForm>;
 }
 
-export function ConfirmationForm({ form }: ConfirmationFormProps) {
+export function ConfirmationForm({ control }: ConfirmationFormProps) {
   useSignals();
 
   return (
@@ -23,21 +23,21 @@ export function ConfirmationForm({ form }: ConfirmationFormProps) {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Обязательные согласия</h3>
         <div className="space-y-3">
-          <FormField control={form.agreePersonalData} />
-          <FormField control={form.agreeCreditHistory} />
-          <FormField control={form.agreeTerms} />
-          <FormField control={form.confirmAccuracy} />
+          <FormField control={control.agreePersonalData} />
+          <FormField control={control.agreeCreditHistory} />
+          <FormField control={control.agreeTerms} />
+          <FormField control={control.confirmAccuracy} />
         </div>
       </div>
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold mt-6">Опциональные согласия</h3>
-        <FormField control={form.agreeMarketing} />
+        <FormField control={control.agreeMarketing} />
       </div>
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold mt-6">Электронная подпись</h3>
-        <FormField control={form.electronicSignature} />
+        <FormField control={control.electronicSignature} />
         <p className="text-xs text-gray-500">
           Введите код из SMS, отправленный на ваш номер телефона
         </p>

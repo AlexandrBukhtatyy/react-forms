@@ -1,19 +1,19 @@
 export interface StepIndicatorProps {
   steps: Array<{number: number, title: string, icon: string}>;
-  form: any; // Принимает любую форму с currentStep и completedSteps
+  control: any; // Принимает любую форму с currentStep и completedSteps
 }
 
-export function StepIndicator({ steps, form }: StepIndicatorProps) {
+export function StepIndicator({ steps, control }: StepIndicatorProps) {
   // Доступ к полям через GroupNode (прямой доступ через proxy)
-  const currentStep = form.currentStep.value.value;
-  const completedSteps = form.completedSteps.value.value;
+  const currentStep = control.currentStep.value.value;
+  const completedSteps = control.completedSteps.value.value;
 
   // Навигация по клику на индикатор шагов
   const goToStep = (step: number) => {
     const canGoTo = step === 1 || completedSteps.includes(step - 1);
 
     if (canGoTo) {
-      form.currentStep.setValue(step);
+      control.currentStep.setValue(step);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };

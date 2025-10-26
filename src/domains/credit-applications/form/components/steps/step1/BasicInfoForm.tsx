@@ -4,38 +4,38 @@ import { FormField } from '@/lib/forms/components';
 import type { CreditApplicationForm } from '../../../types/credit-application';
 
 interface BasicInfoFormProps {
-  form: GroupNodeWithControls<CreditApplicationForm>;
+  control: GroupNodeWithControls<CreditApplicationForm>;
 }
 
-export function BasicInfoForm({ form }: BasicInfoFormProps) {
+export function BasicInfoForm({ control }: BasicInfoFormProps) {
   useSignals();
 
-  const loanType = form.loanType.value.value;
+  const loanType = control.loanType.value.value;
 
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Основная информация о кредите</h2>
-      <FormField control={form.loanType} />
-      <FormField control={form.loanAmount} />
-      <FormField control={form.loanTerm} />
-      <FormField control={form.loanPurpose} />
+      <FormField control={control.loanType} />
+      <FormField control={control.loanAmount} />
+      <FormField control={control.loanTerm} />
+      <FormField control={control.loanPurpose} />
 
       {loanType === 'mortgage' && (
         <>
           <h3 className="text-lg font-semibold mt-4">Информация о недвижимости</h3>
-          <FormField control={form.propertyValue} />
-          <FormField control={form.initialPayment} />
+          <FormField control={control.propertyValue} />
+          <FormField control={control.initialPayment} />
         </>
       )}
 
       {loanType === 'car' && (
         <>
           <h3 className="text-lg font-semibold mt-4">Информация об автомобиле</h3>
-          <FormField control={form.carBrand} />
-          <FormField control={form.carModel} />
+          <FormField control={control.carBrand} />
+          <FormField control={control.carModel} />
           <div className="grid grid-cols-2 gap-4">
-            <FormField control={form.carYear} />
-            <FormField control={form.carPrice} />
+            <FormField control={control.carYear} />
+            <FormField control={control.carPrice} />
           </div>
         </>
       )}

@@ -15,23 +15,23 @@ import { AddressForm } from '../../nested-forms/AddressForm';
 import type { CreditApplicationForm } from '../../../types/credit-application';
 
 interface ContactInfoFormProps {
-  form: GroupNodeWithControls<CreditApplicationForm>;
+  control: GroupNodeWithControls<CreditApplicationForm>;
 }
 
-export function ContactInfoForm({ form }: ContactInfoFormProps) {
+export function ContactInfoForm({ control }: ContactInfoFormProps) {
   useSignals();
 
-  const sameAsRegistration = form.sameAsRegistration.value.value;
+  const sameAsRegistration = control.sameAsRegistration.value.value;
 
   // Копировать адрес регистрации в адрес проживания
   const copyRegistrationAddress = () => {
-    const regAddress = form.registrationAddress.getValue();
-    form.residenceAddress.setValue(regAddress);
+    const regAddress = control.registrationAddress?.getValue();
+    control.residenceAddress?.setValue(regAddress);
   };
 
   // Очистить адрес проживания
   const clearResidenceAddress = () => {
-    form.residenceAddress.reset();
+    control.residenceAddress?.reset();
   };
 
   return (
@@ -41,21 +41,21 @@ export function ContactInfoForm({ form }: ContactInfoFormProps) {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Контакты</h3>
         <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.phoneMain} />
-          <FormField control={form.phoneAdditional} />
+          <FormField control={control.phoneMain} />
+          <FormField control={control.phoneAdditional} />
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.email} />
-          <FormField control={form.emailAdditional} />
+          <FormField control={control.email} />
+          <FormField control={control.emailAdditional} />
         </div>
       </div>
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Адрес регистрации</h3>
-        <AddressForm control={form.registrationAddress} />
+        <AddressForm control={control.registrationAddress} />
       </div>
 
-      <FormField control={form.sameAsRegistration} />
+      <FormField control={control.sameAsRegistration} />
       {!sameAsRegistration && (
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div className="flex justify-between items-center">
@@ -69,7 +69,7 @@ export function ContactInfoForm({ form }: ContactInfoFormProps) {
             </Button>
           </div>
 
-          <AddressForm control={form.residenceAddress} />
+          <AddressForm control={control.residenceAddress} />
 
           <Button
             type="button"

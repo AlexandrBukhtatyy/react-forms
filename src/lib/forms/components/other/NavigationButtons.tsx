@@ -1,17 +1,18 @@
 import { useSignals } from '@preact/signals-react/runtime';
+import type { GroupNodeWithControls } from '../../types';
 
 interface NavigationButtonsProps {
-  form: any; // Принимает любую форму с currentStep, completedSteps, submitting
+  control: GroupNodeWithControls<any>; // Принимает любую форму с currentStep, completedSteps, submitting
   onSubmit: () => void;
 }
 
-export function NavigationButtons({ form, onSubmit }: NavigationButtonsProps) {
+export function NavigationButtons({ control, onSubmit }: NavigationButtonsProps) {
   useSignals();
 
   // Доступ к полям формы через GroupNode (прямой доступ через proxy)
-  const currentStep = form.currentStep.value.value;
-  const completedSteps = form.completedSteps.value.value;
-  const isSubmitting = form.submitting.value;
+  const currentStep = control.currentStep.value.value;
+  const completedSteps = control.completedSteps.value.value;
+  const isSubmitting = control.submitting.value;
 
   // ============================================================================
   // Логика навигации между шагами
@@ -19,11 +20,11 @@ export function NavigationButtons({ form, onSubmit }: NavigationButtonsProps) {
 
   const goToNextStep = async () => {
     const nextStep = Math.min(currentStep + 1, 6);
-    form.currentStep.setValue(nextStep);
+    control.currentStep.setValue(nextStep);
 
     // Добавляем текущий шаг в список завершенных
     if (!completedSteps.includes(currentStep)) {
-      form.completedSteps.setValue([...completedSteps, currentStep]);
+      control.completedSteps.setValue([...completedSteps, currentStep]);
     }
 
     // Скроллим страницу вверх для удобства пользователя
@@ -32,7 +33,7 @@ export function NavigationButtons({ form, onSubmit }: NavigationButtonsProps) {
 
   const goToPreviousStep = () => {
     const previousStep = Math.max(currentStep - 1, 1);
-    form.currentStep.setValue(previousStep);
+    control.currentStep.setValue(previousStep);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
