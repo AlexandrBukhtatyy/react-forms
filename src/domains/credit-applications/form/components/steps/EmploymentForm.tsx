@@ -1,4 +1,3 @@
-import { useSignals } from '@preact/signals-react/runtime';
 import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField } from '@/lib/forms/components';
 import type { CreditApplicationForm } from '../../types/credit-application';
@@ -8,8 +7,6 @@ interface EmploymentFormProps {
 }
 
 export function EmploymentForm({ control }: EmploymentFormProps) {
-  useSignals();
-
   const employmentStatus = control.employmentStatus.value.value;
 
   return (

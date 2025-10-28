@@ -9,7 +9,6 @@
  * NOTE: Массивы будут активированы после раскомментирования в схеме
  */
 
-import { useSignals } from '@preact/signals-react/runtime';
 import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField, FormArrayManager } from '@/lib/forms/components';
 import { PropertyForm } from '../nested-forms/PropertyForm';
@@ -22,8 +21,6 @@ interface AdditionalInfoFormProps {
 }
 
 export function AdditionalInfoForm({ control }: AdditionalInfoFormProps) {
-  useSignals();
-
   const hasProperty = control.hasProperty.value.value;
   const hasExistingLoans = control.hasExistingLoans.value.value;
   const hasCoBorrower = control.hasCoBorrower.value.value;

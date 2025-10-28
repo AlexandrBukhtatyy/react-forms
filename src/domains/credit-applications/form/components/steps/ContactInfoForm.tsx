@@ -7,7 +7,6 @@
  * - Условное отображение вложенных форм
  */
 
-import { useSignals } from '@preact/signals-react/runtime';
 import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField } from '@/lib/forms/components';
 import { Button } from '@/lib/ui/button';
@@ -19,8 +18,6 @@ interface ContactInfoFormProps {
 }
 
 export function ContactInfoForm({ control }: ContactInfoFormProps) {
-  useSignals();
-
   const sameAsRegistration = control.sameAsRegistration.value.value;
 
   // Копировать адрес регистрации в адрес проживания

@@ -6,7 +6,6 @@
  * - PassportDataForm (паспортные данные)
  */
 
-import { useSignals } from '@preact/signals-react/runtime';
 import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField } from '@/lib/forms/components';
 import { PersonalDataForm } from '../nested-forms/PersonalDataForm';
@@ -18,8 +17,6 @@ interface PersonalInfoFormProps {
 }
 
 export function PersonalInfoForm({ control }: PersonalInfoFormProps) {
-  useSignals();
-
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Персональные данные</h2>

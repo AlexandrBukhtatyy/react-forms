@@ -1,4 +1,3 @@
-import { useSignals } from '@preact/signals-react/runtime';
 import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField } from '@/lib/forms/components';
 import type { CreditApplicationForm } from '../../types/credit-application';
@@ -8,8 +7,6 @@ interface BasicInfoFormProps {
 }
 
 export function BasicInfoForm({ control }: BasicInfoFormProps) {
-  useSignals();
-
   const loanType = control.loanType.value.value;
 
   return (
