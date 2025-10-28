@@ -11,12 +11,12 @@
 import { useSignals } from '@preact/signals-react/runtime';
 import { useStepForm } from '@/lib/forms';
 import { createCreditApplicationForm } from '../schemas/create-credit-application-form';
-import { BasicInfoForm } from './steps/step1/BasicInfoForm';
-import { PersonalInfoForm } from './steps/step2/PersonalInfoForm';
-import { ContactInfoForm } from './steps/step3/ContactInfoForm';
-import { EmploymentForm } from './steps/step4/EmploymentForm';
-import { AdditionalInfoForm } from './steps/step5/AdditionalInfoForm';
-import { ConfirmationForm } from './steps/step6/ConfirmationForm';
+import { BasicInfoForm } from './steps/BasicInfoForm';
+import { PersonalInfoForm } from './steps/PersonalInfoForm';
+import { ContactInfoForm } from './steps/ContactInfoForm';
+import { EmploymentForm } from './steps/EmploymentForm';
+import { AdditionalInfoForm } from './steps/AdditionalInfoForm';
+import { ConfirmationForm } from './steps/ConfirmationForm';
 import { STEPS } from '../constants/credit-application';
 import { NavigationButtons, StepIndicator } from '@/lib/forms/components';
 import creditApplicationValidation, { STEP_VALIDATIONS } from '../validation/credit-application-validation';

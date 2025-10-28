@@ -1,7 +1,7 @@
 import { useSignals } from '@preact/signals-react/runtime';
 import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField } from '@/lib/forms/components';
-import type { CreditApplicationForm } from '../../../types/credit-application';
+import type { CreditApplicationForm } from '../../types/credit-application';
 
 interface EmploymentFormProps {
   control: GroupNodeWithControls<CreditApplicationForm>;

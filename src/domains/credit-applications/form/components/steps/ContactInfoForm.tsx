@@ -11,8 +11,8 @@ import { useSignals } from '@preact/signals-react/runtime';
 import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField } from '@/lib/forms/components';
 import { Button } from '@/lib/ui/button';
-import { AddressForm } from '../../nested-forms/AddressForm';
-import type { CreditApplicationForm } from '../../../types/credit-application';
+import { AddressForm } from '../nested-forms/AddressForm';
+import type { CreditApplicationForm } from '../../types/credit-application';
 
 interface ContactInfoFormProps {
   control: GroupNodeWithControls<CreditApplicationForm>;
