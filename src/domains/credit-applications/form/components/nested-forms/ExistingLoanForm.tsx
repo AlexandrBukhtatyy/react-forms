@@ -1,10 +1,20 @@
 import { memo } from 'react';
-import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, Select } from '@/lib/forms/components';
 import { EXISTING_LOAN_TYPES } from '../../constants/credit-application';
+import type { DeepFormSchema } from '@/lib/forms';
 
-export const existingLoansFormSchema = {
+export interface ExistingLoan {
+  id?: string;
+  bank: string;
+  type: string;
+  amount: number;
+  remainingAmount: number;
+  monthlyPayment: number;
+  maturityDate: string;
+}
+
+export const existingLoansFormSchema: DeepFormSchema<ExistingLoan> = {
   bank: {
     value: '',
     component: Input,
@@ -71,7 +81,6 @@ interface ExistingLoanFormProps {
 }
 
 const ExistingLoanFormComponent = ({ control }: ExistingLoanFormProps) => {
-  useSignals();
 
   return (
     <div className="space-y-3">

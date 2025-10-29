@@ -258,6 +258,25 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   }
 
   /**
+   * Получить вложенное поле по пути (например, "personalData.lastName")
+   */
+  private getFieldByPath(path: string): FormNode<any> | undefined {
+    const parts = path.split('.');
+    let current: FormNode<any> = this;
+
+    for (const part of parts) {
+      if (current instanceof GroupNode) {
+        current = current.fields.get(part as any);
+        if (!current) return undefined;
+      } else {
+        return undefined;
+      }
+    }
+
+    return current;
+  }
+
+  /**
    * Применить contextual валидаторы к полям
    * Используется для временной валидации (например, в validateForm)
    */
@@ -281,8 +300,8 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
     // Применяем валидаторы к полям
     for (const [fieldPath, fieldValidators] of validatorsByField) {
-      const fieldKey = fieldPath as keyof T;
-      const control = this.fields.get(fieldKey);
+      // Поддержка вложенных путей (например, "personalData.lastName")
+      const control = this.getFieldByPath(fieldPath);
 
       if (!control) {
         if (import.meta.env.DEV) {
@@ -297,13 +316,12 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       }
 
       const errors: any[] = [];
-      const context = new ValidationContextImpl(this as any, fieldKey, control);
+      const context = new ValidationContextImpl(this as any, fieldPath, control);
 
       for (const registration of fieldValidators) {
         if (registration.condition) {
-          const conditionField = this.fields.get(
-            registration.condition.fieldPath as keyof T
-          );
+          // Поддержка вложенных путей для условной валидации
+          const conditionField = this.getFieldByPath(registration.condition.fieldPath);
           if (conditionField) {
             const conditionValue = conditionField.value.value;
             const shouldApply = registration.condition.conditionFn(conditionValue);

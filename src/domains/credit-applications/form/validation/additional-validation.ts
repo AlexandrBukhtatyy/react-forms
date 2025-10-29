@@ -1,5 +1,4 @@
 import type { FieldPath } from '@/lib/forms/types';
-import type { CreditApplicationForm } from '../../types/credit-application';
 import {
   applyWhen,
   validate,
@@ -7,6 +6,7 @@ import {
   min,
   max,
 } from '@/lib/forms/validators';
+import type { CreditApplicationForm } from '../types/credit-application';
 
 /**
  * Схема валидации для Шага 5: Дополнительная информация
@@ -25,7 +25,7 @@ export const additionalValidation = (path: FieldPath<CreditApplicationForm>) => 
     path.hasProperty,
     (value) => value === true,
     (path) => {
-      validate(path.properties as any, (ctx) => {
+      validate(path.properties, (ctx) => {
         const properties = ctx.value();
         if (!properties || properties.length === 0) {
           return {
@@ -43,7 +43,7 @@ export const additionalValidation = (path: FieldPath<CreditApplicationForm>) => 
     path.hasExistingLoans,
     (value) => value === true,
     (path) => {
-      validate(path.existingLoans as any, (ctx) => {
+      validate(path.existingLoans, (ctx) => {
         const loans = ctx.value();
         if (!loans || loans.length === 0) {
           return {
@@ -61,7 +61,7 @@ export const additionalValidation = (path: FieldPath<CreditApplicationForm>) => 
     path.hasCoBorrower,
     (value) => value === true,
     (path) => {
-      validate(path.coBorrowers as any, (ctx) => {
+      validate(path.coBorrowers, (ctx) => {
         const coBorrowers = ctx.value();
         if (!coBorrowers || coBorrowers.length === 0) {
           return {

@@ -35,23 +35,25 @@ import type { ArrayNode } from '../core/nodes/array-node';
  * Мапит тип модели данных T на правильные типы узлов формы
  *
  * Рекурсивно определяет типы узлов на основе структуры данных:
- * - `T[K] extends Array<infer U>` где U - объект → `ArrayNode<U>`
+ * - `T[K] extends Array<infer U>` где U - объект → `ArrayNodeWithControls<U>`
  * - `T[K] extends Array<infer U>` где U - примитив → `FieldNode<T[K]>` (массив как обычное поле)
- * - `T[K] extends object` → `GroupNode<T[K]>` (вложенная форма)
+ * - `T[K] extends object` → `GroupNodeWithControls<T[K]>` (вложенная форма с типизацией)
  * - `T[K]` примитив → `FieldNode<T[K]>` (простое поле)
+ *
+ * Использует NonNullable для правильной обработки опциональных полей
  *
  * @template T - Тип модели данных формы
  */
 export type FormNodeControls<T> = {
-  [K in keyof T]: T[K] extends Array<infer U>
+  [K in keyof T]: NonNullable<T[K]> extends Array<infer U>
     ? U extends Record<string, any>
-      ? ArrayNode<U>          // Массив объектов → ArrayNode
-      : FieldNode<T[K]>       // Массив примитивов → FieldNode
-    : T[K] extends Record<string, any>
-    ? T[K] extends Date | File | Blob
-      ? FieldNode<T[K]>       // Специальные объекты → FieldNode
-      : GroupNode<T[K]>       // Обычный объект → GroupNode (вложенная форма)
-    : FieldNode<T[K]>;        // Примитивные типы → FieldNode
+      ? ArrayNodeWithControls<U>                    // Массив объектов → ArrayNodeWithControls
+      : FieldNode<T[K]>                             // Массив примитивов → FieldNode
+    : NonNullable<T[K]> extends Record<string, any>
+    ? NonNullable<T[K]> extends Date | File | Blob
+      ? FieldNode<T[K]>                             // Специальные объекты → FieldNode
+      : GroupNodeWithControls<NonNullable<T[K]>>   // Обычный объект → GroupNodeWithControls (рекурсивно!)
+    : FieldNode<T[K]>;                              // Примитивные типы → FieldNode
 };
 
 /**

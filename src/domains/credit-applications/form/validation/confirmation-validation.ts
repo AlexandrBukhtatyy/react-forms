@@ -1,65 +1,29 @@
 import type { FieldPath } from '@/lib/forms/types';
-import type { CreditApplicationForm } from '../../types/credit-application';
 import {
-  validate,
   validateAsync,
   required,
   minLength,
   maxLength,
   pattern,
 } from '@/lib/forms/validators';
+import type { CreditApplicationForm } from '../types/credit-application';
 
 /**
  * Схема валидации для Шага 6: Согласия и подтверждение
  */
 export const confirmationValidation = (path: FieldPath<CreditApplicationForm>) => {
   // Согласие на обработку персональных данных (обязательно)
-  required(path.agreePersonalData, { message: 'Необходимо согласие на обработку персональных данных' });
-  validate(path.agreePersonalData, (ctx) => {
-    if (ctx.value() !== true) {
-      return {
-        code: 'mustAgreePersonalData',
-        message: 'Согласие на обработку персональных данных обязательно',
-      };
-    }
-    return null;
-  });
+  // required() уже проверяет что boolean === true, дополнительный validate не нужен
+  required(path.agreePersonalData, { message: 'Согласие на обработку персональных данных обязательно' });
 
   // Согласие на получение кредитной истории (обязательно)
-  required(path.agreeCreditHistory, { message: 'Необходимо согласие на получение кредитной истории' });
-  validate(path.agreeCreditHistory, (ctx) => {
-    if (ctx.value() !== true) {
-      return {
-        code: 'mustAgreeCreditHistory',
-        message: 'Согласие на получение кредитной истории обязательно',
-      };
-    }
-    return null;
-  });
+  required(path.agreeCreditHistory, { message: 'Согласие на получение кредитной истории обязательно' });
 
   // Согласие с условиями кредитования (обязательно)
-  required(path.agreeTerms, { message: 'Необходимо согласие с условиями кредитования' });
-  validate(path.agreeTerms, (ctx) => {
-    if (ctx.value() !== true) {
-      return {
-        code: 'mustAgreeTerms',
-        message: 'Согласие с условиями кредитования обязательно',
-      };
-    }
-    return null;
-  });
+  required(path.agreeTerms, { message: 'Согласие с условиями кредитования обязательно' });
 
   // Подтверждение точности данных (обязательно)
-  required(path.confirmAccuracy, { message: 'Необходимо подтвердить точность введенных данных' });
-  validate(path.confirmAccuracy, (ctx) => {
-    if (ctx.value() !== true) {
-      return {
-        code: 'mustConfirmAccuracy',
-        message: 'Подтверждение точности данных обязательно',
-      };
-    }
-    return null;
-  });
+  required(path.confirmAccuracy, { message: 'Подтверждение точности данных обязательно' });
 
   // Согласие на маркетинговые рассылки (опциональное)
   // Это согласие не требует обязательного true, пользователь может отказаться

@@ -20,7 +20,7 @@ import type { FieldNode } from '../core/nodes/field-node';
  * Конфигурация поля
  */
 export interface FieldConfig<T = any> {
-  value: T;
+  value: T | null;
   component: ComponentType<any>;
   componentProps?: Record<string, any>;
   validators?: ValidatorFn<T>[];
@@ -49,6 +49,8 @@ export interface ArrayConfig<T extends Record<string, any>> {
  * - object -> DeepFormSchema<T> (группа)
  * - primitive -> FieldConfig<T> (поле)
  *
+ * Использует NonNullable для корректной обработки опциональных полей
+ *
  * @example
  * ```typescript
  * interface Form {
@@ -57,7 +59,7 @@ export interface ArrayConfig<T extends Record<string, any>> {
  *     city: string;
  *     street: string;
  *   };
- *   items: Array<{                   // → [DeepFormSchema<Item>]
+ *   items?: Array<{                  // → [DeepFormSchema<Item>] (опциональный)
  *     title: string;
  *     price: number;
  *   }>;
@@ -77,12 +79,14 @@ export interface ArrayConfig<T extends Record<string, any>> {
  * ```
  */
 export type DeepFormSchema<T> = {
-  [K in keyof T]: T[K] extends Array<infer U>
+  [K in keyof T]: NonNullable<T[K]> extends Array<infer U>
     ? U extends Record<string, any>
       ? [DeepFormSchema<U>]  // Массив объектов
       : FieldConfig<T[K]>     // Массив примитивов (как обычное поле)
-    : T[K] extends Record<string, any>
-    ? DeepFormSchema<T[K]> | FieldConfig<T[K]>  // Группа или поле с объектным типом
+    : NonNullable<T[K]> extends Record<string, any>
+    ? NonNullable<T[K]> extends Date | File | Blob
+      ? FieldConfig<T[K]>  // Специальные объекты
+      : DeepFormSchema<NonNullable<T[K]>> | FieldConfig<T[K]>  // Группа или поле с объектным типом
     : FieldConfig<T[K]>;  // Примитивное поле
 };
 
@@ -98,6 +102,8 @@ export type DeepFormSchema<T> = {
  * - Группы → DeepControls + GroupControlProxy
  * - Массивы → ArrayControlProxy
  *
+ * Использует NonNullable для корректной обработки опциональных полей
+ *
  * @example
  * ```typescript
  * const form = new FormStore(schema);
@@ -108,19 +114,21 @@ export type DeepFormSchema<T> = {
  * // Доступ к вложенной группе
  * form.controls.address.city.value;
  *
- * // Доступ к массиву
- * form.controls.items[0].title.value;
- * form.controls.items.length;
- * form.controls.items.push();
+ * // Доступ к опциональному массиву
+ * form.controls.items?.[0].title.value;
+ * form.controls.items?.length;
+ * form.controls.items?.push();
  * ```
  */
 export type DeepControls<T> = {
-  [K in keyof T]: T[K] extends Array<infer U>
+  [K in keyof T]: NonNullable<T[K]> extends Array<infer U>
     ? U extends Record<string, any>
       ? ArrayControlProxy<U>
       : FieldNode<T[K]>
-    : T[K] extends Record<string, any>
-    ? DeepControls<T[K]> & GroupControlProxy<T[K]>
+    : NonNullable<T[K]> extends Record<string, any>
+    ? NonNullable<T[K]> extends Date | File | Blob
+      ? FieldNode<T[K]>
+      : DeepControls<NonNullable<T[K]>> & GroupControlProxy<NonNullable<T[K]>>
     : FieldNode<T[K]>;
 };
 

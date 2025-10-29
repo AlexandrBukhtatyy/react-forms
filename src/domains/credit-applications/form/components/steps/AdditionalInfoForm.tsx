@@ -50,7 +50,7 @@ export function AdditionalInfoForm({ control }: AdditionalInfoFormProps) {
               <button
                 type="button"
                 className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => control.properties.push()}
+                onClick={() => control.properties?.push()}
               >
                 + Добавить имущество
               </button>
@@ -62,7 +62,7 @@ export function AdditionalInfoForm({ control }: AdditionalInfoFormProps) {
               itemLabel="Имущество"
             />
 
-            {control.properties.length.value === 0 && (
+            {control.properties?.length.value === 0 && (
               <div className="p-4 bg-gray-100 border border-gray-300 rounded text-center text-gray-600">
                 Нажмите "Добавить имущество" для добавления информации
               </div>
@@ -81,7 +81,7 @@ export function AdditionalInfoForm({ control }: AdditionalInfoFormProps) {
               <button
                 type="button"
                 className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => control.existingLoans.push()}
+                onClick={() => control.existingLoans?.push()}
               >
                 + Добавить кредит
               </button>
@@ -93,7 +93,7 @@ export function AdditionalInfoForm({ control }: AdditionalInfoFormProps) {
               itemLabel="Кредит"
             />
 
-            {control.existingLoans.length.value === 0 && (
+            {control.existingLoans?.length.value === 0 && (
               <div className="p-4 bg-gray-100 border border-gray-300 rounded text-center text-gray-600">
                 Нажмите "Добавить кредит" для добавления информации
               </div>
@@ -112,7 +112,7 @@ export function AdditionalInfoForm({ control }: AdditionalInfoFormProps) {
               <button
                 type="button"
                 className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={() => control.coBorrowers.push()}
+                onClick={() => control.coBorrowers?.push()}
               >
                 + Добавить созаемщика
               </button>
@@ -124,7 +124,7 @@ export function AdditionalInfoForm({ control }: AdditionalInfoFormProps) {
               itemLabel="Созаемщик"
             />
 
-            {control.coBorrowers.length.value === 0 && (
+            {control.coBorrowers?.length.value === 0 && (
               <div className="p-4 bg-gray-100 border border-gray-300 rounded text-center text-gray-600">
                 Нажмите "Добавить созаемщика" для добавления информации
                 <div className="mt-2 text-xs text-gray-500">

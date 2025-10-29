@@ -17,17 +17,21 @@ const FormFieldComponent: React.FC<FormFieldProps> = ({
 
   const Component = control.component;
 
-  // Конвертируем null в пустую строку для избежания React warning
-  const safeValue = control.value.value ?? '';
+  // Конвертируем null/undefined в безопасные значения
+  const isCheckbox = control.component === Checkbox;
+  const safeValue = control.value.value ?? (isCheckbox ? false : '');
 
   return (
     <div className={className}>
-      {control.componentProps.label && control.component !== Checkbox && <label className="block mb-1 text-sm font-medium">{control.componentProps.label}</label>}
+      {control.componentProps.label && !isCheckbox && <label className="block mb-1 text-sm font-medium">{control.componentProps.label}</label>}
 
       <Component
         value={safeValue}
         onChange={(e: any) => {
-          control.setValue(e?.target?.value ?? e);
+          // Для чекбоксов e - это boolean напрямую
+          // Для обычных input e - это event с target.value
+          const newValue = isCheckbox ? e : (e?.target?.value ?? e);
+          control.setValue(newValue);
         }}
         onBlur={() => {
           control.markAsTouched();

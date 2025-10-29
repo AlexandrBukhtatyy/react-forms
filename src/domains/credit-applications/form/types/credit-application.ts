@@ -2,86 +2,17 @@
 // Базовые типы
 // ============================================================================
 
+import type { Address } from "../components/nested-forms/AddressForm";
+import type { CoBorrower } from "../components/nested-forms/CoBorrowerForm";
+import type { ExistingLoan } from "../components/nested-forms/ExistingLoanForm";
+import type { PassportData } from "../components/nested-forms/PassportDataForm";
+import type { PersonalData } from "../components/nested-forms/PersonalDataForm";
+import type { Property } from "../components/nested-forms/PropertyForm";
+
 export type LoanType = 'consumer' | 'mortgage' | 'car' | 'business' | 'refinancing';
 export type EmploymentStatus = 'employed' | 'selfEmployed' | 'unemployed' | 'retired' | 'student';
 export type MaritalStatus = 'single' | 'married' | 'divorced' | 'widowed';
-export type PropertyType = 'apartment' | 'house' | 'car' | 'land' | 'none';
 export type EducationLevel = 'secondary' | 'specialized' | 'higher' | 'postgraduate';
-
-// ============================================================================
-// Вложенные интерфейсы
-// ============================================================================
-
-/**
- * Личные данные (вложенная форма)
- */
-export interface PersonalData {
-  lastName: string;
-  firstName: string;
-  middleName: string;
-  birthDate: string;
-  birthPlace: string;
-  gender: 'male' | 'female';
-}
-
-/**
- * Паспортные данные (вложенная форма)
- */
-export interface PassportData {
-  series: string;
-  number: string;
-  issueDate: string;
-  issuedBy: string;
-  departmentCode: string;
-}
-
-/**
- * Адрес (вложенная форма)
- */
-export interface Address {
-  region: string;
-  city: string;
-  street: string;
-  house: string;
-  apartment?: string;
-  postalCode: string;
-}
-
-// ============================================================================
-// Элементы массивов
-// ============================================================================
-
-export interface PropertyItem {
-  id?: string;
-  type: PropertyType;
-  description: string;
-  estimatedValue: number;
-  hasEncumbrance: boolean;
-}
-
-export interface ExistingLoan {
-  id?: string;
-  bank: string;
-  type: string;
-  amount: number;
-  remainingAmount: number;
-  monthlyPayment: number;
-  maturityDate: string;
-}
-
-export interface CoBorrower {
-  id?: string;
-  personalData: {
-    lastName: string;
-    firstName: string;
-    middleName: string;
-    birthDate: string;
-  };
-  phone: string;
-  email: string;
-  relationship: string;
-  monthlyIncome: number;
-}
 
 // ============================================================================
 // Основной интерфейс формы
@@ -140,7 +71,7 @@ export interface CreditApplicationForm {
   dependents: number;
   education: EducationLevel;
   hasProperty: boolean;
-  properties?: PropertyItem[];
+  properties?: Property[];
   hasExistingLoans: boolean;
   existingLoans?: ExistingLoan[];
   hasCoBorrower: boolean;

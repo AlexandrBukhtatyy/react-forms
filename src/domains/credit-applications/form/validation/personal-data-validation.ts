@@ -1,5 +1,4 @@
 import type { FieldPath } from '@/lib/forms/types';
-import type { CreditApplicationForm } from '../../types/credit-application';
 import {
   validate,
   required,
@@ -7,6 +6,7 @@ import {
   maxLength,
   pattern,
 } from '@/lib/forms/validators';
+import type { CreditApplicationForm } from '../types/credit-application';
 
 /**
  * Схема валидации для Шага 2: Персональные данные

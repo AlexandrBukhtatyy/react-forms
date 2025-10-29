@@ -119,10 +119,17 @@ export type ConditionFn<T = any> = (value: T) => boolean;
 /**
  * FieldPath предоставляет типобезопасный доступ к путям полей формы
  *
+ * Рекурсивно обрабатывает вложенные объекты для поддержки вложенных форм.
+ *
  * Использование:
  * ```typescript
  * const validation = (path: FieldPath<MyForm>) => {
  *   required(path.email, { message: 'Email обязателен' });
+ *
+ *   // Вложенные объекты
+ *   required(path.registrationAddress.city);
+ *   minLength(path.registrationAddress.street, 3);
+ *
  *   applyWhen(
  *     path.loanType,
  *     (type) => type === 'mortgage',
@@ -134,7 +141,13 @@ export type ConditionFn<T = any> = (value: T) => boolean;
  * ```
  */
 export type FieldPath<T> = {
-  [K in keyof T]: FieldPathNode<T, T[K], K>;
+  [K in keyof T]: NonNullable<T[K]> extends Array<any>
+    ? FieldPathNode<T, T[K], K>  // Массивы - не рекурсим (обрабатываются отдельно)
+    : NonNullable<T[K]> extends Record<string, any>
+    ? NonNullable<T[K]> extends Date | File | Blob
+      ? FieldPathNode<T, T[K], K>  // Специальные объекты - не рекурсим
+      : FieldPathNode<T, T[K], K> & FieldPath<NonNullable<T[K]>>  // Обычные объекты - рекурсия!
+    : FieldPathNode<T, T[K], K>;  // Примитивы
 };
 
 /**

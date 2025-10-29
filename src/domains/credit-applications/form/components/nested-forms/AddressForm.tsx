@@ -1,67 +1,78 @@
 import { memo } from 'react';
-import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, InputMask } from '@/lib/forms/components';
+import type { DeepFormSchema } from '@/lib/forms';
 
+/**
+ * Адрес (вложенная форма)
+ */
+export interface Address {
+  region: string;
+  city: string;
+  street: string;
+  house: string;
+  apartment?: string;
+  postalCode: string;
+}
 
 /**
  * Переиспользуемая схема формы
  */
-export const addressFormSchema = {
-      region: {
-        value: undefined,
-        component: Input,
-        componentProps: {
-          label: 'Регион',
-          placeholder: 'Введите регион',
-        },
-      },
+export const addressFormSchema: DeepFormSchema<Address> = {
+  region: {
+    value: '',
+    component: Input,
+    componentProps: {
+      label: 'Регион',
+      placeholder: 'Введите регион',
+    },
+  },
 
-      city: {
-        value: undefined,
-        component: Input,
-        componentProps: {
-          label: 'Город',
-          placeholder: 'Введите город',
-        },
-      },
+  city: {
+    value: '',
+    component: Input,
+    componentProps: {
+      label: 'Город',
+      placeholder: 'Введите город',
+    },
+  },
 
-      street: {
-        value: undefined,
-        component: Input,
-        componentProps: {
-          label: 'Улица',
-          placeholder: 'Введите улицу',
-        },
-      },
+  street: {
+    value: '',
+    component: Input,
+    componentProps: {
+      label: 'Улица',
+      placeholder: 'Введите улицу',
+    },
+  },
 
-      house: {
-        value: undefined,
-        component: Input,
-        componentProps: {
-          label: 'Дом',
-          placeholder: '№',
-        },
-      },
+  house: {
+    value: '',
+    component: Input,
+    componentProps: {
+      label: 'Дом',
+      placeholder: '№',
+    },
+  },
 
-      apartment: {
-        value: undefined,
-        component: Input,
-        componentProps: {
-          label: 'Квартира',
-          placeholder: '№',
-        },
-      },
+  apartment: {
+    value: '',
+    component: Input,
+    componentProps: {
+      label: 'Квартира',
+      placeholder: '№',
+    },
+  },
 
-      postalCode: {
-        value: undefined,
-        component: InputMask,
-        componentProps: {
-          label: 'Индекс',
-          placeholder: '000000',
-          mask: '999999',
-        },
-      },
+  postalCode: {
+    value: '',
+    component: InputMask,
+    componentProps: {
+      label: 'Индекс',
+      placeholder: '000000',
+      mask: '999999',
+    },
+  },
 }
 
 interface AddressFormProps {
@@ -70,7 +81,6 @@ interface AddressFormProps {
 }
 
 const AddressFormComponent = ({ control }: AddressFormProps) => {
-  useSignals();
 
   return (
     <div className="space-y-4">

@@ -52,6 +52,9 @@ export async function validateForm<T extends Record<string, any>>(
   // Начинаем регистрацию валидаторов
   ValidationRegistry.beginRegistration();
 
+  let tempValidators: any[] = [];
+  let cancelled = false;
+
   try {
     // Регистрируем валидаторы из схемы
     const path = createFieldPath<T>();
@@ -59,10 +62,11 @@ export async function validateForm<T extends Record<string, any>>(
 
     // Получаем валидаторы БЕЗ сохранения в реестр
     const context = ValidationRegistry.getCurrentContext();
-    const tempValidators = context?.getValidators() || [];
+    tempValidators = context?.getValidators() || [];
 
     // Отменяем регистрацию (не сохраняем в глобальный реестр)
     ValidationRegistry.cancelRegistration();
+    cancelled = true;
 
     // Очищаем текущие ошибки полей
     form.clearErrors();
@@ -83,8 +87,10 @@ export async function validateForm<T extends Record<string, any>>(
     // Проверяем результат
     return form.valid.value;
   } catch (error) {
-    // В случае ошибки тоже отменяем регистрацию
-    ValidationRegistry.cancelRegistration();
+    // В случае ошибки отменяем регистрацию только если еще не отменили
+    if (!cancelled) {
+      ValidationRegistry.cancelRegistration();
+    }
     throw error;
   }
 }

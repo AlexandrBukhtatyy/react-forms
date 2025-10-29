@@ -1,14 +1,20 @@
 import { memo } from 'react';
-import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, InputMask, Textarea } from '@/lib/forms/components';
+import type { DeepFormSchema } from '@/lib/forms';
 
-interface PassportDataFormProps {
-  // GroupProxy для вложенной формы passportData (используем any для обхода ограничений TypeScript)
-  control: any;
+/**
+ * Паспортные данные (вложенная форма)
+ */
+export interface PassportData {
+  series: string;
+  number: string;
+  issueDate: string;
+  issuedBy: string;
+  departmentCode: string;
 }
 
-export const passportDataSchema = {
+export const passportDataSchema: DeepFormSchema<PassportData> = {
   series: {
     value: '',
     component: InputMask,
@@ -59,8 +65,13 @@ export const passportDataSchema = {
   },
 }
 
+
+interface PassportDataFormProps {
+  // GroupProxy для вложенной формы passportData (используем any для обхода ограничений TypeScript)
+  control: any;
+}
+
 const PassportDataFormComponent = ({ control }: PassportDataFormProps) => {
-  useSignals();
 
   return (
     <div className="space-y-4">

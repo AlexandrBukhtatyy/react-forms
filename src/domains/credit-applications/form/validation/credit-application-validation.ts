@@ -1,5 +1,6 @@
 import type { FieldPath, ValidationSchemaFn } from '@/lib/forms/types';
 import type { CreditApplicationForm } from '../types/credit-application';
+import { apply } from '@/lib/forms/validators';
 
 // Импортируем все схемы шагов
 import { basicInfoValidation } from './basic-info-validation';
@@ -24,26 +25,16 @@ import { confirmationValidation } from './confirmation-validation';
 const creditApplicationValidation: ValidationSchemaFn<CreditApplicationForm> = (
   path: FieldPath<CreditApplicationForm>
 ) => {
-  // Применяем валидацию всех шагов
-  basicInfoValidation(path);
-  personalDataValidation(path);
-  contactInfoValidation(path);
-  employmentValidation(path);
-  additionalValidation(path);
-  confirmationValidation(path);
+  // Композиция validation схем через apply (схоже с applyWhen, но без условия)
+  apply(path, basicInfoValidation);
+  apply(path, personalDataValidation);
+  apply(path, contactInfoValidation);
+  apply(path, employmentValidation);
+  apply(path, additionalValidation);
+  apply(path, confirmationValidation);
 };
 
 export default creditApplicationValidation;
-
-// Экспортируем также отдельные схемы для переиспользования
-export {
-  basicInfoValidation,
-  personalDataValidation,
-  contactInfoValidation,
-  employmentValidation,
-  additionalValidation,
-  confirmationValidation,
-};
 
 // Мапа для удобного доступа (если понадобится валидировать конкретный шаг отдельно)
 export const STEP_VALIDATIONS = {

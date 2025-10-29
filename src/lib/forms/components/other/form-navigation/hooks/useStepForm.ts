@@ -31,9 +31,6 @@ export interface StepFormConfig<T extends Record<string, any>> {
  * Результат хука useStepForm
  */
 export interface UseStepFormResult<T extends Record<string, any>> {
-  /** Экземпляр формы */
-  form: GroupNodeWithControls<T>;
-
   /** Текущий шаг (1-based) */
   currentStep: number;
 
@@ -98,10 +95,9 @@ export interface UseStepFormResult<T extends Record<string, any>> {
  * ```
  */
 export function useStepForm<T extends Record<string, any>>(
-  createForm: () => GroupNodeWithControls<T>,
+  form: GroupNodeWithControls<T>,
   config: StepFormConfig<T>
 ): UseStepFormResult<T> {
-  const [form] = useState(createForm);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
 
@@ -204,7 +200,6 @@ export function useStepForm<T extends Record<string, any>>(
   // ============================================================================
 
   return {
-    form,
     currentStep,
     completedSteps,
     validateCurrentStep,

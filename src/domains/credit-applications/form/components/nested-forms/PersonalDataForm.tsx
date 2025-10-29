@@ -1,10 +1,25 @@
 import { memo } from 'react';
-import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, RadioGroup } from '@/lib/forms/components';
 import { GENDERS } from '../../constants/credit-application';
+import type { DeepFormSchema } from '@/lib/forms';
 
-export const personalDataSchema = {
+/**
+ * Личные данные
+ */
+export interface PersonalData {
+  lastName: string;
+  firstName: string;
+  middleName: string;
+  birthDate: string;
+  birthPlace: string;
+  gender: 'male' | 'female';
+}
+
+/**
+ * Схема формы с личными данными
+ */
+export const personalDataSchema: DeepFormSchema<PersonalData> = {
   lastName: {
     value: '',
     component: Input,
@@ -66,8 +81,6 @@ interface PersonalDataFormProps {
 }
 
 const PersonalDataFormComponent = ({ control }: PersonalDataFormProps) => {
-  useSignals();
-
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-4">

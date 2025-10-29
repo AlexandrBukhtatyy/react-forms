@@ -1,6 +1,4 @@
-import type { CreditApplicationForm } from '../../types/credit-application';
 import type { FieldPath } from '@/lib/forms/types';
-
 import {
   applyWhen,
   validateTree,
@@ -10,6 +8,7 @@ import {
   minLength,
   maxLength,
 } from '@/lib/forms/validators';
+import type { CreditApplicationForm } from '../types/credit-application';
 
 /**
  * Схема валидации для Шага 1: Основная информация о кредите
@@ -38,10 +37,10 @@ export const basicInfoValidation = (path: FieldPath<CreditApplicationForm>) => {
     (type) => type === 'mortgage',
     (path) => {
       required(path.propertyValue, { message: 'Укажите стоимость недвижимости' });
-      min(path.propertyValue as any, 1000000, { message: 'Минимальная стоимость: 1 000 000 ₽' });
+      min(path.propertyValue, 1000000, { message: 'Минимальная стоимость: 1 000 000 ₽' });
 
       required(path.initialPayment, { message: 'Укажите первоначальный взнос' });
-      min(path.initialPayment as any, 0);
+      min(path.initialPayment, 0);
 
       // Cross-field валидация
       validateTree(
@@ -72,10 +71,10 @@ export const basicInfoValidation = (path: FieldPath<CreditApplicationForm>) => {
       required(path.carBrand, { message: 'Укажите марку автомобиля' });
       required(path.carModel, { message: 'Укажите модель автомобиля' });
       required(path.carYear, { message: 'Укажите год выпуска' });
-      min(path.carYear as any, 2000, { message: 'Год выпуска не ранее 2000' });
+      min(path.carYear, 2000, { message: 'Год выпуска не ранее 2000' });
 
       required(path.carPrice, { message: 'Укажите стоимость автомобиля' });
-      min(path.carPrice as any, 300000, { message: 'Минимальная стоимость: 300 000 ₽' });
+      min(path.carPrice, 300000, { message: 'Минимальная стоимость: 300 000 ₽' });
     }
   );
 };

@@ -1,9 +1,19 @@
 import { memo } from 'react';
-import { useSignals } from '@preact/signals-react/runtime';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Checkbox, Input, Select, Textarea } from '@/lib/forms/components';
+import type { DeepFormSchema } from '@/lib/forms';
 
-export const propertyFormSchema = {
+export type PropertyType = 'apartment' | 'house' | 'car' | 'land' | 'none';
+
+export interface Property {
+  id?: string;
+  type: PropertyType;
+  description: string;
+  estimatedValue: number;
+  hasEncumbrance: boolean;
+}
+
+export const propertyFormSchema: DeepFormSchema<Property> = {
   type: {
     value: 'apartment',
     component: Select,
@@ -55,8 +65,6 @@ interface PropertyFormProps {
 }
 
 const PropertyFormComponent = ({ control }: PropertyFormProps) => {
-  useSignals();
-
   return (
     <div className="space-y-3">
       <FormField control={control.type} />

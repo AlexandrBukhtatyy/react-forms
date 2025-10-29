@@ -44,6 +44,7 @@ export class FieldNode<T = any> extends FormNode<T> {
   private _dirty: Signal<boolean>;
   private _status: Signal<FieldStatus>;
   private _pending: Signal<boolean>;
+  private _componentProps: Signal<Record<string, any>>;
 
   // ============================================================================
   // Публичные computed signals
@@ -57,6 +58,7 @@ export class FieldNode<T = any> extends FormNode<T> {
   public readonly pending: ReadonlySignal<boolean>;
   public readonly errors: ReadonlySignal<ValidationError[]>;
   public readonly status: ReadonlySignal<FieldStatus>;
+  public readonly componentProps: ReadonlySignal<Record<string, any>>;
 
   /**
    * Вычисляемое свойство: нужно ли показывать ошибку
@@ -77,7 +79,6 @@ export class FieldNode<T = any> extends FormNode<T> {
   private validateDebounceTimer?: ReturnType<typeof setTimeout>;
 
   public readonly component: FieldConfig<T>['component'];
-  public readonly componentProps: Record<string, any>;
 
   // ============================================================================
   // Конструктор
@@ -93,7 +94,6 @@ export class FieldNode<T = any> extends FormNode<T> {
     this.updateOn = config.updateOn || 'change';
     this.debounceMs = config.debounce || 0;
     this.component = config.component;
-    this.componentProps = config.componentProps || {};
 
     // Инициализация приватных сигналов
     this._value = signal(config.value);
@@ -102,6 +102,7 @@ export class FieldNode<T = any> extends FormNode<T> {
     this._dirty = signal(false);
     this._status = signal<FieldStatus>(config.disabled ? 'disabled' : 'valid');
     this._pending = signal(false);
+    this._componentProps = signal(config.componentProps || {});
 
     // Создание computed signals
     this.value = computed(() => this._value.value);
@@ -112,6 +113,7 @@ export class FieldNode<T = any> extends FormNode<T> {
     this.pending = computed(() => this._pending.value);
     this.errors = computed(() => this._errors.value);
     this.status = computed(() => this._status.value);
+    this.componentProps = computed(() => this._componentProps.value);
     this.shouldShowError = computed(
       () =>
         this._status.value === 'invalid' &&
@@ -279,5 +281,23 @@ export class FieldNode<T = any> extends FormNode<T> {
   enable(): void {
     this._status.value = 'valid';
     this.validate();
+  }
+
+  /**
+   * Обновляет свойства компонента (например, опции для Select)
+   *
+   * @example
+   * ```typescript
+   * // Обновление опций для Select после загрузки справочников
+   * form.registrationAddress.city.updateComponentProps({
+   *   options: cities
+   * });
+   * ```
+   */
+  updateComponentProps(props: Partial<Record<string, any>>): void {
+    this._componentProps.value = {
+      ...this._componentProps.value,
+      ...props,
+    };
   }
 }

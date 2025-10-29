@@ -22,6 +22,7 @@ import type {
 
 /**
  * Зарегистрировать кастомный синхронный валидатор для поля
+ * Поддерживает опциональные поля
  *
  * @example
  * ```typescript
@@ -41,11 +42,12 @@ import type {
  * ```
  */
 export function validate<TForm = any, TField = any>(
-  fieldPath: FieldPathNode<TForm, TField>,
+  fieldPath: FieldPathNode<TForm, TField> | undefined,
   validatorFn: ContextualValidatorFn<TForm, TField>,
   options?: ValidateOptions
 ): void {
-  const path = extractPath(fieldPath);
+  if (!fieldPath) return; // Защита от undefined fieldPath
+  const path = extractPath(fieldPath as any);
   ValidationRegistry.registerSync(path, validatorFn, options);
 }
 
@@ -173,12 +175,15 @@ export function applyWhen<TForm = any, TField = any>(
 
 /**
  * Адаптер для required валидатора
+ * Поддерживает опциональные поля (TField | undefined)
  */
 export function required<TForm = any, TField = any>(
-  fieldPath: FieldPathNode<TForm, TField>,
+  fieldPath: FieldPathNode<TForm, TField> | undefined,
   options?: ValidateOptions
 ): void {
-  validate(fieldPath, (ctx) => {
+  if (!fieldPath) return; // Защита от undefined fieldPath
+
+  validate(fieldPath as any, (ctx) => {
     const value = ctx.value();
 
     // Проверка на пустое значение
@@ -205,13 +210,16 @@ export function required<TForm = any, TField = any>(
 
 /**
  * Адаптер для min валидатора
+ * Поддерживает опциональные поля (number | undefined)
  */
-export function min<TForm = any>(
-  fieldPath: FieldPathNode<TForm, number>,
+export function min<TForm = any, TField extends number | undefined = number>(
+  fieldPath: FieldPathNode<TForm, TField> | undefined,
   minValue: number,
   options?: ValidateOptions
 ): void {
-  validate(fieldPath, (ctx) => {
+  if (!fieldPath) return; // Защита от undefined fieldPath
+
+  validate(fieldPath as any, (ctx) => {
     const value = ctx.value();
 
     if (value === null || value === undefined) {
@@ -232,13 +240,16 @@ export function min<TForm = any>(
 
 /**
  * Адаптер для max валидатора
+ * Поддерживает опциональные поля (number | undefined)
  */
-export function max<TForm = any>(
-  fieldPath: FieldPathNode<TForm, number>,
+export function max<TForm = any, TField extends number | undefined = number>(
+  fieldPath: FieldPathNode<TForm, TField> | undefined,
   maxValue: number,
   options?: ValidateOptions
 ): void {
-  validate(fieldPath, (ctx) => {
+  if (!fieldPath) return; // Защита от undefined fieldPath
+
+  validate(fieldPath as any, (ctx) => {
     const value = ctx.value();
 
     if (value === null || value === undefined) {
@@ -259,13 +270,16 @@ export function max<TForm = any>(
 
 /**
  * Адаптер для minLength валидатора
+ * Поддерживает опциональные поля (string | undefined)
  */
-export function minLength<TForm = any>(
-  fieldPath: FieldPathNode<TForm, string>,
+export function minLength<TForm = any, TField extends string | undefined = string>(
+  fieldPath: FieldPathNode<TForm, TField> | undefined,
   minLen: number,
   options?: ValidateOptions
 ): void {
-  validate(fieldPath, (ctx) => {
+  if (!fieldPath) return; // Защита от undefined fieldPath
+
+  validate(fieldPath as any, (ctx) => {
     const value = ctx.value();
 
     if (!value) {
@@ -286,13 +300,16 @@ export function minLength<TForm = any>(
 
 /**
  * Адаптер для maxLength валидатора
+ * Поддерживает опциональные поля (string | undefined)
  */
-export function maxLength<TForm = any>(
-  fieldPath: FieldPathNode<TForm, string>,
+export function maxLength<TForm = any, TField extends string | undefined = string>(
+  fieldPath: FieldPathNode<TForm, TField> | undefined,
   maxLen: number,
   options?: ValidateOptions
 ): void {
-  validate(fieldPath, (ctx) => {
+  if (!fieldPath) return; // Защита от undefined fieldPath
+
+  validate(fieldPath as any, (ctx) => {
     const value = ctx.value();
 
     if (!value) {
@@ -313,14 +330,17 @@ export function maxLength<TForm = any>(
 
 /**
  * Адаптер для email валидатора
+ * Поддерживает опциональные поля (string | undefined)
  */
-export function email<TForm = any>(
-  fieldPath: FieldPathNode<TForm, string>,
+export function email<TForm = any, TField extends string | undefined = string>(
+  fieldPath: FieldPathNode<TForm, TField> | undefined,
   options?: ValidateOptions
 ): void {
+  if (!fieldPath) return; // Защита от undefined fieldPath
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  validate(fieldPath, (ctx) => {
+  validate(fieldPath as any, (ctx) => {
     const value = ctx.value();
 
     if (!value) {
@@ -341,13 +361,16 @@ export function email<TForm = any>(
 
 /**
  * Адаптер для pattern валидатора
+ * Поддерживает опциональные поля (string | undefined)
  */
-export function pattern<TForm = any>(
-  fieldPath: FieldPathNode<TForm, string>,
+export function pattern<TForm = any, TField extends string | undefined = string>(
+  fieldPath: FieldPathNode<TForm, TField> | undefined,
   regex: RegExp,
   options?: ValidateOptions
 ): void {
-  validate(fieldPath, (ctx) => {
+  if (!fieldPath) return; // Защита от undefined fieldPath
+
+  validate(fieldPath as any, (ctx) => {
     const value = ctx.value();
 
     if (!value) {
@@ -364,4 +387,44 @@ export function pattern<TForm = any>(
 
     return null;
   });
+}
+
+// ============================================================================
+// apply - Применить validation schema (композиция схем)
+// ============================================================================
+
+/**
+ * Применить другую validation schema внутри текущей
+ *
+ * Позволяет композировать validation схемы, используя их повторно.
+ * Контракты схожи с applyWhen, но без условия.
+ *
+ * @example
+ * ```typescript
+ * // Базовые схемы валидации
+ * const emailValidation = (path: FieldPath<MyForm>) => {
+ *   required(path.email, { message: 'Email обязателен' });
+ *   email(path.email);
+ * };
+ *
+ * const passwordValidation = (path: FieldPath<MyForm>) => {
+ *   required(path.password);
+ *   minLength(path.password, 8);
+ * };
+ *
+ * // Композиция схем через apply
+ * const authValidation = (path: FieldPath<MyForm>) => {
+ *   apply(path, emailValidation);
+ *   apply(path, passwordValidation);
+ * };
+ *
+ * // Применение к форме
+ * form.applyValidationSchema(authValidation);
+ * ```
+ */
+export function apply<TForm = any>(
+  path: FieldPath<TForm>,
+  validationFn: (path: FieldPath<TForm>) => void
+): void {
+  validationFn(path);
 }

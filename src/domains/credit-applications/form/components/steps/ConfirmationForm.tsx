@@ -7,7 +7,14 @@ interface ConfirmationFormProps {
 }
 
 export function ConfirmationForm({ control }: ConfirmationFormProps) {
-  useSignals();
+
+  // Debug: проверяем состояние чекбокса
+  console.log('agreeTerms состояние:', {
+    value: control.agreeTerms.value.value,
+    touched: control.agreeTerms.touched.value,
+    errors: control.agreeTerms.errors.value,
+    shouldShowError: control.agreeTerms.shouldShowError.value,
+  });
 
   return (
     <div className="space-y-6">
