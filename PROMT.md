@@ -1,85 +1,92 @@
-# Проблема: Разделение логики шагов и валидации формы
+# Задача: Реактивное поведение форм с подпиской на изменения
 
 ## Контекст
 
-**Текущая реализация**: [CreditApplicationForm](src/domains/credit-applications/form/components/CreditApplicationForm.tsx)
+Проект использует архитектуру на основе **@preact/signals-react** для управления состоянием форм.
 
-В файле [create-credit-application-form.ts:37-45](src/domains/credit-applications/form/schemas/create-credit-application-form.ts#L37-L45) состояние шагов (`currentStep`, `completedSteps`) хранится внутри `GroupNode` формы как обычные поля.
+### Ключевые файлы архитектуры:
+- `src/lib/forms/core/nodes/field-node.ts` - узел отдельного поля с реактивным состоянием
+- `src/lib/forms/core/nodes/group-node.ts` - узел группы полей (форма/подформа)
+- `src/lib/forms/core/nodes/array-node.ts` - узел для массивов форм
+- `src/lib/forms/types/group-node-proxy.ts` - типизация с Proxy для прямого доступа к полям
 
+### Текущая реализация:
+- ✅ Поля формы хранят состояние в Signal (`value`, `errors`, `touched`, `dirty`, `status`)
+- ✅ Computed signals для производных значений (`valid`, `invalid`, `shouldShowError`)
+- ✅ Validation Schema API с контекстной валидацией
+- ✅ Рекурсивная типизация для вложенных форм и массивов
+- ✅ Метод `updateComponentProps()` для динамического обновления пропсов
+
+### Текущие возможности подписки:
 ```typescript
-const schema = {
-  currentStep: { value: 1, component: () => null },
-  completedSteps: { value: [] as number[], component: () => null },
-  // ... остальные поля формы
-}
+// Реактивность через computed signals
+const isValid = computed(() => form.email.valid.value && form.password.valid.value);
+
+// Использование в React компонентах (автоматическая подписка)
+<div>{form.email.value.value}</div>
+<div>{form.email.errors.value.map(err => err.message)}</div>
 ```
 
-## Проблемы текущего подхода
+## Задача
 
-1. **Нарушение Single Responsibility Principle**:
-   - `GroupNode` отвечает за данные формы И за UI-состояние навигации
-   - Смешение доменной модели (данные заявки) с UI-состоянием (шаги)
+Проанализируй реализованный подход и **предложи варианты** для описания сложного поведения формы с подпиской на изменения полей.
 
-2. **Сложность переиспользования**:
-   - Невозможно использовать форму без логики шагов
-   - Схему валидации нельзя применить к отдельному шагу
+### Требуемые сценарии:
 
-3. **Типизация**:
-   - `currentStep`/`completedSteps` попадают в тип `CreditApplicationForm`
-   - Эти поля отправляются на сервер при `getValue()`, хотя они не являются частью доменной модели
+1. **Cross-field зависимости**
+   - Поле B должно обновляться при изменении поля A
+   - Пример: при изменении `sameAsRegistration` копировать значения из `registrationAddress` в `residenceAddress`
 
-## Требования к решению
+2. **Условное отображение/скрытие полей**
+   - Показывать `propertyValue` только если `loanType === 'mortgage'`
+   - Динамически enable/disable полей в зависимости от других полей
 
-### 1. Разделение ответственности
-- **GroupNode** должен содержать только данные формы (поля заявки)
-- **Состояние шагов** должно храниться отдельно (React state, отдельный Store, или специальный класс)
+3. **Автозаполнение и каскадные изменения**
+   - При выборе города автоматически заполнять регион
+   - При изменении суммы кредита пересчитывать ежемесячный платеж
 
-### 2. Валидация по шагам
-Нужна возможность создавать отдельные схемы валидации для каждого шага и передавать их в метод `validate()`:
+4. **Валидация с зависимостями**
+   - `initialPayment` не должен превышать `propertyValue`
+   - `workExperienceCurrent` не должен превышать `workExperienceTotal`
 
-```typescript
-// Схемы валидации для каждого шага
-const step1ValidationSchema = (path: FieldPath<CreditApplicationForm>) => {
-  required(path.loanType);
-  required(path.loanAmount);
-  // ... только поля шага 1
-};
+5. **Динамическое обновление справочников**
+   - При изменении страны обновлять список городов в Select
+   - При изменении категории обновлять список подкатегорий
 
-const step2ValidationSchema = (path: FieldPath<CreditApplicationForm>) => {
-  required(path.personalData.firstName);
-  required(path.passportData.series);
-  // ... только поля шага 2
-};
+### Ожидаемый результат:
 
-const fullValidationSchema = (path: FieldPath<CreditApplicationForm>) => {
-  // Вся валидация для всех шагов
-  step1ValidationSchema(path);
-  step2ValidationSchema(path);
-  // ...
-};
+Предложи **несколько вариантов** (минимум 2-3) API/паттернов для реализации таких сценариев:
 
-// Использование
-await form.validate(step1ValidationSchema); // Валидация только шага 1
-await form.validate(fullValidationSchema);  // Валидация всей формы при submit
-```
+1. **Вариант 1**: Декларативный подход (например, через конфигурацию)
+2. **Вариант 2**: Императивный подход (например, через хуки/эффекты)
+3. **Вариант 3**: Гибридный подход
 
-### 3. Адаптация существующих компонентов
-- Компоненты `NavigationButtons`, `StepIndicator` будут адаптированы под новую архитектуру
-- Они должны работать с новым API управления шагами (React state / отдельный Store)
-- Минимальные изменения в компонентах шагов (BasicInfoForm, PersonalInfoForm, и т.д.)
+Для каждого варианта опиши:
+- ✅ Как будет выглядеть API использования (код примеров)
+- ✅ Где будет размещаться логика (в FieldNode, GroupNode, или отдельно)
+- ✅ Как будет работать подписка на изменения (effect, computed, watch и т.д.)
+- ✅ Преимущества и недостатки подхода
+- ✅ Совместимость с текущей архитектурой
 
-## Ожидаемые решения
+### Важные ограничения:
 
-Предложи **2-3 варианта архитектуры**, каждый с:
+- ❌ НЕ ломать существующий API форм
+- ✅ Использовать Signals для реактивности (не добавлять сторонние библиотеки)
+- ✅ Сохранять типобезопасность TypeScript
+- ✅ Поддерживать вложенные формы и массивы
+- ✅ Минимизировать ре-рендеры React компонентов
 
-1. **Описание подхода** - как разделить состояние шагов и формы
-2. **Пример кода** - как будет выглядеть использование
-3. **Валидация по шагам** - как валидировать отдельный шаг
-4. **Плюсы/минусы** - trade-offs каждого решения
-5. **Миграционный путь** - как перейти от текущей реализации
+### Дополнительно:
 
-## Дополнительный контекст
+Если возможно, предложи также:
+- Как интегрировать с существующим Validation Schema API
+- Как избежать циклических зависимостей
+- Как тестировать такое поведение
+- Примеры использования для реального кейса из `CreditApplicationForm`
 
-- **Архитектура**: GroupNode, FieldNode, ValidationSchema (см. [CLAUDE.md](CLAUDE.md))
-- **Компоненты**: [NavigationButtons.tsx](src/lib/forms/components/other/NavigationButtons.tsx), [StepIndicator.tsx](src/lib/forms/components/other/StepIndicator.tsx)
-- **Validation Schema**: [credit-application-validation.ts](src/domains/credit-applications/form/validation/credit-application-validation.ts)
+## Ссылки на примеры
+
+Реальный пример формы: `src/domains/credit-applications/form/`
+- Модель: `models/create-credit-application-form.ts`
+- Валидация: `validation/credit-application-validation.ts`
+- Компоненты: `components/CreditApplicationForm.tsx`
