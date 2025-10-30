@@ -46,8 +46,6 @@ export { Form } from './components/core/form';
 // ============================================================================
 // Validators
 // ============================================================================
-
-export { Validators } from './validators/built-in';
 export { validateForm } from './validators/validate-form';
 
 // ============================================================================
