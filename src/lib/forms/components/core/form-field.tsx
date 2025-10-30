@@ -6,7 +6,6 @@ import { Checkbox } from '../fields/checkbox';
 export interface FormFieldProps {
   control: FieldNode | any; // Поддержка любых узлов (FieldNode, GroupNode fields)
   className?: string;
-  label?: string;
 }
 
 const FormFieldComponent: React.FC<FormFieldProps> = ({
@@ -23,7 +22,7 @@ const FormFieldComponent: React.FC<FormFieldProps> = ({
 
   return (
     <div className={className}>
-      {control.componentProps.label && !isCheckbox && <label className="block mb-1 text-sm font-medium">{control.componentProps.label}</label>}
+      {control.componentProps.value.label && !isCheckbox && <label className="block mb-1 text-sm font-medium">{control.componentProps.value.label}</label>}
 
       <Component
         value={safeValue}
@@ -42,7 +41,7 @@ const FormFieldComponent: React.FC<FormFieldProps> = ({
         }}
         disabled={control.status.value === 'disabled'}
         aria-invalid={control.invalid.value}
-        {...control.componentProps}
+        {...control.componentProps.value}
       />
 
       {control.shouldShowError.value && (
