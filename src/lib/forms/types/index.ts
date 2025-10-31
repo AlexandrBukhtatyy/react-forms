@@ -70,3 +70,26 @@ export type {
   GroupNodeWithControls,
   ArrayNodeWithControls,
 } from './group-node-proxy';
+
+// ============================================================================
+// GroupNode Configuration (with schemas)
+// ============================================================================
+
+import type { BehaviorSchemaFn } from '../behaviors/types';
+import type { ValidationSchemaFn } from './validation-schema';
+import type { DeepFormSchema } from './deep-schema';
+
+/**
+ * Конфигурация GroupNode с поддержкой схем
+ * Используется для создания форм с автоматическим применением behavior и validation схем
+ */
+export interface GroupNodeConfig<T extends Record<string, any>> {
+  /** Схема структуры формы (поля и их конфигурация) */
+  form: DeepFormSchema<T>;
+
+  /** Схема реактивного поведения (copyFrom, enableWhen, computeFrom и т.д.) */
+  behavior?: BehaviorSchemaFn<T>;
+
+  /** Схема валидации (required, email, minLength и т.д.) */
+  validation?: ValidationSchemaFn<T>;
+}

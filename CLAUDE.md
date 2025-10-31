@@ -102,8 +102,23 @@ domains/
 **Таблицы**:
 - [src/lib/tables/store/TableStore.ts](src/lib/tables/store/TableStore.ts): TableStore с полным управлением состоянием таблицы
 
+**Behavior Schema**:
+- [src/lib/forms/behaviors/](src/lib/forms/behaviors/): Behavior Schema API
+- [src/lib/forms/behaviors/schema-behaviors.ts](src/lib/forms/behaviors/schema-behaviors.ts): Декларативные функции (copyFrom, enableWhen, computeFrom и т.д.)
+- [src/lib/forms/behaviors/behavior-registry.ts](src/lib/forms/behaviors/behavior-registry.ts): Регистрация и управление behaviors
+
+**React Hooks**:
+- [src/lib/forms/hooks/](src/lib/forms/hooks/): React хуки для форм
+- [src/lib/forms/hooks/useFormEffect.ts](src/lib/forms/hooks/useFormEffect.ts): Базовый хук для реактивных эффектов
+- [src/lib/forms/hooks/useComputedField.ts](src/lib/forms/hooks/useComputedField.ts): Вычисляемые поля
+- [src/lib/forms/hooks/useCopyField.ts](src/lib/forms/hooks/useCopyField.ts): Копирование полей
+- [src/lib/forms/hooks/useEnableWhen.ts](src/lib/forms/hooks/useEnableWhen.ts): Условное включение/выключение
+
 **Примеры**:
 - [src/examples/validation-example.ts](src/examples/validation-example.ts): Комплексные примеры API валидации
+- [src/examples/behavior-schema-example.ts](src/examples/behavior-schema-example.ts): 8 примеров Behavior Schema API
+- [src/examples/react-hooks-example.tsx](src/examples/react-hooks-example.tsx): 12 примеров React хуков
+- [src/examples/group-node-config-example.ts](src/examples/group-node-config-example.ts): 7 примеров GroupNode с конфигурацией
 
 ### Path Aliases
 
@@ -212,14 +227,96 @@ const validationSchema = (path: FieldPath<MyForm>) => {
 form.applyValidationSchema(validationSchema);
 ```
 
+**Behavior Schema**:
+```typescript
+import { copyFrom, enableWhen, computeFrom, watchField } from '@/lib/forms/behaviors';
+
+const behaviorSchema = (path: FieldPath<MyForm>) => {
+  // Копирование полей
+  copyFrom(path.residenceAddress, path.registrationAddress, {
+    when: (form) => form.sameAsRegistration === true
+  });
+
+  // Условное включение
+  enableWhen(path.propertyValue, path.loanType, {
+    condition: (type) => type === 'mortgage',
+    resetOnDisable: true
+  });
+
+  // Вычисляемое поле
+  computeFrom(
+    path.initialPayment,
+    [path.propertyValue],
+    ({ propertyValue }) => propertyValue ? propertyValue * 0.2 : null
+  );
+};
+
+form.applyBehaviorSchema(behaviorSchema);
+```
+
+**Новый API: GroupNode с автоматическим применением схем** (рекомендуется):
+```typescript
+// Способ 1: Старый API (обратная совместимость)
+const simpleForm = new GroupNode({
+  email: { value: '', component: Input },
+  password: { value: '', component: Input },
+});
+
+// Способ 2: Новый API - все схемы в конструкторе
+const fullForm = new GroupNode({
+  form: {
+    email: { value: '', component: Input },
+    password: { value: '', component: Input },
+    loanType: { value: '', component: Select },
+    propertyValue: { value: null, component: Input },
+  },
+  behavior: (path) => {
+    // Автоматически обрезаем пробелы
+    computeFrom(path.email, [path.email], (values) => values[0]?.trim());
+
+    // Условное включение поля
+    enableWhen(path.propertyValue, path.loanType, {
+      condition: (type) => type === 'mortgage',
+      resetOnDisable: true
+    });
+  },
+  validation: (path) => {
+    required(path.email, { message: 'Email обязателен' });
+    email(path.email);
+    required(path.password);
+    minLength(path.password, 8);
+
+    // Условная валидация
+    applyWhen(path.loanType, (type) => type === 'mortgage', () => {
+      required(path.propertyValue, { message: 'Укажите стоимость' });
+    });
+  },
+});
+
+// Схемы применяются автоматически при создании формы!
+```
+
+**Преимущества нового API**:
+- ✅ Все схемы (form, behavior, validation) в одном месте
+- ✅ Автоматическое применение при создании формы
+- ✅ Полная обратная совместимость (старый API работает)
+- ✅ TypeScript автоматически определяет тип
+- ✅ Декларативный стиль кода
+
+**Примеры**:
+- [src/examples/group-node-config-example.ts](src/examples/group-node-config-example.ts): 7 примеров использования нового API
+
 ## TODO List
 
-**Завершено (2025-10-25)**:
+**Завершено (2025-10-31)**:
 - ✅ Архитектура FormNode (FormNode, FieldNode, GroupNode, ArrayNode)
 - ✅ Вложенные формы и массивы
 - ✅ Computed signals для производительности
 - ✅ Параллельная async валидация с debounce
 - ✅ Validation Schema API (вдохновлено Angular Signal Forms)
+- ✅ Behavior Schema API - декларативное реактивное поведение
+- ✅ React Hooks для форм (useFormEffect, useComputedField, useCopyField и т.д.)
+- ✅ GroupNode с перегрузками конструктора (автоматическое применение схем)
 - ✅ Прямой доступ к полям через Proxy
 - ✅ Композиция validation схем
 - ✅ Поддержка вложенных путей в ValidationContext

@@ -19,6 +19,7 @@ import type {
   FieldStatus,
   ValidationSchemaFn,
   DeepFormSchema,
+  GroupNodeConfig,
 } from '../../types';
 import type { GroupNodeWithControls } from '../../types/group-node-proxy';
 import { ValidationRegistry, createFieldPath } from '../../validators';
@@ -29,17 +30,39 @@ import { createFieldPath as createBehaviorFieldPath } from '../../behaviors/crea
 /**
  * GroupNode - узел для группы полей
  *
+ * Поддерживает два API:
+ * 1. Старый API (только schema) - обратная совместимость
+ * 2. Новый API (config с form, behavior, validation) - автоматическое применение схем
+ *
  * @example
  * ```typescript
- * const form = new GroupNode({
- *   email: { value: '', component: Input, validators: [required, email] },
- *   password: { value: '', component: Input, validators: [required, minLength(8)] },
+ * // 1. Старый способ (обратная совместимость)
+ * const simpleForm = new GroupNode({
+ *   email: { value: '', component: Input },
+ *   password: { value: '', component: Input },
+ * });
+ *
+ * // 2. Новый способ (с behavior и validation схемами)
+ * const fullForm = new GroupNode({
+ *   form: {
+ *     email: { value: '', component: Input },
+ *     password: { value: '', component: Input },
+ *   },
+ *   behavior: (path) => {
+ *     computeFrom(path.email, [path.email], (values) => values[0]?.trim());
+ *   },
+ *   validation: (path) => {
+ *     required(path.email, { message: 'Email обязателен' });
+ *     email(path.email);
+ *     required(path.password);
+ *     minLength(path.password, 8);
+ *   },
  * });
  *
  * // Прямой доступ к полям через Proxy
- * form.email.setValue('test@mail.com');
- * await form.validate();
- * console.log(form.valid.value); // true
+ * fullForm.email.setValue('test@mail.com');
+ * await fullForm.validate();
+ * console.log(fullForm.valid.value); // true
  * ```
  */
 export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> {
@@ -65,17 +88,35 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   public readonly submitting: ReadonlySignal<boolean>;
 
   // ============================================================================
-  // Конструктор
+  // Конструктор с перегрузками
   // ============================================================================
 
-  constructor(schema: DeepFormSchema<T>) {
+  /**
+   * Создать GroupNode только со схемой формы (обратная совместимость)
+   */
+  constructor(schema: DeepFormSchema<T>);
+
+  /**
+   * Создать GroupNode с полной конфигурацией (form, behavior, validation)
+   */
+  constructor(config: GroupNodeConfig<T>);
+
+  constructor(
+    schemaOrConfig: DeepFormSchema<T> | GroupNodeConfig<T>
+  ) {
     super();
 
     this.fields = new Map();
     this._submitting = signal(false);
 
+    // Определяем, что передано: schema или config
+    const isNewAPI = 'form' in schemaOrConfig;
+    const formSchema = isNewAPI ? schemaOrConfig.form : schemaOrConfig;
+    const behaviorSchema = isNewAPI ? schemaOrConfig.behavior : undefined;
+    const validationSchema = isNewAPI ? schemaOrConfig.validation : undefined;
+
     // Создать поля из схемы с поддержкой вложенности
-    for (const [key, config] of Object.entries(schema)) {
+    for (const [key, config] of Object.entries(formSchema)) {
       const node = this.createNode(config);
       this.fields.set(key as keyof T, node);
     }
@@ -123,10 +164,8 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
     this.submitting = computed(() => this._submitting.value);
 
-    // ✅ ВАЖНО: Возвращаем Proxy для прямого доступа к полям
-    // Это позволяет писать form.email вместо form.controls.email
-    // Используем GroupNodeWithControls для правильной типизации вложенных форм и массивов
-    return new Proxy(this, {
+    // Создать Proxy для прямого доступа к полям
+    const proxy = new Proxy(this, {
       get(target, prop: string | symbol) {
         // Если это поле формы
         if (typeof prop === 'string' && target.fields.has(prop as keyof T)) {
@@ -136,6 +175,19 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
         return (target as any)[prop];
       },
     }) as GroupNodeWithControls<T>;
+
+    // Применяем схемы, если они переданы (новый API)
+    if (behaviorSchema) {
+      this.applyBehaviorSchema(behaviorSchema);
+    }
+    if (validationSchema) {
+      this.applyValidationSchema(validationSchema);
+    }
+
+    // ✅ ВАЖНО: Возвращаем Proxy для прямого доступа к полям
+    // Это позволяет писать form.email вместо form.controls.email
+    // Используем GroupNodeWithControls для правильной типизации вложенных форм и массивов
+    return proxy;
   }
 
   // ============================================================================
