@@ -11,7 +11,7 @@
 
 import { useState, useMemo } from 'react';
 import { useStepForm } from '@/lib/forms';
-import { createCreditApplicationForm } from '../schema/create-credit-application-form';
+import { createCreditApplicationForm } from '../schemas/create-credit-application-form';
 import { BasicInfoForm } from './steps/BasicInfoForm';
 import { PersonalInfoForm } from './steps/PersonalInfoForm';
 import { ContactInfoForm } from './steps/ContactInfoForm';
@@ -20,7 +20,7 @@ import { AdditionalInfoForm } from './steps/AdditionalInfoForm';
 import { ConfirmationForm } from './steps/ConfirmationForm';
 import { STEPS } from '../constants/credit-application';
 import { NavigationButtons, StepIndicator } from '@/lib/forms/components';
-import creditApplicationValidation, { STEP_VALIDATIONS } from '../validation/credit-application-validation';
+import creditApplicationValidation, { STEP_VALIDATIONS } from '../schemas/credit-application-validation';
 import { useLoadCreditApplication } from '../hooks/useLoadCreditApplication';
 import { setSimulateError, getSimulateError } from '../../api/mock-credit-application-api';
 

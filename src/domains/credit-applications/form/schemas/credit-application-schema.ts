@@ -1,14 +1,14 @@
 /**
- * Создание формы кредитной заявки
+ * Form Schema для кредитной заявки
  *
- * Функция создаёт GroupNode с полной схемой формы, включая:
+ * Содержит полное описание структуры формы:
  * - 6 шагов заполнения
  * - Вложенные формы (personalData, passportData, addresses)
  * - Массивы форм (properties, existingLoans, coBorrowers)
+ * - 8 вычисляемых полей
  */
 
-import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
+import type { DeepFormSchema } from '@/lib/forms';
 import { Input, Select, Textarea, Checkbox, RadioGroup, InputMask } from '@/lib/forms/components';
 import {
   LOAN_TYPES,
@@ -23,11 +23,9 @@ import { propertyFormSchema } from '../components/nested-forms/PropertyForm';
 import { existingLoansFormSchema } from '../components/nested-forms/ExistingLoanForm';
 import { coBorrowersFormSchema } from '../components/nested-forms/CoBorrowerForm';
 
-
-
 import type { CreditApplicationForm } from '../types/credit-application';
 
-const schema: DeepFormSchema<CreditApplicationForm> = {
+export const creditApplicationSchema: DeepFormSchema<CreditApplicationForm> = {
   // ========================================================================
   // Шаг 1: Основная информация
   // ========================================================================
@@ -504,9 +502,92 @@ const schema: DeepFormSchema<CreditApplicationForm> = {
       mask: '999999',
     },
   },
-};
 
-export const createCreditApplicationForm = (): GroupNodeWithControls<CreditApplicationForm> => {
-  const form = new GroupNode(schema);
-  return form;
+  // ========================================================================
+  // Вычисляемые поля (computed fields)
+  // ========================================================================
+
+  interestRate: {
+    value: 0,
+    component: Input,
+    componentProps: {
+      label: 'Процентная ставка (%)',
+      type: 'number',
+      readonly: true,
+      disabled: true,
+    },
+  },
+
+  monthlyPayment: {
+    value: 0,
+    component: Input,
+    componentProps: {
+      label: 'Ежемесячный платеж (₽)',
+      type: 'number',
+      readonly: true,
+      disabled: true,
+    },
+  },
+
+  fullName: {
+    value: '',
+    component: Input,
+    componentProps: {
+      label: 'Полное имя',
+      readonly: true,
+      disabled: true,
+    },
+  },
+
+  age: {
+    value: null,
+    component: Input,
+    componentProps: {
+      label: 'Возраст (лет)',
+      type: 'number',
+      readonly: true,
+      disabled: true,
+    },
+  },
+
+  totalIncome: {
+    value: 0,
+    component: Input,
+    componentProps: {
+      label: 'Общий доход (₽)',
+      type: 'number',
+      readonly: true,
+      disabled: true,
+    },
+  },
+
+  paymentToIncomeRatio: {
+    value: 0,
+    component: Input,
+    componentProps: {
+      label: 'Процент платежа от дохода (%)',
+      type: 'number',
+      readonly: true,
+      disabled: true,
+    },
+  },
+
+  coBorrowersIncome: {
+    value: 0,
+    component: Input,
+    componentProps: {
+      label: 'Доход созаемщиков (₽)',
+      type: 'number',
+      readonly: true,
+      disabled: true,
+    },
+  },
+
+  sameEmail: {
+    value: false,
+    component: Checkbox,
+    componentProps: {
+      label: 'Дублировать email',
+    },
+  },
 };

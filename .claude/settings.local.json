@@ -14,7 +14,9 @@
       "Bash(npm run dev:*)",
       "Bash(pkill:*)",
       "Bash(git reset:*)",
-      "Bash(timeout 60 npx tsc:*)"
+      "Bash(timeout 60 npx tsc:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

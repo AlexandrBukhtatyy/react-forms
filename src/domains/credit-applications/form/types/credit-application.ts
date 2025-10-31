@@ -84,4 +84,14 @@ export interface CreditApplicationForm {
   agreeTerms: boolean;
   confirmAccuracy: boolean;
   electronicSignature: string;
+
+  // Вычисляемые поля (computed fields)
+  interestRate: number;
+  monthlyPayment: number;
+  fullName: string;
+  age: number | null;
+  totalIncome: number;
+  paymentToIncomeRatio: number;
+  coBorrowersIncome: number;
+  sameEmail: boolean;
 }
