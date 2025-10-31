@@ -22,6 +22,9 @@ import type {
 } from '../../types';
 import type { GroupNodeWithControls } from '../../types/group-node-proxy';
 import { ValidationRegistry, createFieldPath } from '../../validators';
+import type { BehaviorSchemaFn } from '../../behaviors/types';
+import { BehaviorRegistry } from '../../behaviors/behavior-registry';
+import { createFieldPath as createBehaviorFieldPath } from '../../behaviors/create-field-path';
 
 /**
  * GroupNode - узел для группы полей
@@ -253,6 +256,54 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       ValidationRegistry.endRegistration(this as any);
     } catch (error) {
       console.error('Error applying validation schema:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Применить behavior schema к форме
+   * Декларативное описание реактивного поведения через схему
+   *
+   * @param schemaFn - Функция описания поведения формы
+   * @returns Функция cleanup для отписки от всех behaviors
+   *
+   * @example
+   * ```typescript
+   * import { copyFrom, enableWhen, computeFrom } from '@/lib/forms/behaviors';
+   *
+   * const behaviorSchema: BehaviorSchemaFn<MyForm> = (path) => {
+   *   // Копирование адреса
+   *   copyFrom(path.residenceAddress, path.registrationAddress, {
+   *     when: (form) => form.sameAsRegistration === true
+   *   });
+   *
+   *   // Условное отображение
+   *   enableWhen(path.propertyValue, (form) => form.loanType === 'mortgage');
+   *
+   *   // Вычисляемое поле
+   *   computeFrom(
+   *     path.initialPayment,
+   *     [path.propertyValue],
+   *     ({ propertyValue }) => propertyValue ? propertyValue * 0.2 : null
+   *   );
+   * };
+   *
+   * const cleanup = form.applyBehaviorSchema(behaviorSchema);
+   *
+   * // Cleanup при unmount
+   * useEffect(() => cleanup, []);
+   * ```
+   */
+  applyBehaviorSchema(schemaFn: BehaviorSchemaFn<T>): () => void {
+    BehaviorRegistry.beginRegistration();
+
+    try {
+      const path = createBehaviorFieldPath<T>();
+      schemaFn(path);
+      const result = BehaviorRegistry.endRegistration(this as any);
+      return result.cleanup;
+    } catch (error) {
+      console.error('Error applying behavior schema:', error);
       throw error;
     }
   }
