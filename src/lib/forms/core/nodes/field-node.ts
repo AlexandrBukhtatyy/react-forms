@@ -5,7 +5,7 @@
  * Наследует от FormNode и реализует все его абстрактные методы
  */
 
-import { signal, computed } from '@preact/signals-react';
+import { signal, computed, effect } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
 import { FormNode } from './form-node';
 import type { SetValueOptions }  from "./form-node"
@@ -299,5 +299,71 @@ export class FieldNode<T = any> extends FormNode<T> {
       ...this._componentProps.value,
       ...props,
     };
+  }
+
+  // ============================================================================
+  // Методы-помощники для реактивности (Фаза 1)
+  // ============================================================================
+
+  /**
+   * Подписка на изменения значения поля
+   * Автоматически отслеживает изменения через @preact/signals effect
+   *
+   * @param callback - Функция, вызываемая при изменении значения
+   * @returns Функция отписки для cleanup
+   *
+   * @example
+   * ```typescript
+   * const unsubscribe = form.email.watch((value) => {
+   *   console.log('Email changed:', value);
+   * });
+   *
+   * // Cleanup
+   * useEffect(() => unsubscribe, []);
+   * ```
+   */
+  watch(callback: (value: T) => void | Promise<void>): () => void {
+    return effect(() => {
+      const currentValue = this.value.value; // track changes
+      callback(currentValue);
+    });
+  }
+
+  /**
+   * Вычисляемое значение из других полей
+   * Автоматически обновляет текущее поле при изменении источников
+   *
+   * @param sources - Массив ReadonlySignal для отслеживания
+   * @param computeFn - Функция вычисления нового значения
+   * @returns Функция отписки для cleanup
+   *
+   * @example
+   * ```typescript
+   * // Автоматический расчет первоначального взноса (20% от стоимости)
+   * const dispose = form.initialPayment.computeFrom(
+   *   [form.propertyValue.value],
+   *   (propertyValue) => {
+   *     return propertyValue ? propertyValue * 0.2 : null;
+   *   }
+   * );
+   *
+   * // Cleanup
+   * useEffect(() => dispose, []);
+   * ```
+   */
+  computeFrom<TSource extends any[]>(
+    sources: ReadonlySignal<TSource[number]>[],
+    computeFn: (...values: TSource) => T
+  ): () => void {
+    return effect(() => {
+      // Читаем все источники для отслеживания
+      const sourceValues = sources.map((source) => source.value) as TSource;
+
+      // Вычисляем новое значение
+      const newValue = computeFn(...sourceValues);
+
+      // Устанавливаем значение без триггера событий (избегаем циклов)
+      this.setValue(newValue, { emitEvent: false });
+    });
   }
 }

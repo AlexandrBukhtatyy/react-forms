@@ -7,7 +7,7 @@
  * - Реактивного состояния через signals
  */
 
-import { signal, computed } from '@preact/signals-react';
+import { signal, computed, effect } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
 import { FormNode,  type SetValueOptions } from './form-node';
 import { GroupNode } from './group-node';
@@ -293,5 +293,82 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
       !('component' in schema) &&
       !Array.isArray(schema)
     );
+  }
+
+  // ============================================================================
+  // Методы-помощники для реактивности (Фаза 1)
+  // ============================================================================
+
+  /**
+   * Подписка на изменения конкретного поля во всех элементах массива
+   * Срабатывает при изменении значения поля в любом элементе
+   *
+   * @param fieldKey - Ключ поля для отслеживания
+   * @param callback - Функция, вызываемая при изменении, получает массив всех значений и индекс измененного элемента
+   * @returns Функция отписки для cleanup
+   *
+   * @example
+   * ```typescript
+   * // Автоматический пересчет общей стоимости при изменении цен
+   * const dispose = form.existingLoans.watchItems(
+   *   'remainingAmount',
+   *   (amounts) => {
+   *     const totalDebt = amounts.reduce((sum, amount) => sum + (amount || 0), 0);
+   *     form.totalDebt.setValue(totalDebt);
+   *   }
+   * );
+   *
+   * // При изменении любого remainingAmount → пересчитается totalDebt
+   * form.existingLoans.at(0)?.remainingAmount.setValue(500000);
+   *
+   * // Cleanup
+   * useEffect(() => dispose, []);
+   * ```
+   */
+  watchItems<K extends keyof T>(
+    fieldKey: K,
+    callback: (values: Array<T[K] | undefined>) => void | Promise<void>
+  ): () => void {
+    return effect(() => {
+      // Отслеживаем изменения всех элементов массива
+      const values = this.items.value.map((item) => {
+        if (item instanceof GroupNode) {
+          const field = item.fields.get(fieldKey as string);
+          return field?.value.value as T[K];
+        }
+        return undefined;
+      });
+
+      callback(values);
+    });
+  }
+
+  /**
+   * Подписка на изменение длины массива
+   * Срабатывает при добавлении/удалении элементов
+   *
+   * @param callback - Функция, вызываемая при изменении длины, получает новую длину
+   * @returns Функция отписки для cleanup
+   *
+   * @example
+   * ```typescript
+   * // Обновление счетчика элементов в UI
+   * const dispose = form.properties.watchLength((length) => {
+   *   console.log(`Количество объектов недвижимости: ${length}`);
+   *   form.propertyCount.setValue(length);
+   * });
+   *
+   * form.properties.push({ title: 'Квартира', value: 5000000 });
+   * // Выведет: "Количество объектов недвижимости: 1"
+   *
+   * // Cleanup
+   * useEffect(() => dispose, []);
+   * ```
+   */
+  watchLength(callback: (length: number) => void | Promise<void>): () => void {
+    return effect(() => {
+      const currentLength = this.length.value;
+      callback(currentLength);
+    });
   }
 }

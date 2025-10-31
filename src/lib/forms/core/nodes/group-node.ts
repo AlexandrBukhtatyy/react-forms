@@ -9,7 +9,7 @@
  * Наследует от FormNode и реализует все его абстрактные методы
  */
 
-import { signal, computed } from '@preact/signals-react';
+import { signal, computed, effect } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
 import { FormNode, type SetValueOptions } from './form-node';
 import { FieldNode } from './field-node';
@@ -427,5 +427,108 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       !('component' in config) &&
       !Array.isArray(config)
     );
+  }
+
+  // ============================================================================
+  // Методы-помощники для реактивности (Фаза 1)
+  // ============================================================================
+
+  /**
+   * Связывает два поля: при изменении source автоматически обновляется target
+   * Поддерживает опциональную трансформацию значения
+   *
+   * @param sourceKey - Ключ поля-источника
+   * @param targetKey - Ключ поля-цели
+   * @param transform - Опциональная функция трансформации значения
+   * @returns Функция отписки для cleanup
+   *
+   * @example
+   * ```typescript
+   * // Автоматический расчет минимального взноса от стоимости недвижимости
+   * const dispose = form.linkFields(
+   *   'propertyValue',
+   *   'initialPayment',
+   *   (propertyValue) => propertyValue ? propertyValue * 0.2 : null
+   * );
+   *
+   * // При изменении propertyValue → автоматически обновится initialPayment
+   * form.propertyValue.setValue(1000000);
+   * // initialPayment станет 200000
+   *
+   * // Cleanup
+   * useEffect(() => dispose, []);
+   * ```
+   */
+  linkFields<K1 extends keyof T, K2 extends keyof T>(
+    sourceKey: K1,
+    targetKey: K2,
+    transform?: (value: T[K1]) => T[K2]
+  ): () => void {
+    const sourceField = this.fields.get(sourceKey);
+    const targetField = this.fields.get(targetKey);
+
+    if (!sourceField || !targetField) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          `GroupNode.linkFields: field "${String(sourceKey)}" or "${String(targetKey)}" not found`
+        );
+      }
+      return () => {}; // noop
+    }
+
+    return effect(() => {
+      const sourceValue = sourceField.value.value;
+      const transformedValue = transform
+        ? transform(sourceValue as T[K1])
+        : (sourceValue as any);
+
+      targetField.setValue(transformedValue, { emitEvent: false });
+    });
+  }
+
+  /**
+   * Подписка на изменения вложенного поля по строковому пути
+   * Поддерживает вложенные пути типа "address.city"
+   *
+   * @param fieldPath - Строковый путь к полю (например, "address.city")
+   * @param callback - Функция, вызываемая при изменении поля
+   * @returns Функция отписки для cleanup
+   *
+   * @example
+   * ```typescript
+   * // Подписка на изменение страны для загрузки городов
+   * const dispose = form.watchField(
+   *   'registrationAddress.country',
+   *   async (countryCode) => {
+   *     if (countryCode) {
+   *       const cities = await fetchCitiesByCountry(countryCode);
+   *       form.registrationAddress.city.updateComponentProps({
+   *         options: cities
+   *       });
+   *     }
+   *   }
+   * );
+   *
+   * // Cleanup
+   * useEffect(() => dispose, []);
+   * ```
+   */
+  watchField<K extends keyof T>(
+    fieldPath: K extends string ? K : string,
+    callback: (value: any) => void | Promise<void>
+  ): () => void {
+    const field = this.getFieldByPath(fieldPath as string);
+
+    if (!field) {
+      if (import.meta.env.DEV) {
+        console.warn(`GroupNode.watchField: field "${fieldPath}" not found`);
+      }
+      return () => {}; // noop
+    }
+
+    return effect(() => {
+      const value = field.value.value;
+      callback(value);
+    });
   }
 }
