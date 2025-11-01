@@ -46,6 +46,7 @@ export const basicInfoValidation = (path: FieldPath<CreditApplicationForm>) => {
       validateTree(
         (ctx) => {
           const form = ctx.formValue();
+
           if (
             form.initialPayment &&
             form.propertyValue &&
@@ -54,6 +55,17 @@ export const basicInfoValidation = (path: FieldPath<CreditApplicationForm>) => {
             return {
               code: 'initialPaymentTooHigh',
               message: 'Первоначальный взнос не может превышать стоимость недвижимости',
+            };
+          }
+
+          if (
+            form.initialPayment &&
+            form.propertyValue &&
+            form.initialPayment < (form.propertyValue * 0.2)
+          ) {
+            return {
+              code: 'initialPaymentTooLow',
+              message: 'Первоначальный взнос не может быть меньше 20% от стоимость недвижимости',
             };
           }
           return null;

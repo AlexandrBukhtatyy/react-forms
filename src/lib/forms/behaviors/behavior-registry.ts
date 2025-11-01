@@ -234,9 +234,9 @@ class BehaviorRegistryClass {
         const shouldEnable = condition(formValue);
 
         if (shouldEnable) {
-          node.enable();
+          node.enable && node.enable();
         } else {
-          node.disable();
+          node.disable && node.disable();
           if (resetOnDisable) {
             node.reset();
           }
