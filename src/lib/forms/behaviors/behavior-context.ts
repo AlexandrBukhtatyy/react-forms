@@ -24,15 +24,6 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
     // ✅ Используем _proxyInstance если доступен, иначе fallback на form
     // _proxyInstance устанавливается в GroupNode конструкторе перед применением behavior схем
     this.formNode = (form as any)._proxyInstance || form;
-
-    // Debug: проверка что formNode установлен
-    if (import.meta.env.DEV) {
-      console.log('[BehaviorContext] Created with formNode:', {
-        hasProxyInstance: !!(form as any)._proxyInstance,
-        formNode: this.formNode,
-        formNodeType: this.formNode?.constructor?.name
-      });
-    }
   }
 
   /**

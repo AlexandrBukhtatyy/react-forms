@@ -242,9 +242,7 @@ export const creditApplicationBehavior: BehaviorSchemaFn<CreditApplicationForm> 
 
   // Очистить массив имущества при снятии чекбокса hasProperty
   watchField(path.hasProperty, (hasProperty, ctx) => {
-    console.log('[watchField hasProperty]', { hasProperty, ctx, formNode: ctx.formNode });
     if (!hasProperty) {
-      console.log('[watchField hasProperty] Clearing properties array');
       ctx.formNode.properties?.clear();
     }
   });
