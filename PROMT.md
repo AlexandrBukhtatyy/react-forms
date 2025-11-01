@@ -1,409 +1,347 @@
-# Задача: Миграция формы кредитной заявки на новый API
+# План миграции на ArrayNode для формы заявки на кредит
 
-## Цель
+## Текущее состояние
 
-Мигрировать **существующую форму кредитной заявки** на новый GroupNode API с автоматическим применением Behavior Schema и Validation Schema, демонстрируя **максимум возможностей** реактивного поведения форм.
+### Архитектура формы
+- **Главная форма**: `GroupNode<CreditApplicationForm>` с 6 шагами
+- **Вложенные группы**: `personalData`, `passportData`, `registrationAddress`, `residenceAddress`
+- **Массивы**: `properties`, `existingLoans`, `coBorrowers` (в настоящее время используют legacy подход)
 
-## Контекст
+### Используемые компоненты
+1. **PropertyForm** - карточка имущества (тип, описание, стоимость, обременение)
+2. **ExistingLoanForm** - карточка существующего кредита (банк, тип, суммы, дата)
+3. **CoBorrowerForm** - карточка созаемщика (personalData, контакты, доход) - содержит вложенную группу!
 
-### Существующая форма
+### Текущий UI для массивов
+- `FormArrayManager` - компонент для рендеринга массива форм
+- Кнопка "+" для добавления элемента через `control.properties?.push()`
+- Кнопка удаления в каждой карточке
+- Условное отображение при `hasProperty`, `hasExistingLoans`, `hasCoBorrower`
 
-**Файл**: [src/domains/credit-applications/form/schema/create-credit-application-form.ts](src/domains/credit-applications/form/schema/create-credit-application-form.ts)
+---
 
-**Текущее состояние**:
-- ✅ Использует GroupNode (старый API без схем)
-- ✅ Имеет 6 шагов заполнения (основная информация, персональные данные, контакты, занятость, дополнительная информация, согласия)
-- ✅ Имеет вложенные формы (personalData, passportData, registrationAddress, residenceAddress)
-- ✅ Имеет массивы форм (properties, existingLoans, coBorrowers)
-- ✅ ~50+ полей
+## Задачи для миграции на ArrayNode
 
-**Что НЕ реализовано**:
-- ❌ Новый GroupNode конструктор с `{ form, behavior, validation }`
-- ❌ Behavior Schema (copyFrom, enableWhen, computeFrom, watchField)
-- ❌ Validation Schema в декларативном виде
-- ❌ Вычисляемые поля (процентная ставка, ежемесячный платеж, возраст и т.д.)
-- ❌ Условное включение полей на основе типа кредита и занятости
-- ❌ Динамическая загрузка данных (регионы, города, модели авто)
+### 🔴 Критичные (блокируют миграцию)
 
-## Контекст проекта
-
-### Доступные возможности
-
-**Behavior Schema API** (декларативное реактивное поведение):
-- `copyFrom()` - копирование значений между полями с условиями и трансформацией
-- `enableWhen()` / `disableWhen()` - условное включение/выключение полей
-- `showWhen()` / `hideWhen()` - условное отображение/скрытие полей
-- `computeFrom()` - автоматическое вычисление значений из других полей
-- `watchField()` - подписка на изменения с доступом к контексту (для динамической загрузки данных)
-- `revalidateWhen()` - перевалидация поля при изменении других полей
-- `syncFields()` - двусторонняя синхронизация полей
-
-**Validation Schema API**:
-- Синхронные валидаторы: `required()`, `email()`, `minLength()`, `maxLength()`, `pattern()`, `min()`, `max()`
-- Асинхронные валидаторы: `validateAsync()`, `customAsync()`
-- Условная валидация: `applyWhen()`
-- Кросс-полевая валидация: `validateTree()`
-
-**GroupNode с автоматическим применением схем**:
+#### 1. Обновить схему создания массивов в `credit-application-schema.ts`
+**Текущий код:**
 ```typescript
-const form = new GroupNode({
-  form: { /* структура полей */ },
-  behavior: (path) => { /* behavior schema */ },
-  validation: (path) => { /* validation schema */ },
-});
+properties: [propertyFormSchema],  // массив из 1 элемента (legacy)
+existingLoans: [existingLoansFormSchema],
+coBorrowers: [coBorrowersFormSchema],
 ```
 
-### Полезные файлы для изучения
-
-**Документация**:
-- [docs/BEHAVIOR_SCHEMA_IMPLEMENTATION.md](docs/BEHAVIOR_SCHEMA_IMPLEMENTATION.md) - полная документация Behavior Schema API
-- [docs/BEHAVIOR_HELPERS_IMPLEMENTATION.md](docs/BEHAVIOR_HELPERS_IMPLEMENTATION.md) - helper методы для реактивности
-- [docs/REACT_HOOKS_IMPLEMENTATION.md](docs/REACT_HOOKS_IMPLEMENTATION.md) - React хуки для форм
-- [docs/GROUP_NODE_CONSTRUCTOR_OVERLOAD.md](docs/GROUP_NODE_CONSTRUCTOR_OVERLOAD.md) - новый API GroupNode
-
-**Примеры**:
-- [src/examples/behavior-schema-example.ts](src/examples/behavior-schema-example.ts) - 8 примеров Behavior Schema
-- [src/examples/group-node-config-example.ts](src/examples/group-node-config-example.ts) - 7 примеров нового GroupNode API
-- [src/examples/validation-example.ts](src/examples/validation-example.ts) - примеры валидации
-
-**Исходный код**:
-- [src/lib/forms/behaviors/schema-behaviors.ts](src/lib/forms/behaviors/schema-behaviors.ts) - реализация behavior функций
-- [src/lib/forms/validators/](src/lib/forms/validators/) - реализация валидаторов
-- [src/lib/forms/core/nodes/group-node.ts](src/lib/forms/core/nodes/group-node.ts) - GroupNode с новым API
-
----
-
-## Требования к миграции
-
-### 1. Behavior Schema - Обязательные behaviors (минимум 15)
-
-#### 1.1. `copyFrom()` - Копирование (2 примера)
-- **Адреса**: Копировать `registrationAddress` → `residenceAddress` при `sameAsRegistration === true`
-- **Email**: Копировать `email` → `emailAdditional` при добавлении флага `sameEmail === true`
-
-#### 1.2. `enableWhen()` / `disableWhen()` - Условное включение (минимум 7)
-- **Ипотека**: Включать `propertyValue`, `initialPayment` только при `loanType === 'mortgage'`
-- **Автокредит**: Включать `carBrand`, `carModel`, `carYear`, `carPrice` только при `loanType === 'car'`
-- **Трудоустроен**: Включать `companyName`, `companyInn`, `companyPhone`, `companyAddress`, `position` только при `employmentStatus === 'employed'`
-- **ИП**: Включать `businessType`, `businessInn`, `businessActivity` только при `employmentStatus === 'selfEmployed'`
-- **Адрес проживания**: Включать `residenceAddress` только при `sameAsRegistration === false`
-- **Имущество**: Включать массив `properties` только при `hasProperty === true`
-- **Существующие кредиты**: Включать массив `existingLoans` только при `hasExistingLoans === true`
-- **Созаемщики**: Включать массив `coBorrowers` только при `hasCoBorrower === true`
-
-#### 1.3. `computeFrom()` - Вычисляемые поля (минимум 8)
-1. **Процентная ставка** - вычисляется на основе типа кредита и дополнительных условий:
-   - Ипотека: базовая ставка + надбавка по региону
-   - Автокредит: базовая ставка - скидка за КАСКО
-   - Потребительский: базовая ставка - скидка за обеспечение
-
-2. **Ежемесячный платеж** - вычисляется по формуле аннуитетного платежа:
-   ```
-   monthlyPayment = loanAmount * (r * (1 + r)^n) / ((1 + r)^n - 1)
-   где r = monthRate / 12 / 100, n = term
-   ```
-
-3. **Первоначальный взнос** (для ипотеки) - 20% от стоимости недвижимости
-
-4. **Полное имя** - конкатенация "Фамилия Имя Отчество"
-
-5. **Возраст** - вычисляется из даты рождения
-
-6. **Общий доход** - monthlyIncome + additionalIncome
-
-7. **Процент платежа от дохода** - (monthlyPayment / totalIncome) * 100
-
-8. **Общий доход по созаемщикам** - сумма доходов всех созаемщиков
-
-#### 1.4. `watchField()` - Динамическая загрузка (минимум 3)
-1. **Загрузка регионов** при изменении страны (для `registrationAddress` и `residenceAddress`)
-2. **Загрузка городов** при изменении региона (для обоих адресов)
-3. **Загрузка моделей автомобилей** при изменении марки (для автокредита)
-
-#### 1.5. `revalidateWhen()` - Перевалидация (минимум 2)
-- Перевалидировать `monthlyIncome` при изменении `monthlyPayment`
-- Перевалидировать `initialPayment` при изменении `propertyValue`
-
----
-
-### 2. Validation Schema - ПРИМЕНИТЬ СУЩЕСТВУЮЩУЮ
-
-**ВАЖНО**: Validation схема уже существует и полностью готова!
-
-**Файл**: [src/domains/credit-applications/form/validation/credit-application-validation.ts](src/domains/credit-applications/form/validation/credit-application-validation.ts)
-
-**Что уже есть**:
-- ✅ Базовые валидации (`required`, `email`, `min`, `max`, `minLength`, `maxLength`, `pattern`)
-- ✅ Условная валидация через `applyWhen()` (для ипотеки, автокредита, занятости)
-- ✅ Кросс-полевая валидация через `validateTree()` (первоначальный взнос, стоимость авто)
-- ✅ Модульная структура по шагам (basicInfoValidation, personalDataValidation и т.д.)
-
-**Что нужно сделать**:
-1. **ИМПОРТИРОВАТЬ** существующую схему: `import creditApplicationValidation from '../validation/credit-application-validation'`
-2. **ПРИМЕНИТЬ** через новый API в секции `validation`
-3. **ДОПОЛНИТЬ** новыми validateTree для вычисляемых полей:
-   - Платежеспособность: `paymentToIncomeRatio <= 50%`
-   - Возраст заемщика: `18 <= age <= 70`
-   - Первоначальный взнос >= 20% (если ещё нет)
-
----
-
-### 3. Новый GroupNode API - Обязательное использование
-
-Форма **MUST** быть создана с использованием **нового GroupNode конструктора** с автоматическим применением схем:
-
+**Нужно изменить на:**
 ```typescript
-const loanApplicationForm = new GroupNode<LoanApplicationForm>({
-  form: {
-    // Структура полей
-  },
-  behavior: (path) => {
-    // Все behaviors здесь
-    copyFrom(...);
-    enableWhen(...);
-    computeFrom(...);
-    watchField(...);
-    revalidateWhen(...);
-  },
-  validation: (path) => {
-    // Все валидации здесь
-    required(...);
-    email(...);
-    applyWhen(...);
-    validateTree(...);
-  },
-});
+properties: {
+  schema: propertyFormSchema,
+  initialItems: [],
+},
+existingLoans: {
+  schema: existingLoansFormSchema,
+  initialItems: [],
+},
+coBorrowers: {
+  schema: coBorrowersFormSchema,
+  initialItems: [],
+},
 ```
 
+**Файл**: `src/domains/credit-applications/form/schemas/credit-application-schema.ts`
+
 ---
 
-### 4. Вспомогательные функции - Создать новый файл
+#### 2. Обновить типы для массивов в `GroupNode`
+**Проблема**: GroupNode должен корректно определять ArrayNode из schema
 
-**Создать файл**: [src/domains/credit-applications/form/utils/form-helpers.ts](src/domains/credit-applications/form/utils/form-helpers.ts)
+**Нужно**:
+- Проверить типизацию в `GroupNode` для распознавания ArrayNode из schema
+- Убедиться, что `GroupNodeWithControls` корректно типизирует массивы как `ArrayNode<T>`
+- Проверить `DeepFormSchema` - должна поддерживать объект с `schema` и `initialItems`
 
+**Файлы**:
+- `src/lib/forms/core/nodes/group-node.ts`
+- `src/lib/forms/types/group-node-proxy.ts`
+- `src/lib/forms/types/deep-schema.ts`
+
+---
+
+#### 3. Добавить создание ArrayNode в конструкторе GroupNode
+**Текущий код** (строка ~70-90 в `group-node.ts`):
 ```typescript
-// API имитации для watchField
-export async function fetchRegions(country: string): Promise<Option[]>;
-export async function fetchCities(region: string): Promise<Option[]>;
-export async function fetchCarModels(brand: string): Promise<Option[]>;
-
-// Compute функции для computeFrom
-export function computeInterestRate(values: Record<string, any>): number;
-export function computeMonthlyPayment(values: Record<string, any>): number;
-
-// Validator функции для validateTree
-export function validateInitialPayment(ctx: TreeValidationContext): ValidationError | null;
-export function validatePaymentToIncome(ctx: TreeValidationContext): ValidationError | null;
-export function validateAge(ctx: TreeValidationContext): ValidationError | null;
-
-interface Option {
-  value: string;
-  label: string;
+// Создать дочерние FieldNode для каждого поля
+for (const [key, config] of Object.entries(schema)) {
+  if (Array.isArray(config)) {
+    // TODO: Legacy array support - будет удалено после миграции
+    (controls as any)[key] = config;
+  } else if (typeof config === 'object' && 'value' in config) {
+    // Создать FieldNode
+    controls[key] = new FieldNode(config as FieldConfig);
+  } else {
+    // Создать вложенный GroupNode
+    controls[key] = new GroupNode(config as DeepFormSchema<any>);
+  }
 }
 ```
 
+**Нужно добавить**:
+```typescript
+for (const [key, config] of Object.entries(schema)) {
+  if ('schema' in config && 'initialItems' in config) {
+    // Создать ArrayNode
+    controls[key] = new ArrayNode(config.schema, config.initialItems || []);
+  } else if (Array.isArray(config)) {
+    // Legacy support (deprecated)
+    (controls as any)[key] = config;
+  } else if (typeof config === 'object' && 'value' in config) {
+    // Создать FieldNode
+    controls[key] = new FieldNode(config as FieldConfig);
+  } else {
+    // Создать вложенный GroupNode
+    controls[key] = new GroupNode(config as DeepFormSchema<any>);
+  }
+}
+```
+
+**Файл**: `src/lib/forms/core/nodes/group-node.ts`
+
 ---
 
-### 5. Структура миграции
-
-**Файл для миграции**: [src/domains/credit-applications/form/schema/create-credit-application-form.ts](src/domains/credit-applications/form/schema/create-credit-application-form.ts)
-
-**Было** (старый API):
+#### 4. Обновить validation schema для ArrayNode
+**Текущий код** (`additional-validation.ts`, строки 46-76):
 ```typescript
-const schema: DeepFormSchema<CreditApplicationForm> = {
-  loanType: { value: 'consumer', component: Select, ... },
-  loanAmount: { value: null, component: Input, ... },
-  // ... остальные 50+ полей
+validateTree((ctx) => {
+  const form = ctx.formValue();
+  if (!form.properties || form.properties.length === 0) return null;
+
+  const errors: string[] = [];
+  form.properties.forEach((property: any, index: number) => {
+    // Валидация каждого элемента...
+  });
+  // ...
+}, { targetField: 'properties' });
+```
+
+**Нужно создать отдельные схемы валидации**:
+
+```typescript
+// src/domains/credit-applications/form/schemas/validation/property-validation.ts
+export const propertyValidation = (path: FieldPath<Property>) => {
+  required(path.type, { message: 'Укажите тип имущества' });
+  required(path.description, { message: 'Добавьте описание' });
+  minLength(path.description, 10, { message: 'Минимум 10 символов' });
+  maxLength(path.description, 500, { message: 'Максимум 500 символов' });
+  required(path.estimatedValue, { message: 'Укажите стоимость' });
+  min(path.estimatedValue, 10000, { message: 'Минимальная стоимость: 10 000 ₽' });
 };
 
-export const createCreditApplicationForm = () => {
-  const form = new GroupNode(schema);
-  return form;
+// src/domains/credit-applications/form/schemas/validation/existing-loan-validation.ts
+export const existingLoanValidation = (path: FieldPath<ExistingLoan>) => {
+  required(path.bank, { message: 'Укажите название банка' });
+  minLength(path.bank, 3);
+  maxLength(path.bank, 100);
+  // ... остальная валидация
+
+  validateTree((ctx) => {
+    const loan = ctx.formValue();
+    if (loan.remainingAmount > loan.amount) {
+      return { code: 'remainingExceedsAmount', message: 'Остаток > суммы' };
+    }
+    return null;
+  }, { targetField: 'remainingAmount' });
+};
+
+// src/domains/credit-applications/form/schemas/validation/co-borrower-validation.ts
+export const coBorrowerValidation = (path: FieldPath<CoBorrower>) => {
+  // ФИО
+  required(path.personalData.lastName, { message: 'Фамилия обязательна' });
+  minLength(path.personalData.lastName, 2);
+  maxLength(path.personalData.lastName, 50);
+  pattern(path.personalData.lastName, /^[А-ЯЁа-яё\s-]+$/);
+  // ... остальная валидация
 };
 ```
 
-**Стало** (новый API с behavior и validation):
+**Применить в schema**:
 ```typescript
-import creditApplicationValidation from '../validation/credit-application-validation';
-import { validateTree } from '@/lib/forms/validators';
+// В credit-application-schema.ts
+properties: {
+  schema: propertyFormSchema,
+  initialItems: [],
+  validation: propertyValidation,  // Применяется к каждому элементу
+},
+```
 
-export const createCreditApplicationForm = () => {
-  return new GroupNode<CreditApplicationForm>({
-    form: {
-      // ВСЕ существующие поля из schema
-      loanType: { value: 'consumer', component: Select, ... },
-      loanAmount: { value: null, component: Input, ... },
-      // ... остальные ~50 полей
+**Файлы**:
+- Создать: `src/domains/credit-applications/form/schemas/validation/property-validation.ts`
+- Создать: `src/domains/credit-applications/form/schemas/validation/existing-loan-validation.ts`
+- Создать: `src/domains/credit-applications/form/schemas/validation/co-borrower-validation.ts`
+- Обновить: `src/domains/credit-applications/form/schemas/validation/additional-validation.ts` (удалить `validateTree` для массивов)
 
-      // НОВЫЕ вычисляемые поля (добавить):
-      interestRate: { value: 0, component: Input, componentProps: { readonly: true, label: 'Процентная ставка (%)' } },
-      monthlyPayment: { value: 0, component: Input, componentProps: { readonly: true, label: 'Ежемесячный платеж (₽)' } },
-      fullName: { value: '', component: Input, componentProps: { readonly: true, label: 'Полное имя' } },
-      age: { value: null, component: Input, componentProps: { readonly: true, label: 'Возраст' } },
-      totalIncome: { value: 0, component: Input, componentProps: { readonly: true, label: 'Общий доход (₽)' } },
-      paymentToIncomeRatio: { value: 0, component: Input, componentProps: { readonly: true, label: 'Процент от дохода (%)' } },
-      coBorrowersIncome: { value: 0, component: Input, componentProps: { readonly: true, label: 'Доход созаемщиков (₽)' } },
-      sameEmail: { value: false, component: Checkbox, componentProps: { label: 'Дублировать email' } },
-    },
+---
 
-    behavior: (path) => {
-      // ===================================================================
-      // 1. copyFrom() - Копирование
-      // ===================================================================
-      copyFrom(path.residenceAddress, path.registrationAddress, {
-        when: (form) => form.sameAsRegistration === true,
-        fields: 'all',
-      });
+### 🟡 Важные (улучшают архитектуру)
 
-      copyFrom(path.emailAdditional, path.email, {
-        when: (form) => form.sameEmail === true,
-      });
+#### 5. Обновить поддержку ArrayNode в FormArrayManager
+**Проверить**: Компонент `FormArrayManager` должен корректно работать с `ArrayNode`
 
-      // ===================================================================
-      // 2. enableWhen() - Условное включение
-      // ===================================================================
-      // Ипотека
-      enableWhen(path.propertyValue, path.loanType, {
-        condition: (type) => type === 'mortgage',
-        resetOnDisable: true,
-      });
-      enableWhen(path.initialPayment, path.loanType, {
-        condition: (type) => type === 'mortgage',
-        resetOnDisable: true,
-      });
+**Файл**: `src/lib/forms/components/form-array-manager.tsx`
 
-      // Автокредит
-      enableWhen(path.carBrand, path.loanType, {
-        condition: (type) => type === 'car',
-        resetOnDisable: true,
-      });
-      // ... остальные enableWhen
+**Что проверить**:
+- `control.at(index)` - возвращает `GroupNode` элемента
+- `control.push()` - добавляет новый элемент
+- `control.removeAt(index)` - удаляет элемент
+- `control.length.value` - реактивная длина массива
 
-      // ===================================================================
-      // 3. computeFrom() - Вычисляемые поля
-      // ===================================================================
-      computeFrom(path.interestRate, [path.loanType, path.loanTerm], computeInterestRate);
-      computeFrom(path.monthlyPayment, [path.loanAmount, path.loanTerm, path.interestRate], computeMonthlyPayment);
-      computeFrom(path.initialPayment, [path.propertyValue], computeInitialPayment);
-      computeFrom(path.fullName, [path.personalData.lastName, path.personalData.firstName, path.personalData.middleName], computeFullName);
-      computeFrom(path.age, [path.personalData.birthDate], computeAge);
-      computeFrom(path.totalIncome, [path.monthlyIncome, path.additionalIncome], computeTotalIncome);
-      computeFrom(path.paymentToIncomeRatio, [path.monthlyPayment, path.totalIncome], computePaymentRatio);
+---
 
-      // ===================================================================
-      // 4. watchField() - Динамическая загрузка
-      // ===================================================================
-      watchField(path.registrationAddress.country, loadRegionsForRegistration, { immediate: false, debounce: 300 });
-      watchField(path.registrationAddress.region, loadCitiesForRegistration, { immediate: false, debounce: 300 });
-      watchField(path.carBrand, loadCarModels, { immediate: false, debounce: 300 });
+#### 6. Добавить behavior schema для массивов
+**Что нужно**:
+```typescript
+// В credit-application-behavior.ts
+export const creditApplicationBehavior = (path: FieldPath<CreditApplicationForm>) => {
+  // Сбросить массив при отключении hasProperty
+  watchField(path.hasProperty, (hasProperty, form) => {
+    if (!hasProperty && form.properties && form.properties.length > 0) {
+      form.properties.clear();  // Очистить массив
+    }
+  });
 
-      // ===================================================================
-      // 5. revalidateWhen() - Перевалидация
-      // ===================================================================
-      revalidateWhen(path.monthlyIncome, [path.monthlyPayment]);
-      revalidateWhen(path.initialPayment, [path.propertyValue]);
-    },
+  // Аналогично для existingLoans и coBorrowers
+  watchField(path.hasExistingLoans, (hasLoans, form) => {
+    if (!hasLoans && form.existingLoans) {
+      form.existingLoans.clear();
+    }
+  });
 
-    validation: (path) => {
-      // ===================================================================
-      // 1. ПРИМЕНЯЕМ СУЩЕСТВУЮЩУЮ validation схему
-      // ===================================================================
-      creditApplicationValidation(path);
-
-      // ===================================================================
-      // 2. ДОПОЛНЯЕМ новыми validateTree для вычисляемых полей
-      // ===================================================================
-
-      // Платежеспособность (процент платежа от дохода <= 50%)
-      validateTree((ctx) => {
-        const paymentRatio = ctx.getField('paymentToIncomeRatio');
-        if (!paymentRatio) return null;
-
-        if (paymentRatio > 50) {
-          return {
-            code: 'paymentTooHigh',
-            message: `Ежемесячный платеж не должен превышать 50% дохода (сейчас ${paymentRatio}%)`,
-          };
-        }
-        return null;
-      }, { targetField: 'monthlyPayment' });
-
-      // Возраст заемщика (18-70 лет)
-      validateTree((ctx) => {
-        const age = ctx.getField('age');
-        if (!age) return null;
-
-        if (age < 18) {
-          return { code: 'ageTooYoung', message: 'Заемщик должен быть старше 18 лет' };
-        }
-        if (age > 70) {
-          return { code: 'ageTooOld', message: 'Заемщик должен быть младше 70 лет' };
-        }
-        return null;
-      }, { targetField: 'age' });
-    },
+  watchField(path.hasCoBorrower, (hasCoBorrower, form) => {
+    if (!hasCoBorrower && form.coBorrowers) {
+      form.coBorrowers.clear();
+    }
   });
 };
 ```
 
-**Дополнительно создать**: [src/domains/credit-applications/form/utils/form-helpers.ts](src/domains/credit-applications/form/utils/form-helpers.ts) - вспомогательные функции для behaviors и validations
+**Файл**: `src/domains/credit-applications/form/schemas/credit-application-behavior.ts`
 
 ---
 
-## Критерии успеха миграции
+#### 7. Добавить метод `clear()` в ArrayNode
+**Что добавить** в `array-node.ts`:
+```typescript
+public clear(): void {
+  this.items.value = [];
+  this.markAsDirty();
+}
+```
 
-Миграция считается успешной, если:
-
-✅ **Новый API**: Использует GroupNode конструктор с `{ form, behavior, validation }`
-✅ **Behaviors**: Реализовано минимум 15 behaviors (2 copyFrom, 7+ enableWhen, 8 computeFrom, 3 watchField, 2 revalidateWhen)
-✅ **Validation**: Импортирована и применена существующая схема `creditApplicationValidation`, дополнена 2 новыми validateTree
-✅ **Вычисляемые поля**: Добавлены 8 новых полей (interestRate, monthlyPayment, fullName, age, totalIncome, paymentToIncomeRatio, coBorrowersIncome, sameEmail)
-✅ **Динамическая загрузка**: Реализованы 3 watchField для загрузки регионов, городов и моделей авто
-✅ **Типы**: Обновлен интерфейс CreditApplicationForm с новыми полями
-✅ **Вспомогательные функции**: Создан файл form-helpers.ts с compute функциями и API имитациями
-✅ **TypeScript**: Полностью типизировано, компилируется без ошибок
-✅ **Обратная совместимость**: React компонент CreditApplicationForm.tsx продолжает работать без изменений
-✅ **Комментарии**: Добавлены JSDoc комментарии для всех behavior и compute функций
+**Файл**: `src/lib/forms/core/nodes/array-node.ts`
 
 ---
 
-## Дополнительные требования
+### 🟢 Опциональные (дополнительные улучшения)
 
-### Стиль кода
-- Использовать русские комментарии
-- Группировать behaviors по типам (copyFrom, enableWhen, computeFrom, watchField, revalidateWhen)
-- Группировать валидации по типам (базовые, условные, кросс-полевые)
-- Вынести сложные функции в form-helpers.ts
-- Добавить JSDoc комментарии для compute и validator функций
+#### 8. Добавить методы валидации в ArrayNode
+```typescript
+// В ArrayNode
+public async validate(): Promise<boolean> {
+  const results = await Promise.all(
+    this.items.value.map(item => item.validate())
+  );
+  return results.every(valid => valid);
+}
 
-### Демонстрация возможностей
-- Каждый behavior должен быть **функционально оправдан** (решает реальную бизнес-задачу)
-- Вычисления должны быть **реалистичными** (формула аннуитета, процент от дохода)
-- Условная логика должна быть **сложной** (зависимости от типа кредита, занятости)
-- Динамическая загрузка должна быть **асинхронной** (имитация API запросов)
+public markAllAsTouched(): void {
+  this.items.value.forEach(item => item.markAsTouched());
+}
+```
 
-### Тестирование после миграции
-Убедиться, что после миграции:
-1. **Ипотека**: При выборе loanType === 'mortgage' автоматически вычисляются interestRate, monthlyPayment, initialPayment
-2. **Копирование адресов**: При установке sameAsRegistration === true адрес копируется автоматически
-3. **Динамическая загрузка**: При изменении страны загружаются регионы, при изменении региона — города
-4. **Валидация**: При попытке submit с некорректными данными показываются ошибки валидации
-5. **Платежеспособность**: При превышении 50% платежа от дохода показывается ошибка
+**Файл**: `src/lib/forms/core/nodes/array-node.ts`
 
 ---
 
-## Итоговая задача
+#### 9. Типобезопасность для вложенных массивов
+**Проверить**: CoBorrowerForm содержит вложенную группу `personalData`
 
-**МИГРИРОВАТЬ существующую форму кредитной заявки** ([src/domains/credit-applications/form/schema/create-credit-application-form.ts](src/domains/credit-applications/form/schema/create-credit-application-form.ts)) **на новый GroupNode API с Behavior Schema и Validation Schema.**
+**Убедиться**:
+- `ArrayNode<CoBorrower>` → каждый элемент это `GroupNode<CoBorrower>`
+- `element.personalData` → тоже `GroupNode<PersonalData>`
+- Типы корректны на всех уровнях вложенности
 
-Миграция должна:
-- 📋 **Сохранить всю существующую структуру** (6 шагов, ~50+ полей, вложенные формы, массивы)
-- 🆕 **Добавить новые вычисляемые поля** (interestRate, monthlyPayment, fullName, age, totalIncome, paymentToIncomeRatio, coBorrowersIncome)
-- 🎯 **Реализовать минимум 15 behaviors** (copyFrom, enableWhen, computeFrom, watchField, revalidateWhen)
-- ✅ **Реализовать полную валидацию** (базовая + условная + кросс-полевая)
-- 🚀 **Использовать новый GroupNode конструктор** с `{ form, behavior, validation }`
-- 📝 **Добавить подробные комментарии** для каждого behavior и validation
+---
 
-**Время на выполнение**: Не ограничено, качество важнее скорости.
+#### 10. Обновить примеры и документацию
+**Создать**:
+- `src/examples/array-node-example.tsx` - примеры использования ArrayNode
+- Обновить комментарии в `AdditionalInfoForm.tsx`
+- Добавить JSDoc к методам ArrayNode
 
-**Важно**: Используй все доступные файлы документации и примеров для изучения API!
+---
+
+## Порядок выполнения
+
+### Фаза 1: Подготовка типов и API (1-3 задачи)
+1. ✅ Обновить `DeepFormSchema` для поддержки `{ schema, initialItems, validation? }`
+2. ✅ Обновить `GroupNode` конструктор - добавить создание `ArrayNode`
+3. ✅ Обновить типы `GroupNodeWithControls` - распознавание `ArrayNode`
+
+### Фаза 2: Создание схем валидации (4 задача)
+4. ✅ Создать `property-validation.ts`
+5. ✅ Создать `existing-loan-validation.ts`
+6. ✅ Создать `co-borrower-validation.ts`
+7. ✅ Обновить `additional-validation.ts` - удалить legacy валидацию массивов
+
+### Фаза 3: Миграция формы (1, 5-7 задачи)
+8. ✅ Обновить `credit-application-schema.ts` - новый формат массивов
+9. ✅ Проверить `FormArrayManager` - совместимость с ArrayNode
+10. ✅ Добавить `clear()` метод в ArrayNode
+11. ✅ Добавить behavior schema для сброса массивов
+
+### Фаза 4: Тестирование и документация (8-10 задачи)
+12. ✅ Добавить методы валидации в ArrayNode
+13. ✅ Проверить типобезопасность вложенных структур
+14. ✅ Создать примеры и обновить документацию
+15. ✅ Протестировать все CRUD операции на UI
+
+---
+
+## Критерии успеха
+
+### Функциональность
+- ✅ Массивы корректно создаются через `new ArrayNode(schema, [])`
+- ✅ CRUD операции работают: `push()`, `removeAt()`, `at()`, `clear()`
+- ✅ Валидация применяется к каждому элементу массива
+- ✅ Реактивность: изменения в элементах массива обновляют UI
+
+### Типобезопасность
+- ✅ `control.properties` имеет тип `ArrayNode<Property>`
+- ✅ `control.properties.at(0)` имеет тип `GroupNode<Property> | undefined`
+- ✅ Нет ошибок TypeScript в компиляции
+
+### UI/UX
+- ✅ Кнопка "+" добавляет элементы
+- ✅ Кнопка удаления работает
+- ✅ Валидация отображается для каждого элемента
+- ✅ При снятии чекбокса массив очищается
+
+---
+
+## Риски и ограничения
+
+### Риски
+1. **Breaking changes** - изменение формата schema может сломать существующий код
+2. **Типизация** - сложность с глубокой вложенностью типов (CoBorrower содержит PersonalData)
+3. **Производительность** - большое количество элементов в массиве может замедлить рендер
+
+### Ограничения
+1. **Legacy code** - старый формат `[schema]` должен остаться для обратной совместимости
+2. **Валидация** - нужно продумать как показывать ошибки массива в целом vs ошибки элементов
+
+---
+
+## Следующий шаг
+
+**Начать с Фазы 1, задача 1**: Обновить `DeepFormSchema` для поддержки нового формата массивов.
+
+Это позволит постепенно мигрировать без ломающих изменений.
