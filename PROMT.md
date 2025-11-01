@@ -24,85 +24,84 @@
 
 ### 🔴 Критичные (блокируют миграцию)
 
-#### 1. Обновить схему создания массивов в `credit-application-schema.ts`
-**Текущий код:**
+#### 1. ~~Обновить схему создания массивов~~ ✅ НЕ ТРЕБУЕТСЯ!
+
+**Текущий код ОСТАЕТСЯ БЕЗ ИЗМЕНЕНИЙ:**
 ```typescript
-properties: [propertyFormSchema],  // массив из 1 элемента (legacy)
-existingLoans: [existingLoansFormSchema],
-coBorrowers: [coBorrowersFormSchema],
+properties: [propertyFormSchema],  // ✅ оставляем как есть!
+existingLoans: [existingLoansFormSchema],  // ✅ оставляем как есть!
+coBorrowers: [coBorrowersFormSchema],  // ✅ оставляем как есть!
 ```
 
-**Нужно изменить на:**
-```typescript
-properties: {
-  schema: propertyFormSchema,
-  initialItems: [],
-},
-existingLoans: {
-  schema: existingLoansFormSchema,
-  initialItems: [],
-},
-coBorrowers: {
-  schema: coBorrowersFormSchema,
-  initialItems: [],
-},
-```
+**Почему не нужно менять:**
+- GroupNode автоматически распознает формат `[schema]`
+- Автоматически создаст `ArrayNode` при обнаружении массива с 1 элементом
+- Не нужно менять существующий код!
 
-**Файл**: `src/domains/credit-applications/form/schemas/credit-application-schema.ts`
+**Файл**: `src/domains/credit-applications/form/schemas/credit-application-schema.ts` - **НЕ ТРОГАЕМ**
 
 ---
 
 #### 2. Обновить типы для массивов в `GroupNode`
-**Проблема**: GroupNode должен корректно определять ArrayNode из schema
 
-**Нужно**:
-- Проверить типизацию в `GroupNode` для распознавания ArrayNode из schema
-- Убедиться, что `GroupNodeWithControls` корректно типизирует массивы как `ArrayNode<T>`
-- Проверить `DeepFormSchema` - должна поддерживать объект с `schema` и `initialItems`
+**Что нужно**:
+- ✅ `GroupNodeWithControls` должен корректно типизировать массивы как `ArrayNode<T>`
+- ✅ TypeScript должен выводить `control.properties` → `ArrayNode<Property>`
 
 **Файлы**:
-- `src/lib/forms/core/nodes/group-node.ts`
-- `src/lib/forms/types/group-node-proxy.ts`
-- `src/lib/forms/types/deep-schema.ts`
+- `src/lib/forms/types/group-node-proxy.ts` - обновить типы
+
+**НЕ НУЖНО**:
+- ❌ Менять `DeepFormSchema` - типы остаются как есть
+- ❌ Добавлять `ArrayNodeConfig<T>` - используем существующий формат `[schema]`
 
 ---
 
 #### 3. Добавить создание ArrayNode в конструкторе GroupNode
+
 **Текущий код** (строка ~70-90 в `group-node.ts`):
 ```typescript
-// Создать дочерние FieldNode для каждого поля
 for (const [key, config] of Object.entries(schema)) {
   if (Array.isArray(config)) {
     // TODO: Legacy array support - будет удалено после миграции
     (controls as any)[key] = config;
   } else if (typeof config === 'object' && 'value' in config) {
-    // Создать FieldNode
     controls[key] = new FieldNode(config as FieldConfig);
   } else {
-    // Создать вложенный GroupNode
     controls[key] = new GroupNode(config as DeepFormSchema<any>);
   }
 }
 ```
 
-**Нужно добавить**:
+**Нужно изменить на**:
 ```typescript
+import { ArrayNode } from './array-node';
+
+// ... в конструкторе:
 for (const [key, config] of Object.entries(schema)) {
-  if ('schema' in config && 'initialItems' in config) {
-    // Создать ArrayNode
-    controls[key] = new ArrayNode(config.schema, config.initialItems || []);
-  } else if (Array.isArray(config)) {
-    // Legacy support (deprecated)
-    (controls as any)[key] = config;
-  } else if (typeof config === 'object' && 'value' in config) {
-    // Создать FieldNode
+  // ✅ Распознаем массив [schema] и создаем ArrayNode
+  if (Array.isArray(config)) {
+    if (config.length === 1) {
+      // Формат: properties: [propertyFormSchema]
+      const itemSchema = config[0] as DeepFormSchema<any>;
+      controls[key] = new ArrayNode(itemSchema, []);
+    } else {
+      console.warn(`Unexpected array format for "${key}"`);
+      (controls as any)[key] = config;
+    }
+  }
+  // FieldNode
+  else if (typeof config === 'object' && 'value' in config) {
     controls[key] = new FieldNode(config as FieldConfig);
-  } else {
-    // Создать вложенный GroupNode
+  }
+  // GroupNode
+  else {
     controls[key] = new GroupNode(config as DeepFormSchema<any>);
   }
 }
 ```
+
+**Ключевое изменение**: Проверяем `Array.isArray(config) && config.length === 1` → создаем ArrayNode
 
 **Файл**: `src/lib/forms/core/nodes/group-node.ts`
 
