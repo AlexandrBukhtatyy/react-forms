@@ -6,7 +6,7 @@ import {
   maxLength,
   pattern,
 } from '@/lib/forms/validators';
-import type { CreditApplicationForm } from '../types/credit-application';
+import type { CreditApplicationForm } from '../../types/credit-application';
 
 /**
  * Схема валидации для Шага 6: Согласия и подтверждение

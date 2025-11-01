@@ -8,7 +8,7 @@ import {
   minLength,
   maxLength,
 } from '@/lib/forms/validators';
-import type { CreditApplicationForm } from '../types/credit-application';
+import type { CreditApplicationForm } from '../../types/credit-application';
 
 /**
  * Схема валидации для Шага 1: Основная информация о кредите
@@ -81,12 +81,22 @@ export const basicInfoValidation = (path: FieldPath<CreditApplicationForm>) => {
     (type) => type === 'car',
     (path) => {
       required(path.carBrand, { message: 'Укажите марку автомобиля' });
+      minLength(path.carBrand, 2, { message: 'Минимум 2 символа' });
+      maxLength(path.carBrand, 50, { message: 'Максимум 50 символов' });
+
       required(path.carModel, { message: 'Укажите модель автомобиля' });
+      minLength(path.carModel, 1, { message: 'Минимум 1 символ' });
+      maxLength(path.carModel, 50, { message: 'Максимум 50 символов' });
+
       required(path.carYear, { message: 'Укажите год выпуска' });
       min(path.carYear, 2000, { message: 'Год выпуска не ранее 2000' });
+      max(path.carYear, new Date().getFullYear() + 1, {
+        message: `Год выпуска не позднее ${new Date().getFullYear() + 1}`,
+      });
 
       required(path.carPrice, { message: 'Укажите стоимость автомобиля' });
       min(path.carPrice, 300000, { message: 'Минимальная стоимость: 300 000 ₽' });
+      max(path.carPrice, 10000000, { message: 'Максимальная стоимость: 10 000 000 ₽' });
     }
   );
 };

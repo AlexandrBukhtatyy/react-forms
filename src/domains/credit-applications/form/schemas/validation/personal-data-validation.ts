@@ -1,12 +1,13 @@
 import type { FieldPath } from '@/lib/forms/types';
 import {
   validate,
+  validateTree,
   required,
   minLength,
   maxLength,
   pattern,
 } from '@/lib/forms/validators';
-import type { CreditApplicationForm } from '../types/credit-application';
+import type { CreditApplicationForm } from '../../types/credit-application';
 
 /**
  * Схема валидации для Шага 2: Персональные данные
@@ -60,8 +61,10 @@ export const personalDataValidation = (path: FieldPath<CreditApplicationForm>) =
   });
 
   required(path.personalData.gender, { message: 'Выберите пол' });
+
   required(path.personalData.birthPlace, { message: 'Место рождения обязательно' });
   minLength(path.personalData.birthPlace, 5, { message: 'Минимум 5 символов' });
+  maxLength(path.personalData.birthPlace, 100, { message: 'Максимум 100 символов' });
 
   // Валидация паспортных данных
   required(path.passportData.series, { message: 'Серия паспорта обязательна' });
@@ -93,11 +96,39 @@ export const personalDataValidation = (path: FieldPath<CreditApplicationForm>) =
 
   required(path.passportData.issuedBy, { message: 'Кем выдан обязательно' });
   minLength(path.passportData.issuedBy, 10, { message: 'Минимум 10 символов' });
+  maxLength(path.passportData.issuedBy, 200, { message: 'Максимум 200 символов' });
 
   required(path.passportData.departmentCode, { message: 'Код подразделения обязателен' });
   pattern(path.passportData.departmentCode, /^\d{3}-\d{3}$/, {
     message: 'Формат: 000-000',
   });
+
+  // Кросс-полевая валидация: дата выдачи паспорта должна быть после достижения 14 лет
+  validateTree(
+    (ctx) => {
+      const form = ctx.formValue();
+      if (!form.personalData.birthDate || !form.passportData.issueDate) {
+        return null;
+      }
+
+      const birthDate = new Date(form.personalData.birthDate);
+      const issueDate = new Date(form.passportData.issueDate);
+
+      // Минимальный возраст получения паспорта - 14 лет
+      const minIssueDate = new Date(birthDate);
+      minIssueDate.setFullYear(birthDate.getFullYear() + 14);
+
+      if (issueDate < minIssueDate) {
+        return {
+          code: 'passportIssuedBeforeMinAge',
+          message: 'Паспорт не может быть выдан ранее достижения 14 лет',
+        };
+      }
+
+      return null;
+    },
+    { targetField: 'passportData.issueDate' }
+  );
 
   // Валидация ИНН
   required(path.inn, { message: 'ИНН обязателен' });
