@@ -73,6 +73,12 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   private fields: Map<keyof T, FormNode<any>>;
   private _submitting: Signal<boolean>;
 
+  /**
+   * Ссылка на Proxy-инстанс для использования в BehaviorContext
+   * Устанавливается в конструкторе до применения behavior schema
+   */
+  private _proxyInstance?: GroupNodeWithControls<T>;
+
   // ============================================================================
   // Публичные computed signals
   // ============================================================================
@@ -175,6 +181,10 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
         return (target as any)[prop];
       },
     }) as GroupNodeWithControls<T>;
+
+    // ✅ Сохраняем Proxy-инстанс перед применением схем
+    // Это позволяет BehaviorContext получить доступ к прокси через formNode
+    this._proxyInstance = proxy;
 
     // Применяем схемы, если они переданы (новый API)
     if (behaviorSchema) {
@@ -305,7 +315,9 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     try {
       const path = createFieldPath<T>();
       schemaFn(path);
-      ValidationRegistry.endRegistration(this as any);
+      // ✅ Передаём proxy-инстанс, если доступен (консистентность с applyBehaviorSchema)
+      const formToUse = (this._proxyInstance || this) as any;
+      ValidationRegistry.endRegistration(formToUse);
     } catch (error) {
       console.error('Error applying validation schema:', error);
       throw error;
@@ -352,7 +364,9 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     try {
       const path = createBehaviorFieldPath<T>();
       schemaFn(path);
-      const result = BehaviorRegistry.endRegistration(this as any);
+      // ✅ Передаём proxy-инстанс в endRegistration, если доступен
+      const formToUse = (this._proxyInstance || this) as any;
+      const result = BehaviorRegistry.endRegistration(formToUse);
       return result.cleanup;
     } catch (error) {
       console.error('Error applying behavior schema:', error);

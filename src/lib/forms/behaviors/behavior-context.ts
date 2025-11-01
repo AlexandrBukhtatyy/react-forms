@@ -14,7 +14,26 @@ import type { BehaviorContext, FieldPathNode } from './types';
  * Используется в callback функциях behavior схем
  */
 export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
-  constructor(private form: GroupNode<TForm>) {}
+  /**
+   * Корневой узел формы с проксированными полями
+   * Позволяет обращаться к полям напрямую: ctx.formNode.properties.clear()
+   */
+  public readonly formNode: any;
+
+  constructor(private form: GroupNode<TForm>) {
+    // ✅ Используем _proxyInstance если доступен, иначе fallback на form
+    // _proxyInstance устанавливается в GroupNode конструкторе перед применением behavior схем
+    this.formNode = (form as any)._proxyInstance || form;
+
+    // Debug: проверка что formNode установлен
+    if (import.meta.env.DEV) {
+      console.log('[BehaviorContext] Created with formNode:', {
+        hasProxyInstance: !!(form as any)._proxyInstance,
+        formNode: this.formNode,
+        formNodeType: this.formNode?.constructor?.name
+      });
+    }
+  }
 
   /**
    * Получить значение поля по строковому пути
@@ -85,6 +104,15 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
    */
   getForm(): TForm {
     return this.form.getValue();
+  }
+
+  /**
+   * Получить узел формы (FormNode) по строковому пути
+   * @param path - Путь к полю (например, "properties", "address.city")
+   * @returns FormNode или undefined если путь не найден
+   */
+  getFieldNode(path: string): FormNode<any> | undefined {
+    return this.resolveFieldNode(path);
   }
 
   /**

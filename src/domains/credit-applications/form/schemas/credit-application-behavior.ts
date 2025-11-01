@@ -8,11 +8,11 @@
  * - watchField: Подписка на изменения с динамической загрузкой
  * - revalidateWhen: Перевалидация зависимых полей
  *
- * Всего реализовано 30 behaviors:
+ * Всего реализовано 33 behaviors:
  * - 2 copyFrom
  * - 15 enableWhen (массивы контролируются через UI)
  * - 8 computeFrom
- * - 3 watchField
+ * - 6 watchField (включая 3 для очистки ArrayNode)
  * - 2 revalidateWhen
  */
 
@@ -234,4 +234,32 @@ export const creditApplicationBehavior: BehaviorSchemaFn<CreditApplicationForm> 
 
   // Перевалидировать первоначальный взнос при изменении стоимости недвижимости
   revalidateWhen(path.initialPayment, [path.propertyValue]);
+
+  // ===================================================================
+  // 6. Очистка ArrayNode при снятии чекбоксов (3)
+  // ===================================================================
+  // ✅ Миграция на ArrayNode: автоматическая очистка массивов
+
+  // Очистить массив имущества при снятии чекбокса hasProperty
+  watchField(path.hasProperty, (hasProperty, ctx) => {
+    console.log('[watchField hasProperty]', { hasProperty, ctx, formNode: ctx.formNode });
+    if (!hasProperty) {
+      console.log('[watchField hasProperty] Clearing properties array');
+      ctx.formNode.properties?.clear();
+    }
+  });
+
+  // Очистить массив кредитов при снятии чекбокса hasExistingLoans
+  watchField(path.hasExistingLoans, (hasLoans, ctx) => {
+    if (!hasLoans) {
+      ctx.formNode.existingLoans?.clear();
+    }
+  });
+
+  // Очистить массив созаемщиков при снятии чекбокса hasCoBorrower
+  watchField(path.hasCoBorrower, (hasCoBorrower, ctx) => {
+    if (!hasCoBorrower) {
+      ctx.formNode.coBorrowers?.clear();
+    }
+  });
 };

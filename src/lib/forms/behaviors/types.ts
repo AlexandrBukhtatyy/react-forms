@@ -82,6 +82,28 @@ export interface BehaviorContext<TForm> {
    * Получить всю форму целиком
    */
   getForm(): TForm;
+
+  /**
+   * Получить узел формы (FormNode) по строковому пути
+   * @param path - Путь к полю (например, "properties", "address.city")
+   * @returns FormNode или undefined если путь не найден
+   */
+  getFieldNode(path: string): FormNode<any> | undefined;
+
+  /**
+   * Получить корневой узел формы с доступом к полям через точку
+   * @returns GroupNode с проксированными полями (GroupNodeWithControls)
+   *
+   * @example
+   * ```typescript
+   * watchField(path.hasProperty, (hasProperty, ctx) => {
+   *   if (!hasProperty) {
+   *     ctx.formNode.properties.clear(); // Прямой доступ к ArrayNode!
+   *   }
+   * });
+   * ```
+   */
+  readonly formNode: any; // Типизируется как GroupNodeWithControls<TForm> в реализации
 }
 
 /**

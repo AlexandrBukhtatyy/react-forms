@@ -334,14 +334,16 @@ class BehaviorRegistryClass {
     // Вызвать сразу если immediate: true
     if (immediate) {
       const value = node.value.value;
-      callback(value, node, context);
+      // ✅ Передаём context, а не node
+      callback(value, context);
     }
 
     return effect(() => {
       const value = node.value.value;
 
       withDebounce(() => {
-        callback(value, node, context);
+        // ✅ Передаём context, а не node
+        callback(value, context);
       });
     });
   }

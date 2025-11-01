@@ -272,6 +272,13 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
       if (initialValue) {
         node.patchValue(initialValue);
       }
+
+      // Применяем validation schema к новому элементу, если она была установлена
+      const validationSchemaFn = (this as any).validationSchemaFn;
+      if (validationSchemaFn && 'applyValidationSchema' in node) {
+        node.applyValidationSchema(validationSchemaFn);
+      }
+
       return node as any;
     }
 
@@ -293,6 +300,38 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
       !('component' in schema) &&
       !Array.isArray(schema)
     );
+  }
+
+  // ============================================================================
+  // Validation Schema
+  // ============================================================================
+
+  /**
+   * Применить validation schema ко всем элементам массива
+   *
+   * Validation schema будет применена к:
+   * - Всем существующим элементам
+   * - Всем новым элементам, добавляемым через push/insert
+   *
+   * @param schemaFn - Функция валидации для элемента массива
+   *
+   * @example
+   * ```typescript
+   * import { propertyValidation } from './validation/property-validation';
+   *
+   * form.properties.applyValidationSchema(propertyValidation);
+   * ```
+   */
+  applyValidationSchema(schemaFn: any): void {
+    // Сохраняем validation schema для применения к новым элементам
+    (this as any).validationSchemaFn = schemaFn;
+
+    // Применяем validation schema ко всем существующим элементам
+    this.items.value.forEach((item) => {
+      if ('applyValidationSchema' in item && typeof item.applyValidationSchema === 'function') {
+        item.applyValidationSchema(schemaFn);
+      }
+    });
   }
 
   // ============================================================================
