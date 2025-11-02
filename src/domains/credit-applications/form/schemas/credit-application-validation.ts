@@ -3,12 +3,12 @@ import type { CreditApplicationForm } from '../types/credit-application';
 import { apply, validateTree } from '@/lib/forms/validators';
 
 // Импортируем все схемы шагов
-import { basicInfoValidation } from './validation/basic-info-validation';
-import { personalDataValidation } from './validation/personal-data-validation';
-import { contactInfoValidation } from './validation/contact-info-validation';
-import { employmentValidation } from './validation/employment-validation';
-import { additionalValidation } from './validation/additional-validation';
-import { confirmationValidation } from './validation/confirmation-validation';
+import { basicInfoValidation } from './validations/basic-info-validation';
+import { personalDataValidation } from './validations/personal-data-validation';
+import { contactInfoValidation } from './validations/contact-info-validation';
+import { employmentValidation } from './validations/employment-validation';
+import { additionalValidation } from './validations/additional-validation';
+import { confirmationValidation } from './validations/confirmation-validation';
 
 // Импортируем validator функции для вычисляемых полей
 import { validatePaymentToIncome, validateAge } from '../utils';

@@ -10,7 +10,7 @@ import {
 import type { CreditApplicationForm } from '../../types/credit-application';
 
 // Импортируем модульную validation схему для Address
-import { addressValidation } from '../validation-modules/address-validation';
+import { addressValidation } from './address-validation';
 
 /**
  * Схема валидации для Шага 3: Контактная информация
