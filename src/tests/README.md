@@ -214,6 +214,6 @@ npm run test:coverage
 
 ## Дополнительная информация
 
-- [Документация по организации тестов](../../docs/testing-structure.md)
+- [Документация по организации тестов](./docs/testing-structure.md)
 - [Vitest Documentation](https://vitest.dev/)
 - [Testing Library](https://testing-library.com/)

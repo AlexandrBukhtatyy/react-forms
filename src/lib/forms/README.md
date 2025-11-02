@@ -1,386 +1,421 @@
 # Forms Library
 
-Signal-based forms library для React с TypeScript поддержкой и Angular-inspired API.
+Библиотека для управления формами на основе **@preact/signals-react** и **TypeScript**.
 
-## Особенности
+## 🎯 Что это?
 
-- ✅ **Signal-based** - Использует Preact Signals для реактивности
-- ✅ **Type-safe** - Полная поддержка TypeScript с generic типами
-- ✅ **Declarative** - Декларативное описание схемы формы
-- ✅ **Валидация** - Синхронная и асинхронная валидация
-- ✅ **Resources** - Встроенная поддержка ресурсов (static/preload/partial)
-- ✅ **Flexible** - Работает с любыми React компонентами
+Современная библиотека форм с:
+- ✅ **Type-safe** архитектурой на основе иерархии классов
+- ✅ **Reactive** состоянием через @preact/signals
+- ✅ **Declarative** API для валидации и поведения
+- ✅ **Composable** структурой для переиспользования
 
-## Быстрый старт
+## 🚀 Quick Start
 
 ```typescript
-import { FormStore, FormField, staticResource } from '@/lib/forms';
-import type { FormSchema } from '@/lib/forms';
+import { GroupNode } from './core/nodes/group-node';
+import { required, email } from './validators';
 
-// 1. Определите модель формы
-interface UserFormModel {
-  username: string;
+interface LoginForm {
   email: string;
-  role: string | null;
+  password: string;
 }
 
-// 2. Создайте ресурсы
-const roleResource = staticResource([
-  { id: '1', label: 'Admin', value: 'admin' },
-  { id: '2', label: 'User', value: 'user' }
-]);
+const form = new GroupNode<LoginForm>({
+  form: {
+    email: { value: '', component: Input },
+    password: { value: '', component: Input },
+  },
+  validation: (path) => {
+    required(path.email);
+    email(path.email);
+    required(path.password);
+  },
+});
 
-// 3. Опишите схему
-const createUserForm = () => {
-  const schema: FormSchema<UserFormModel> = {
-    username: {
-      value: '',
-      component: Input,
-      componentProps: { placeholder: 'Enter username' }
-    },
-    email: {
-      value: '',
-      component: Input,
-      componentProps: { type: 'email' }
-    },
-    role: {
-      value: null,
-      component: Select,
-      componentProps: {
-        placeholder: 'Select role',
-        resource: roleResource
-      }
-    }
-  };
+// Использование
+form.email.setValue('test@mail.com');
+const isValid = await form.validate();
+```
 
-  return new FormStore(schema);
-};
+## 📚 Архитектура
 
-// 4. Используйте в компоненте
-function UserForm() {
-  const form = React.useMemo(() => createUserForm(), []);
+### Иерархия классов
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+```
+FormNode<T>                      # Абстрактный базовый класс
+├── FieldNode<T>                 # Поле с валидацией
+├── GroupNode<T>                 # Группа полей (объект)
+└── ArrayNode<T>                 # Массив форм
+```
 
-    const result = await form.submit(async (values) => {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        body: JSON.stringify(values)
-      });
-      return response.json();
-    });
+### FormNode - базовый класс
 
-    if (result) {
-      console.log('Success:', result);
-    }
-  };
+Определяет единый интерфейс для всех узлов:
 
-  return (
-    <Form onSubmit={handleSubmit}>
-      <FormField control={form.controls.username} label="Username" />
-      <FormField control={form.controls.email} label="Email" />
-      <FormField control={form.controls.role} label="Role" />
+```typescript
+abstract class FormNode<T> {
+  // Readonly signals (реактивное состояние)
+  abstract readonly value: ReadonlySignal<T>;
+  abstract readonly valid: ReadonlySignal<boolean>;
+  abstract readonly errors: ReadonlySignal<ValidationError[]>;
+  abstract readonly touched: ReadonlySignal<boolean>;
+  abstract readonly dirty: ReadonlySignal<boolean>;
 
-      <Button type="submit" disabled={form.invalid || form.submitting}>
-        {form.submitting ? 'Saving...' : 'Save'}
-      </Button>
-    </Form>
-  );
+  // Методы
+  abstract getValue(): T;
+  abstract setValue(value: T): void;
+  abstract validate(): Promise<boolean>;
 }
 ```
 
-## Архитектура
+### FieldNode - поле формы
+
+```typescript
+const field = new FieldNode({
+  value: '',
+  component: Input,
+  validators: [required, email],
+  asyncValidators: [checkEmailUnique],
+  debounce: 300,
+});
+
+field.setValue('test@mail.com');
+await field.validate();
+```
+
+### GroupNode - группа полей
+
+```typescript
+const form = new GroupNode({
+  form: {
+    name: { value: '', component: Input },
+    address: {
+      city: { value: '', component: Input },
+      street: { value: '', component: Input },
+    },
+  },
+});
+
+// Прямой доступ через proxy
+form.name.setValue('John');
+form.address.city.setValue('Moscow');
+```
+
+### ArrayNode - массив форм
+
+```typescript
+const form = new GroupNode({
+  form: {
+    items: [{
+      title: { value: '', component: Input },
+      price: { value: 0, component: Input },
+    }],
+  },
+});
+
+// CRUD операции
+form.items.push({ title: 'Item 1', price: 100 });
+form.items.at(0)?.title.setValue('Updated');
+form.items.removeAt(0);
+```
+
+## 🔍 Validation Schema API
+
+Декларативная валидация:
+
+```typescript
+const form = new GroupNode({
+  form: { /* ... */ },
+  validation: (path) => {
+    // Sync валидаторы
+    required(path.email);
+    email(path.email);
+    minLength(path.password, 8);
+
+    // Async валидаторы
+    validateAsync(
+      path.email,
+      async (value) => {
+        const exists = await api.checkEmail(value);
+        return exists ? { code: 'exists', message: 'Email занят' } : null;
+      },
+      { debounce: 300 }
+    );
+
+    // Кросс-полевая валидация
+    validate(
+      [path.password, path.confirmPassword],
+      (values) => {
+        const [password, confirm] = values;
+        return password !== confirm
+          ? { code: 'mismatch', message: 'Пароли не совпадают' }
+          : null;
+      },
+      { targetField: 'confirmPassword' }
+    );
+
+    // Условная валидация
+    applyWhen(
+      path.loanType,
+      (type) => type === 'mortgage',
+      (path) => {
+        required(path.propertyValue);
+      }
+    );
+  },
+});
+```
+
+### Доступные валидаторы
+
+```typescript
+import {
+  required,
+  email,
+  min,
+  max,
+  minLength,
+  maxLength,
+  pattern,
+  validate,
+  validateAsync,
+  validateTree,
+  applyWhen,
+} from './validators';
+```
+
+### Композиция валидации
+
+```typescript
+// address-validation.ts
+export const addressValidation: ValidationSchemaFn<Address> = (path) => {
+  required(path.city);
+  required(path.street);
+};
+
+// user-validation.ts
+import { apply } from './validators';
+
+export const userValidation: ValidationSchemaFn<User> = (path) => {
+  // Применить к нескольким полям
+  apply([path.homeAddress, path.workAddress], addressValidation);
+};
+```
+
+## ⚡ Behavior Schema API
+
+Декларативное реактивное поведение:
+
+```typescript
+const form = new GroupNode({
+  form: { /* ... */ },
+  behavior: (path) => {
+    // Копирование полей
+    copyFrom(path.residenceAddress, path.registrationAddress, {
+      when: (form) => form.sameAsRegistration === true
+    });
+
+    // Условное включение
+    enableWhen(path.propertyValue, path.loanType, {
+      condition: (type) => type === 'mortgage',
+      resetOnDisable: true,
+    });
+
+    // Вычисляемое поле
+    computeFrom(
+      path.fullName,
+      [path.firstName, path.lastName],
+      ({ firstName, lastName }) => `${firstName} ${lastName}`.trim()
+    );
+
+    // Callback при изменении
+    watchField(path.country, async (country, ctx) => {
+      const regions = await fetchRegions(country);
+      ctx.updateComponentProps(path.region, { options: regions });
+    });
+  },
+});
+```
+
+### Доступные behaviors
+
+```typescript
+import {
+  copyFrom,
+  enableWhen,
+  computeFrom,
+  watchField,
+  apply,
+  applyWhen,
+} from './behaviors';
+```
+
+## 📁 Структура проекта
 
 ```
 src/lib/forms/
-├── components/       # React компоненты
-│   ├── form.tsx
-│   ├── form-field.tsx
-│   └── input-*.tsx
-├── core/            # Основная логика
-│   ├── field-controller.ts
-│   └── form-store.ts
-├── resources/       # API для ресурсов
+├── core/
+│   └── nodes/                   # Узлы формы
+│       ├── form-node.ts         # Базовый класс
+│       ├── field-node.ts        # Поле
+│       ├── group-node.ts        # Группа
+│       └── array-node.ts        # Массив
+│
+├── validators/                  # Validation Schema API
+│   ├── schema-validators.ts     # Функции валидации
+│   ├── validation-registry.ts   # Реестр валидаторов
+│   ├── validation-context.ts    # Контекст валидации
+│   ├── field-path.ts            # Type-safe пути
 │   └── index.ts
-├── validators/      # Встроенные валидаторы
-│   └── built-in.ts
-├── types.ts         # TypeScript типы
-└── index.ts         # Главный экспорт
+│
+├── behaviors/                   # Behavior Schema API
+│   ├── schema-behaviors.ts      # Behavior функции
+│   ├── behavior-registry.ts     # Реестр behaviors
+│   ├── behavior-context.ts      # Контекст behaviors
+│   ├── create-field-path.ts     # Type-safe пути
+│   └── index.ts
+│
+├── hooks/                       # React hooks
+│   ├── useFormEffect.ts
+│   ├── useComputedField.ts
+│   ├── useCopyField.ts
+│   └── useEnableWhen.ts
+│
+├── types/                       # TypeScript типы
+└── README.md                    # Этот файл
 ```
 
-## API Reference
+## 🧪 Тестирование
 
-### FormStore
+Unit тесты находятся в `src/tests/unit/forms/`:
 
-Главный класс для управления формой.
-
-```typescript
-class FormStore<T extends Record<string, any>> {
-  // Доступ к контроллерам полей
-  controls: Record<keyof T, FieldController>;
-
-  // Состояние формы
-  valid: boolean;
-  invalid: boolean;
-  dirty: boolean;
-  pristine: boolean;
-  touched: boolean;
-  submitting: boolean;
-  pending: boolean;
-
-  // Методы
-  getValue(): T;
-  setValue(values: Partial<T>): void;
-  reset(): void;
-  markAllAsTouched(): void;
-  validate(): Promise<boolean>;
-  submit<R>(onSubmit: (values: T) => Promise<R> | R): Promise<R | null>;
-}
+```bash
+npm run test:unit         # Запустить unit тесты
+npm run test:coverage     # С coverage
 ```
 
-### FieldController
+**Текущее покрытие**:
+- ✅ FormNode, FieldNode, GroupNode, ArrayNode
+- ✅ ValidationContext
+- ✅ BehaviorRegistry
+- ✅ 70+ тестов
 
-Контроллер отдельного поля формы.
+## 📖 Документация
 
-```typescript
-class FieldController<T = any> {
-  // Значение
-  value: T;
+### Основная документация
+- **[Architecture](../../../docs/ARCHITECTURE.md)** - полное описание архитектуры
+- **[Quick Start](../../../docs/QUICK-START.md)** - быстрое введение
+- **[Migration Guide](./MIGRATION.md)** - миграция со старой архитектуры
 
-  // Компонент
-  component: ComponentType<any>;
-  componentProps: Record<string, any>;
+### Примеры
+- **[Validation Examples](../../examples/validation-example.ts)** - примеры валидации
+- **[Behavior Examples](../../examples/behavior-schema-example.ts)** - примеры behaviors
+- **[React Hooks](../../examples/react-hooks-example.tsx)** - React integration
+- **[GroupNode Config](../../examples/group-node-config-example.ts)** - конфигурация
 
-  // Состояние
-  status: 'valid' | 'invalid' | 'pending' | 'disabled';
-  errors: ValidationError[];
-  touched: boolean;
-  dirty: boolean;
-  valid: boolean;
-  invalid: boolean;
-  pending: boolean;
-  shouldShowError: boolean;
+## 🔧 API Reference
 
-  // Методы
-  markAsTouched(): void;
-  validate(): Promise<boolean>;
-  setErrors(errors: ValidationError[]): void;
-}
-```
-
-### Validators
-
-Встроенные валидаторы.
+### GroupNode
 
 ```typescript
-import { Validators } from '@/lib/forms';
-
-const schema: FormSchema<Model> = {
-  email: {
-    value: '',
-    component: Input,
-    validators: [
-      Validators.required('Email is required'),
-      Validators.email('Invalid email')
-    ]
-  },
-  password: {
-    value: '',
-    component: InputPassword,
-    validators: [
-      Validators.required(),
-      Validators.minLength(8, 'Min 8 characters'),
-      Validators.pattern(/[A-Z]/, 'Must contain uppercase')
-    ]
-  }
-};
-```
-
-Доступные валидаторы:
-- `required(message?)` - Обязательное поле
-- `email(message?)` - Валидация email
-- `minLength(min, message?)` - Минимальная длина
-- `maxLength(max, message?)` - Максимальная длина
-- `min(min, message?)` - Минимальное значение
-- `max(max, message?)` - Максимальное значение
-- `pattern(regex, message?)` - Регулярное выражение
-
-### Resources
-
-API для создания ресурсов данных.
-
-```typescript
-import { staticResource, preloadResource, partialResource } from '@/lib/forms';
-
-// Статические данные (загружаются сразу)
-const statusResource = staticResource([
-  { id: '1', label: 'Active', value: 'active' },
-  { id: '2', label: 'Inactive', value: 'inactive' }
-]);
-
-// Предзагрузка (загружается один раз при первом обращении)
-const countriesResource = preloadResource(async () => {
-  const response = await fetch('/api/countries');
-  return response.json();
+// Создание формы
+const form = new GroupNode<T>({
+  form: DeepFormSchema<T>,
+  validation?: ValidationSchemaFn<T>,
+  behavior?: BehaviorSchemaFn<T>,
 });
 
-// Парциальная загрузка (загружается при каждом запросе с параметрами)
-const usersResource = partialResource(async (params) => {
-  const search = params?.search || '';
-  const response = await fetch(`/api/users?search=${search}`);
-  return response.json();
-});
+// Получение/установка значений
+form.getValue(): T
+form.setValue(value: T): void
+form.patchValue(partial: Partial<T>): void
+form.reset(): void
+
+// Валидация
+form.validate(): Promise<boolean>
+form.clearErrors(): void
+
+// Состояние
+form.markAsTouched(): void
+form.markAsDirty(): void
+
+// Submit
+form.submit(callback: (values: T) => Promise<void>): Promise<void>
+
+// Signals (readonly)
+form.value: ReadonlySignal<T>
+form.valid: ReadonlySignal<boolean>
+form.errors: ReadonlySignal<ValidationError[]>
+form.touched: ReadonlySignal<boolean>
+form.dirty: ReadonlySignal<boolean>
 ```
 
-## Примеры
-
-### Форма с валидацией
+### ArrayNode
 
 ```typescript
-const schema: FormSchema<Model> = {
-  username: {
-    value: '',
-    component: Input,
-    validators: [
-      Validators.required(),
-      Validators.minLength(3)
-    ],
-    asyncValidators: [
-      async (value) => {
-        const available = await checkUsername(value);
-        return available ? null : {
-          code: 'taken',
-          message: 'Username already taken'
-        };
-      }
-    ]
-  }
-};
+// CRUD
+array.push(value: Partial<T>): void
+array.removeAt(index: number): void
+array.insert(index: number, value: Partial<T>): void
+array.clear(): void
+array.at(index: number): GroupNode<T> | undefined
+
+// Итерация
+array.forEach(callback: (item, index) => void): void
+array.map<R>(callback: (item, index) => R): R[]
+
+// Schemas
+array.applyValidationSchema(schema: ValidationSchemaFn<T>): void
+array.applyBehaviorSchema(schema: BehaviorSchemaFn<T>): void
+
+// Helpers
+array.watchItems(field: keyof T, callback: (values) => void): () => void
+array.watchLength(callback: (length: number) => void): () => void
+
+// Signals
+array.length: ReadonlySignal<number>
+array.value: ReadonlySignal<T[]>
+array.valid: ReadonlySignal<boolean>
 ```
 
-### Форма фильтрации (без валидации)
+## 💡 Best Practices
 
+1. **Используйте новый API** - GroupNode вместо FormStore (legacy)
+2. **Декларативный подход** - validation/behavior в конструкторе
+3. **Композиция схем** - переиспользуйте validation/behavior функции через `apply`
+4. **Type-safe пути** - используйте `path.*` вместо строк
+5. **Cleanup** - вызывайте cleanup функции в React useEffect
+
+## 🔄 Миграция
+
+Переход со старой архитектуры:
+
+**Было**:
 ```typescript
-const schema: FormSchema<FilterModel> = {
-  search: {
-    value: null,
-    component: InputSearch,
-    componentProps: {
-      placeholder: 'Search...',
-      debounce: 300
-    }
+const form = new FormStore({ email: '', password: '' });
+form.controls.email.setValue('test@mail.com');
+```
+
+**Стало**:
+```typescript
+const form = new GroupNode({
+  form: {
+    email: { value: '', component: Input },
+    password: { value: '', component: Input },
   },
-  status: {
-    value: null,
-    component: Select,
-    componentProps: {
-      resource: statusResource
-    }
-  }
-};
+});
+form.email.setValue('test@mail.com');
 ```
 
-### Программное управление
+См. [MIGRATION.md](./MIGRATION.md) для деталей.
 
-```typescript
-// Установить значения
-form.setValue({ username: 'john', email: 'john@example.com' });
+## 📞 Поддержка
 
-// Получить значения
-const values = form.getValue();
+- Вопросы: создайте issue
+- Примеры: см. `src/examples/`
+- Тесты: см. `src/tests/unit/forms/`
 
-// Сбросить форму
-form.reset();
-
-// Валидация вручную
-const isValid = await form.validate();
-
-// Пометить все поля как touched
-form.markAllAsTouched();
-
-// Проверка состояния
-if (form.dirty && form.valid) {
-  // Форма изменена и валидна
-}
-```
-
-## Лучшие практики
-
-### 1. Выносите ресурсы в отдельные файлы
-
-```
-src/domains/users/
-├── form/
-│   ├── resources/
-│   │   ├── role.resource.ts
-│   │   └── country.resource.ts
-│   └── UsersForm.tsx
-```
-
-### 2. Создавайте фабрики форм
-
-```typescript
-// Bad
-const MyComponent = () => {
-  const form = new FormStore(schema); // ❌ Пересоздается при каждом рендере
-};
-
-// Good
-const MyComponent = () => {
-  const form = React.useMemo(() => new FormStore(schema), []); // ✅
-};
-
-// Better
-const createMyForm = () => new FormStore(schema);
-
-const MyComponent = () => {
-  const form = React.useMemo(createMyForm, []); // ✅✅
-};
-```
-
-### 3. Используйте типизацию
-
-```typescript
-// Типизированная модель
-interface UserFormModel {
-  username: string;
-  email: string;
-  age: number;
-}
-
-// TypeScript проверит все поля
-const schema: FormSchema<UserFormModel> = {
-  username: { ... },
-  email: { ... },
-  age: { ... }
-  // TypeScript ошибка, если забудете поле
-};
-```
-
-### 4. Переиспользуйте валидаторы
-
-```typescript
-// validators/email.validator.ts
-export const emailValidators = [
-  Validators.required('Email is required'),
-  Validators.email('Invalid email format')
-];
-
-// В форме
-const schema: FormSchema<Model> = {
-  email: {
-    value: '',
-    component: Input,
-    validators: emailValidators
-  }
-};
-```
-
-## Migration Guide
-
-Если вы использовали старый API (form-field.tsx, forms.ts), смотрите [Migration Guide](./docs/migration-guide.md).
-
-## License
+## 📄 Лицензия
 
 MIT
