@@ -13,7 +13,9 @@
     "test:integration": "vitest --run ./src/tests/integration",
     "test:coverage": "vitest --coverage",
     "test:watch": "vitest --watch",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:e2e:ci": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui"
   },
   "dependencies": {
     "@preact/signals-react": "^3.3.0",
