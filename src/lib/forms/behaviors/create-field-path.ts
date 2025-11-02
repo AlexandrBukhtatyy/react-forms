@@ -34,22 +34,40 @@ function createFieldPathProxy<T>(
     {},
     {
       get(_target, prop: string) {
-        if (prop === '__fieldPath') {
-          return currentPath;
+        // Поддержка обоих вариантов для обратной совместимости
+        if (prop === '__path' || prop === '__fieldPath') {
+          return currentPath || prop;
+        }
+
+        if (prop === '__key') {
+          const parts = currentPath.split('.');
+          return parts[parts.length - 1] || prop;
         }
 
         const newPath = currentPath ? `${currentPath}.${prop}` : prop;
 
         // Создаем объект FieldPathNode с вложенным Proxy
         const node: FieldPathNode<T, any> = {
-          __fieldPath: newPath,
+          __path: newPath,
+          __key: prop,
+          __formType: undefined as any,
+          __fieldType: undefined as any,
         };
 
         // Возвращаем Proxy, который поддерживает дальнейшую вложенность
         return new Proxy(node, {
           get(target, nestedProp: string) {
-            if (nestedProp === '__fieldPath') {
+            // Поддержка обоих вариантов для обратной совместимости
+            if (nestedProp === '__path' || nestedProp === '__fieldPath') {
               return newPath;
+            }
+
+            if (nestedProp === '__key') {
+              return prop;
+            }
+
+            if (nestedProp === '__formType' || nestedProp === '__fieldType') {
+              return undefined;
             }
 
             // Для вложенных свойств создаем новый Proxy

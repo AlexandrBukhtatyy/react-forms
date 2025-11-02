@@ -366,4 +366,25 @@ export class FieldNode<T = any> extends FormNode<T> {
       this.setValue(newValue, { emitEvent: false });
     });
   }
+
+  /**
+   * Очистить все ресурсы и таймеры
+   * Должен вызываться при unmount компонента
+   *
+   * @example
+   * ```typescript
+   * useEffect(() => {
+   *   return () => {
+   *     field.dispose();
+   *   };
+   * }, []);
+   * ```
+   */
+  dispose(): void {
+    // Очищаем debounce таймер если он есть
+    if (this.validateDebounceTimer) {
+      clearTimeout(this.validateDebounceTimer);
+      this.validateDebounceTimer = undefined;
+    }
+  }
 }

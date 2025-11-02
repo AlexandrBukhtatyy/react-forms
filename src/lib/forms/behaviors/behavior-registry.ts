@@ -100,54 +100,71 @@ class BehaviorRegistryClass {
       }
     };
 
+    // ✅ ИСПРАВЛЕНИЕ: Cleanup функция для debounce таймера
+    const cleanupDebounce = () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+        debounceTimer = null;
+      }
+    };
+
     // Создаем effect в зависимости от типа
+    let effectDispose: (() => void) | null = null;
+
     switch (type) {
       case 'copy': {
-        return this.createCopyEffect(registration, form, context, withDebounce);
+        effectDispose = this.createCopyEffect(registration, form, context, withDebounce);
+        break;
       }
 
       case 'enable': {
-        return this.createEnableEffect(
+        effectDispose = this.createEnableEffect(
           registration,
           form,
           context,
           withDebounce
         );
+        break;
       }
 
       case 'show': {
-        return this.createShowEffect(registration, form, context, withDebounce);
+        effectDispose = this.createShowEffect(registration, form, context, withDebounce);
+        break;
       }
 
       case 'compute': {
-        return this.createComputeEffect(
+        effectDispose = this.createComputeEffect(
           registration,
           form,
           context,
           withDebounce
         );
+        break;
       }
 
       case 'watch': {
-        return this.createWatchEffect(
+        effectDispose = this.createWatchEffect(
           registration,
           form,
           context,
           withDebounce
         );
+        break;
       }
 
       case 'revalidate': {
-        return this.createRevalidateEffect(
+        effectDispose = this.createRevalidateEffect(
           registration,
           form,
           context,
           withDebounce
         );
+        break;
       }
 
       case 'sync': {
-        return this.createSyncEffect(registration, form, context, withDebounce);
+        effectDispose = this.createSyncEffect(registration, form, context, withDebounce);
+        break;
       }
 
       default:
@@ -156,6 +173,15 @@ class BehaviorRegistryClass {
         }
         return null;
     }
+
+    // ✅ ИСПРАВЛЕНИЕ: Возвращаем комбинированный cleanup
+    // который очищает и effect, и debounce таймер
+    return () => {
+      cleanupDebounce();
+      if (effectDispose) {
+        effectDispose();
+      }
+    };
   }
 
   /**
@@ -173,8 +199,8 @@ class BehaviorRegistryClass {
 
     if (!sourceField || !targetField) return () => {};
 
-    const sourceNode = this.resolveNode(form, sourceField.__fieldPath);
-    const targetNode = this.resolveNode(form, targetField.__fieldPath);
+    const sourceNode = this.resolveNode(form, sourceField.__path);
+    const targetNode = this.resolveNode(form, targetField.__path);
 
     if (!sourceNode || !targetNode) return () => {};
 
@@ -224,7 +250,7 @@ class BehaviorRegistryClass {
 
     if (!targetField || !condition) return () => {};
 
-    const node = this.resolveNode(form, targetField.__fieldPath);
+    const node = this.resolveNode(form, targetField.__path);
     if (!node) return () => {};
 
     return effect(() => {
@@ -259,7 +285,7 @@ class BehaviorRegistryClass {
 
     if (!targetField || !condition) return () => {};
 
-    const node = this.resolveNode(form, targetField.__fieldPath);
+    const node = this.resolveNode(form, targetField.__path);
     if (!node || !('updateComponentProps' in node)) return () => {};
 
     return effect(() => {
@@ -286,11 +312,11 @@ class BehaviorRegistryClass {
 
     if (!targetField || !sourceFields || !computeFn) return () => {};
 
-    const targetNode = this.resolveNode(form, targetField.__fieldPath);
+    const targetNode = this.resolveNode(form, targetField.__path);
     if (!targetNode) return () => {};
 
     const sourceNodes = sourceFields
-      .map((sf) => this.resolveNode(form, sf.__fieldPath))
+      .map((sf) => this.resolveNode(form, sf.__path))
       .filter(Boolean) as FormNode<any>[];
 
     if (sourceNodes.length === 0) return () => {};
@@ -328,7 +354,7 @@ class BehaviorRegistryClass {
 
     if (!sourceField || !callback) return () => {};
 
-    const node = this.resolveNode(form, sourceField.__fieldPath);
+    const node = this.resolveNode(form, sourceField.__path);
     if (!node) return () => {};
 
     // Вызвать сразу если immediate: true
@@ -362,11 +388,11 @@ class BehaviorRegistryClass {
 
     if (!targetField || !sourceFields) return () => {};
 
-    const targetNode = this.resolveNode(form, targetField.__fieldPath);
+    const targetNode = this.resolveNode(form, targetField.__path);
     if (!targetNode) return () => {};
 
     const sourceNodes = sourceFields
-      .map((sf) => this.resolveNode(form, sf.__fieldPath))
+      .map((sf) => this.resolveNode(form, sf.__path))
       .filter(Boolean) as FormNode<any>[];
 
     if (sourceNodes.length === 0) return () => {};
@@ -396,8 +422,8 @@ class BehaviorRegistryClass {
 
     if (!sourceField || !targetField) return () => {};
 
-    const sourceNode = this.resolveNode(form, sourceField.__fieldPath);
-    const targetNode = this.resolveNode(form, targetField.__fieldPath);
+    const sourceNode = this.resolveNode(form, sourceField.__path);
+    const targetNode = this.resolveNode(form, targetField.__path);
 
     if (!sourceNode || !targetNode) return () => {};
 

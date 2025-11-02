@@ -53,7 +53,7 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
     field: FieldPathNode<TForm, any>,
     props: Record<string, any>
   ): void {
-    const node = this.resolveFieldNode(field.__fieldPath);
+    const node = this.resolveFieldNode(field.__path);
     if (node && 'updateComponentProps' in node) {
       (node as any).updateComponentProps(props);
     }
@@ -63,7 +63,7 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
    * Перевалидировать поле
    */
   async validateField(field: FieldPathNode<TForm, any>): Promise<boolean> {
-    const node = this.resolveFieldNode(field.__fieldPath);
+    const node = this.resolveFieldNode(field.__path);
     if (node) {
       return await node.validate();
     }
@@ -74,7 +74,7 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
    * Установить ошибки поля
    */
   setErrors(field: FieldPathNode<TForm, any>, errors: ValidationError[]): void {
-    const node = this.resolveFieldNode(field.__fieldPath);
+    const node = this.resolveFieldNode(field.__path);
     if (node) {
       node.setErrors(errors);
     }
@@ -84,7 +84,7 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
    * Очистить ошибки поля
    */
   clearErrors(field: FieldPathNode<TForm, any>): void {
-    const node = this.resolveFieldNode(field.__fieldPath);
+    const node = this.resolveFieldNode(field.__path);
     if (node) {
       node.clearErrors();
     }
@@ -114,7 +114,7 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
     pathOrNode: string | FieldPathNode<TForm, any>
   ): FormNode<any> | undefined {
     const fieldPath =
-      typeof pathOrNode === 'string' ? pathOrNode : pathOrNode.__fieldPath;
+      typeof pathOrNode === 'string' ? pathOrNode : pathOrNode.__path;
 
     if (!fieldPath) return undefined;
 

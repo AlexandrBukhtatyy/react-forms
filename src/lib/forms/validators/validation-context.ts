@@ -29,7 +29,9 @@ export class ValidationContextImpl<TForm = any, TField = any>
   getField(path: string): any;
   getField(path: any): any {
     if (typeof path !== 'string') {
-      return this.form.controls[path]?.value.value;
+      // ✅ Используем proxy доступ вместо form.controls
+      const field = (this.form as any)[path];
+      return field?.value?.value;
     }
 
     const keys = path.split('.');
@@ -100,7 +102,9 @@ export class TreeValidationContextImpl<TForm = any>
   getField(path: string): any;
   getField(path: any): any {
     if (typeof path !== 'string') {
-      return this.form.controls[path]?.value.value;
+      // ✅ Используем proxy доступ вместо form.controls
+      const field = (this.form as any)[path];
+      return field?.value?.value;
     }
 
     const keys = path.split('.');

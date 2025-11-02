@@ -50,7 +50,7 @@ export function toBehaviorFieldPath<TForm, TField>(
     return createFieldPath<TField>();
   }
 
-  const basePath = fieldPath.__fieldPath;
+  const basePath = fieldPath.__path;
   return createNestedBehaviorFieldPath<TField>(basePath);
 }
 
@@ -66,7 +66,7 @@ function createNestedBehaviorFieldPath<T>(basePath: string): FieldPath<T> {
       const fullPath = basePath ? `${basePath}.${prop}` : prop;
 
       return {
-        __fieldPath: fullPath,
+        __path: fullPath,
         __key: prop,
       } as FieldPathNode<T, any>;
     },
@@ -136,9 +136,12 @@ export function apply<TForm, TField>(
 /**
  * Условное применение behavior схем (аналог applyWhen из validation API)
  *
- * ВАЖНО: Эта функция создаёт реактивный эффект через watchField.
- * Callback будет вызываться каждый раз при изменении conditionField,
- * если условие выполняется.
+ * ⚠️ ВАЖНО: Эта функция НЕ создаёт новые behaviors при каждом изменении условия!
+ * Вместо этого behaviors регистрируются ОДИН РАЗ при первом вызове и затем
+ * просто не выполняются, если условие не выполнено.
+ *
+ * Это отличается от старой реализации, которая создавала утечку памяти,
+ * регистрируя behaviors при каждом изменении conditionField.
  *
  * @param conditionField - Поле для проверки условия
  * @param condition - Функция проверки условия
@@ -174,14 +177,23 @@ export function applyWhen<TForm, TValue>(
 ): void {
   if (!conditionField) return;
 
-  // Используем watchField для реактивного отслеживания условия
+  // ✅ ИСПРАВЛЕНО: Регистрируем behaviors только ОДИН РАЗ
+  // вне watchField callback, чтобы избежать утечки памяти
+  let hasRegistered = false;
+
   watchField(
     conditionField,
     (value, _ctx) => {
-      if (condition(value)) {
+      // Регистрируем behaviors только при первом срабатывании
+      // когда условие выполнено
+      if (!hasRegistered && condition(value)) {
         const fieldPath = createFieldPath<TForm>();
         callback(fieldPath);
+        hasRegistered = true;
       }
+
+      // TODO: В будущем можно добавить поддержку деактивации behaviors
+      // при изменении условия, но это требует изменений в BehaviorRegistry
     },
     { immediate: true }
   );

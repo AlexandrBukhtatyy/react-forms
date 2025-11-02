@@ -24,11 +24,13 @@ export type FieldPath<T> = {
  */
 export interface FieldPathNode<TForm, TField> {
   /** Строковый путь к полю (например, "address.city") */
-  __fieldPath: string;
+  readonly __path: string;
+  /** Ключ поля (последняя часть пути) */
+  readonly __key: string;
   /** Тип формы */
-  __formType?: TForm;
+  readonly __formType?: TForm;
   /** Тип поля */
-  __fieldType?: TField;
+  readonly __fieldType?: TField;
 }
 
 /**

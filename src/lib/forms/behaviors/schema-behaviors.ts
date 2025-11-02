@@ -210,7 +210,7 @@ export function computeFrom<TForm, TTarget>(
   const wrappedComputeFn = (...values: any[]) => {
     const valuesObj: Record<string, any> = {};
     sources.forEach((source, index) => {
-      const fieldPath = source.__fieldPath;
+      const fieldPath = source.__path;
       const fieldName = fieldPath.split('.').pop() || fieldPath;
       valuesObj[fieldName] = values[index];
     });
