@@ -1,12 +1,18 @@
 import type { FieldPath } from '@/lib/forms/types';
 import {
   applyWhen,
-  validate,
   required,
   min,
   max,
+  notEmpty,
+  validateItems,
 } from '@/lib/forms/validators';
 import type { CreditApplicationForm } from '../../types/credit-application';
+
+// Импортируем validation схемы для элементов массивов
+import { propertyValidation } from './property-validation';
+import { existingLoanValidation } from './existing-loan-validation';
+import { coBorrowerValidation } from './co-borrower-validation';
 
 /**
  * Схема валидации для Шага 5: Дополнительная информация
@@ -20,66 +26,42 @@ export const additionalValidation = (path: FieldPath<CreditApplicationForm>) => 
 
   required(path.education, { message: 'Укажите уровень образования' });
 
-  // Валидация имущества
-  // ✅ Валидация элементов массива перенесена в property-validation.ts
-  // ArrayNode автоматически применяет validation schema к каждому элементу
+  // ✅ Валидация имущества: массив + элементы
   applyWhen(
     path.hasProperty,
     (value) => value === true,
     (path) => {
-      // Проверка что массив не пустой
-      validate(path.properties, (ctx) => {
-        const properties = ctx.value();
-        if (!properties || properties.length === 0) {
-          return {
-            code: 'noProperties',
-            message: 'Добавьте хотя бы один объект имущества',
-          };
-        }
-        return null;
-      });
+      // Массив не должен быть пустым
+      notEmpty(path.properties, { message: 'Добавьте хотя бы один объект имущества' });
+
+      // Валидация каждого элемента массива
+      validateItems(path.properties, propertyValidation);
     }
   );
 
-  // Валидация существующих кредитов
-  // ✅ Валидация элементов массива перенесена в existing-loan-validation.ts
-  // ArrayNode автоматически применяет validation schema к каждому элементу
+  // ✅ Валидация существующих кредитов: массив + элементы
   applyWhen(
     path.hasExistingLoans,
     (value) => value === true,
     (path) => {
-      // Проверка что массив не пустой
-      validate(path.existingLoans, (ctx) => {
-        const loans = ctx.value();
-        if (!loans || loans.length === 0) {
-          return {
-            code: 'noExistingLoans',
-            message: 'Добавьте информацию о существующих кредитах',
-          };
-        }
-        return null;
-      });
+      // Массив не должен быть пустым
+      notEmpty(path.existingLoans, { message: 'Добавьте информацию о существующих кредитах' });
+
+      // Валидация каждого элемента массива
+      validateItems(path.existingLoans, existingLoanValidation);
     }
   );
 
-  // Валидация созаемщиков
-  // ✅ Валидация элементов массива перенесена в co-borrower-validation.ts
-  // ArrayNode автоматически применяет validation schema к каждому элементу
+  // ✅ Валидация созаемщиков: массив + элементы
   applyWhen(
     path.hasCoBorrower,
     (value) => value === true,
     (path) => {
-      // Проверка что массив не пустой
-      validate(path.coBorrowers, (ctx) => {
-        const coBorrowers = ctx.value();
-        if (!coBorrowers || coBorrowers.length === 0) {
-          return {
-            code: 'noCoBorrowers',
-            message: 'Добавьте информацию о созаемщике',
-          };
-        }
-        return null;
-      });
+      // Массив не должен быть пустым
+      notEmpty(path.coBorrowers, { message: 'Добавьте информацию о созаемщике' });
+
+      // Валидация каждого элемента массива
+      validateItems(path.coBorrowers, coBorrowerValidation);
     }
   );
 };

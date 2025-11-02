@@ -91,6 +91,9 @@ class ValidationRegistryClass {
 
     // Применяем валидаторы к полям
     this.applyValidators(form, validators);
+
+    // Применяем array-items validators к ArrayNode элементам
+    this.applyArrayItemValidators(form, validators);
   }
 
   /**
@@ -207,6 +210,34 @@ class ValidationRegistryClass {
   }
 
   /**
+   * Зарегистрировать validation schema для элементов массива
+   *
+   * Используется функцией validateItems() для регистрации схемы валидации,
+   * которая будет применяться к каждому элементу ArrayNode.
+   *
+   * @param fieldPath - Путь к ArrayNode полю
+   * @param itemSchemaFn - Validation schema для элемента массива
+   */
+  registerArrayItemValidation(
+    fieldPath: string,
+    itemSchemaFn: any // ValidationSchemaFn<TItem>
+  ): void {
+    const context = this.getCurrentContext();
+    if (!context) {
+      throw new Error(
+        'Array item validators can only be registered inside a validation schema function'
+      );
+    }
+
+    context.addValidator({
+      fieldPath,
+      type: 'array-items',
+      validator: itemSchemaFn,
+      options: {},
+    } as any);
+  }
+
+  /**
    * Получить зарегистрированные валидаторы для GroupNode
    */
   getValidators<T>(form: GroupNode<T>): ValidatorRegistration[] | undefined {
@@ -222,8 +253,8 @@ class ValidationRegistryClass {
     const validatorsByField = new Map<string, ValidatorRegistration[]>();
 
     for (const registration of validators) {
-      if (registration.type === 'tree') {
-        // Tree валидаторы обрабатываются отдельно
+      if (registration.type === 'tree' || (registration as any).type === 'array-items') {
+        // Tree и array-items валидаторы обрабатываются отдельно
         continue;
       }
 
@@ -235,6 +266,35 @@ class ValidationRegistryClass {
     // Валидаторы сохранены в formStoreMap
     // Они будут применяться при вызове GroupNode.validate()
     console.log(`Registered ${validators.length} validators for GroupNode`);
+  }
+
+  /**
+   * Применить array-items validators к ArrayNode элементам
+   * @private
+   */
+  private applyArrayItemValidators<T>(form: GroupNode<T>, validators: ValidatorRegistration[]): void {
+    // Фильтруем array-items validators
+    const arrayItemValidators = validators.filter((v: any) => v.type === 'array-items');
+
+    if (arrayItemValidators.length === 0) {
+      return;
+    }
+
+    // Применяем validation schema к каждому ArrayNode
+    for (const registration of arrayItemValidators) {
+      const arrayNode = (form as any)[registration.fieldPath.split('.')[0]];
+
+      if (arrayNode && 'applyValidationSchema' in arrayNode) {
+        const itemSchemaFn = (registration as any).validator;
+        arrayNode.applyValidationSchema(itemSchemaFn);
+
+        if (import.meta.env.DEV) {
+          console.log(`Applied validation schema to ArrayNode: ${registration.fieldPath}`);
+        }
+      } else if (import.meta.env.DEV) {
+        console.warn(`Field ${registration.fieldPath} is not an ArrayNode or doesn't exist`);
+      }
+    }
   }
 }
 

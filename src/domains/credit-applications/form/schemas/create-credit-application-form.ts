@@ -21,11 +21,6 @@ import { creditApplicationSchema } from './credit-application-schema';
 import { creditApplicationBehavior } from './credit-application-behavior';
 import creditApplicationValidation from './credit-application-validation';
 
-// Импортируем validation схемы для массивов
-import { propertyValidation } from './validation/property-validation';
-import { existingLoanValidation } from './validation/existing-loan-validation';
-import { coBorrowerValidation } from './validation/co-borrower-validation';
-
 /**
  * Создаёт форму кредитной заявки с полной реактивностью
  *
@@ -37,12 +32,6 @@ export const createCreditApplicationForm = (): GroupNodeWithControls<CreditAppli
     behavior: creditApplicationBehavior,
     validation: creditApplicationValidation,
   });
-
-  // ✅ Применяем validation схемы к ArrayNode элементам
-  // Эти схемы будут применяться к каждому элементу массива автоматически
-  form.properties.applyValidationSchema(propertyValidation);
-  form.existingLoans.applyValidationSchema(existingLoanValidation);
-  form.coBorrowers.applyValidationSchema(coBorrowerValidation);
 
   return form;
 };

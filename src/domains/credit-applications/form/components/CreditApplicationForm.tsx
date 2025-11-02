@@ -175,9 +175,11 @@ function CreditApplicationForm() {
       </div>
 
       {/* Значение формы */}
+      {/* 
       <pre>
         {JSON.stringify(form.value.value, null, '  ')}
-      </pre>
+      </pre> 
+      */}
 
     </div>
   );

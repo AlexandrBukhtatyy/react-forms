@@ -19,6 +19,9 @@ export {
   pattern,
 } from './schema-validators';
 
+// Валидаторы для массивов
+export { notEmpty, validateItems } from './array-validators';
+
 // Утилиты для FieldPath
 export { createFieldPath, extractPath, extractKey, toFieldPath } from './field-path';
 

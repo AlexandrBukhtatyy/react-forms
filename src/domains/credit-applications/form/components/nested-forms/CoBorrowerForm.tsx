@@ -81,7 +81,7 @@ export const coBorrowersFormSchema: DeepFormSchema<CoBorrower> = {
     },
   },
   monthlyIncome: {
-    value: undefined,
+    value: 0,
     component: Input,
     componentProps: {
       label: 'Ежемесячный доход (₽)',
