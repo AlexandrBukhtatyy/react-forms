@@ -8,7 +8,6 @@ export {
   validateAsync,
   validateTree,
   applyWhen,
-  apply,
   // Переиспользуемые валидаторы
   required,
   min,
