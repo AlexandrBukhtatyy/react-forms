@@ -200,12 +200,15 @@ console.log(form.items.length.value); // текущее количество
 
 **Validation Schema**:
 ```typescript
-import { createFieldPath, required, email, minLength } from '@/lib/forms/validators';
+import { apply, createFieldPath, required, email, minLength } from '@/lib/forms/validators';
 
 const validationSchema = (path: FieldPath<MyForm>) => {
   required(path.email, { message: 'Email обязателен' });
   email(path.email);
   minLength(path.password, 8);
+
+  // ✅ Композиция: применение одной схемы к нескольким полям
+  apply([path.homeAddress, path.workAddress], addressValidation);
 
   // Условная валидация
   applyWhen(path.loanType, (type) => type === 'mortgage', () => {
@@ -306,6 +309,116 @@ const fullForm = new GroupNode({
 **Примеры**:
 - [src/examples/group-node-config-example.ts](src/examples/group-node-config-example.ts): 7 примеров использования нового API
 
+**Композиция behavior схем** (аналог toFieldPath из validation API):
+```typescript
+// address-behavior.ts - модульная схема
+export const addressBehavior: BehaviorSchemaFn<Address> = (path) => {
+  watchField(path.region, async (region, ctx) => {
+    if (region) {
+      const cities = await fetchCities(region);
+      ctx.updateComponentProps(path.city, { options: cities });
+    }
+  }, { debounce: 300 });
+
+  watchField(path.region, (region, ctx) => {
+    ctx.setField('city', '');
+  });
+};
+
+// user-behavior.ts - применение через композицию
+import { apply, applyWhen, toBehaviorFieldPath } from '@/lib/forms/behaviors';
+
+export const userBehavior: BehaviorSchemaFn<UserForm> = (path) => {
+  // ✅ Применить одну схему к нескольким полям
+  apply([path.homeAddress, path.workAddress, path.billingAddress], addressBehavior);
+
+  // ✅ Применить несколько схем к одному полю
+  apply(path.metadata, [slugBehavior, searchTermsBehavior]);
+
+  // ✅ Условное применение
+  applyWhen(
+    path.hasShipping,
+    (value) => value === true,
+    (path) => {
+      apply(path.shippingAddress, addressBehavior);
+    }
+  );
+
+  // ✅ Вложенная композиция
+  addressBehavior(toBehaviorFieldPath(path.headquarters.address));
+};
+```
+
+**Преимущества композиции behavior схем**:
+- ✅ **DRY**: Переиспользование behavior схем (например, addressBehavior для всех адресов)
+- ✅ **Модульность**: Разделение логики по файлам (address-behavior.ts, metadata-behavior.ts)
+- ✅ **Консистентность**: API аналогичен validation API (apply ↔ validate, applyWhen ↔ applyWhen)
+- ✅ **Type-safe**: TypeScript проверяет совместимость типов
+- ✅ **Масштабируемость**: Легко добавлять новые behavior схемы
+
+**Примеры**:
+- [src/examples/behavior-composition-example.ts](src/examples/behavior-composition-example.ts): 5 примеров композиции behavior схем
+- [src/domains/credit-applications/form/schemas/behaviors/address-behavior.ts](src/domains/credit-applications/form/schemas/behaviors/address-behavior.ts): Реальный пример модульной схемы
+
+**Композиция validation схем** (полный паритет с behavior API):
+```typescript
+// address-validation.ts - модульная схема
+export const addressValidation: ValidationSchemaFn<Address> = (path) => {
+  required(path.region, { message: 'Укажите регион' });
+  required(path.city, { message: 'Укажите город' });
+  required(path.street, { message: 'Укажите улицу' });
+  required(path.house, { message: 'Укажите дом' });
+  required(path.postalCode, { message: 'Укажите индекс' });
+  pattern(path.postalCode, /^\d{6}$/, { message: '6 цифр' });
+};
+
+// user-validation.ts - применение через композицию
+import { apply, applyWhen } from '@/lib/forms/validators';
+
+export const userValidation: ValidationSchemaFn<UserForm> = (path) => {
+  // ✅ Применить одну схему к нескольким полям
+  apply([path.homeAddress, path.workAddress, path.billingAddress], addressValidation);
+
+  // ✅ Применить несколько схем к одному полю
+  apply(path.email, [emailBasicValidation, emailDomainValidation]);
+
+  // ✅ Условное применение
+  applyWhen(
+    path.hasShipping,
+    (value) => value === true,
+    (path) => {
+      apply(path.shippingAddress, addressValidation);
+    }
+  );
+};
+```
+
+**Преимущества композиции validation схем**:
+- ✅ **DRY**: Переиспользование validation схем (addressValidation для всех адресов)
+- ✅ **Модульность**: Разделение логики по файлам (address-validation.ts, email-validation.ts)
+- ✅ **Консистентность**: API идентичен behavior API (`apply`, `applyWhen`)
+- ✅ **Type-safe**: TypeScript проверяет совместимость типов
+- ✅ **Масштабируемость**: Легко добавлять новые validation схемы
+
+**Сравнение До/После**:
+```typescript
+// До: ~50 строк дублирующегося кода
+required(path.homeAddress.region, { message: '...' });
+required(path.homeAddress.city, { message: '...' });
+// ... ещё 20 строк для homeAddress
+required(path.workAddress.region, { message: '...' });
+required(path.workAddress.city, { message: '...' });
+// ... ещё 20 строк для workAddress
+
+// После: 1 строка
+apply([path.homeAddress, path.workAddress], addressValidation);
+```
+
+**Примеры**:
+- [src/examples/validation-composition-example.ts](src/examples/validation-composition-example.ts): 5 примеров композиции validation схем
+- [src/domains/credit-applications/form/schemas/validation-modules/address-validation.ts](src/domains/credit-applications/form/schemas/validation-modules/address-validation.ts): Реальный пример модульной схемы
+- [src/domains/credit-applications/form/schemas/validation/contact-info-validation.ts](src/domains/credit-applications/form/schemas/validation/contact-info-validation.ts): Использование apply в реальной форме
+
 ## TODO List
 
 **Завершено (2025-10-31)**:
@@ -318,7 +431,9 @@ const fullForm = new GroupNode({
 - ✅ React Hooks для форм (useFormEffect, useComputedField, useCopyField и т.д.)
 - ✅ GroupNode с перегрузками конструктора (автоматическое применение схем)
 - ✅ Прямой доступ к полям через Proxy
-- ✅ Композиция validation схем
+- ✅ Композиция validation схем (apply, toFieldPath, applyWhen)
+- ✅ Композиция behavior схем (apply, applyWhen, toBehaviorFieldPath)
+- ✅ Полный паритет API между validation и behavior схемами
 - ✅ Поддержка вложенных путей в ValidationContext
 
 **Текущие приоритеты**:

@@ -33,6 +33,9 @@ export {
   syncFields,
 } from './schema-behaviors';
 
+// Композиция behavior схем (аналог toFieldPath из validation API)
+export { apply, applyWhen, toBehaviorFieldPath } from './compose-behavior';
+
 // Вспомогательные классы и функции
 export { BehaviorRegistry } from './behavior-registry';
 export { BehaviorContextImpl } from './behavior-context';

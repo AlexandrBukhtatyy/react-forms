@@ -22,6 +22,9 @@ export {
 // Валидаторы для массивов
 export { notEmpty, validateItems } from './array-validators';
 
+// Композиция validation схем (аналог apply из behaviors API)
+export { apply } from './compose-validation';
+
 // Утилиты для FieldPath
 export { createFieldPath, extractPath, extractKey, toFieldPath } from './field-path';
 

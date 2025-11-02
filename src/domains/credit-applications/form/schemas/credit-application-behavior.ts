@@ -7,8 +7,10 @@
  * - computeFrom: Автоматическое вычисление значений
  * - watchField: Подписка на изменения с динамической загрузкой
  * - revalidateWhen: Перевалидация зависимых полей
+ * - apply: Композиция behavior схем для переиспользования
  *
- * Всего реализовано 33 behaviors:
+ * Всего реализовано 34+ behaviors:
+ * - 1 apply (для Address - применяется к 2 полям)
  * - 2 copyFrom
  * - 15 enableWhen (массивы контролируются через UI)
  * - 8 computeFrom
@@ -17,8 +19,11 @@
  */
 
 import type { BehaviorSchemaFn, FieldPath } from '@/lib/forms';
-import { copyFrom, enableWhen, computeFrom, watchField, revalidateWhen } from '@/lib/forms/behaviors';
+import { copyFrom, enableWhen, computeFrom, watchField, revalidateWhen, apply } from '@/lib/forms/behaviors';
 import type { CreditApplicationForm } from '../types/credit-application';
+
+// Импортируем модульные behavior схемы
+import { addressBehavior } from './behaviors/address-behavior';
 
 // Compute функции из utils
 import {
@@ -33,7 +38,8 @@ import {
 } from '../utils';
 
 // API функции из api (уровень домена)
-import { fetchRegions, fetchCities, fetchCarModels } from '../../api';
+// ПРИМЕЧАНИЕ: fetchRegions, fetchCities теперь используются в addressBehavior
+import { fetchCarModels } from '../../api';
 
 /**
  * Главная схема поведения формы заявки на кредит
@@ -43,6 +49,14 @@ import { fetchRegions, fetchCities, fetchCarModels } from '../../api';
 export const creditApplicationBehavior: BehaviorSchemaFn<CreditApplicationForm> = (
   path: FieldPath<CreditApplicationForm>
 ) => {
+  // ===================================================================
+  // 0. Композиция behavior схем (apply)
+  // ===================================================================
+
+  // ✅ Применяем addressBehavior к двум полям адреса
+  // Это заменяет дублирование логики загрузки регионов/городов
+  apply([path.registrationAddress, path.residenceAddress], addressBehavior);
+
   // ===================================================================
   // 1. copyFrom() - Копирование значений между полями (2)
   // ===================================================================
@@ -197,25 +211,10 @@ export const creditApplicationBehavior: BehaviorSchemaFn<CreditApplicationForm> 
   );
 
   // ===================================================================
-  // 4. watchField() - Динамическая загрузка данных (3)
+  // 4. watchField() - Динамическая загрузка данных (1)
   // ===================================================================
 
-  // Загрузка регионов при изменении страны (адрес регистрации)
-  watchField(path.registrationAddress, async (value, ctx) => {
-    if (value?.country) {
-      const regions = await fetchRegions(value.country);
-      // В реальном приложении здесь нужно обновить componentProps.options
-      console.log('Loaded regions for registration:', regions);
-    }
-  }, { immediate: false, debounce: 300 });
-
-  // Загрузка городов при изменении региона (адрес регистрации)
-  watchField(path.registrationAddress, async (value, ctx) => {
-    if (value?.region) {
-      const cities = await fetchCities(value.region);
-      console.log('Loaded cities for registration:', cities);
-    }
-  }, { immediate: false, debounce: 300 });
+  // ПРИМЕЧАНИЕ: Загрузка регионов/городов для адресов теперь в addressBehavior (композиция)
 
   // Загрузка моделей автомобилей при изменении марки
   watchField(path.carBrand, async (value, ctx) => {
