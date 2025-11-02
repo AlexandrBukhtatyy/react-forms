@@ -4,6 +4,7 @@
 
 import type { FormNode } from '../core/nodes/form-node';
 import type { ValidationError } from '../types';
+import type { GroupNodeWithControls } from '../types/group-node-proxy';
 
 /**
  * Тип функции behavior схемы
@@ -105,7 +106,7 @@ export interface BehaviorContext<TForm> {
    * });
    * ```
    */
-  readonly formNode: any; // Типизируется как GroupNodeWithControls<TForm> в реализации
+  readonly formNode: GroupNodeWithControls<TForm>;
 }
 
 /**

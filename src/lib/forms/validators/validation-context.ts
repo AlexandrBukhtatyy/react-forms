@@ -22,7 +22,7 @@ export class ValidationContextImpl<TForm = any, TField = any>
   ) {}
 
   value(): TField {
-    return this.control.value;
+    return this.control.value.value;
   }
 
   getField<K extends keyof TForm>(path: K): TForm[K];

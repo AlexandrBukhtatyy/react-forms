@@ -23,6 +23,7 @@ import type {
 } from '../../types';
 import type { GroupNodeWithControls } from '../../types/group-node-proxy';
 import { ValidationRegistry, createFieldPath } from '../../validators';
+import { ValidationContextImpl, TreeValidationContextImpl } from '../../validators/validation-context';
 import type { BehaviorSchemaFn } from '../../behaviors/types';
 import { BehaviorRegistry } from '../../behaviors/behavior-registry';
 import { createFieldPath as createBehaviorFieldPath } from '../../behaviors/create-field-path';
@@ -244,7 +245,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     );
 
     // Шаг 2: Применение contextual валидаторов из validation schema
-    const validators = ValidationRegistry.getValidators(this as any);
+    const validators = ValidationRegistry.getValidators(this._proxyInstance || (this as GroupNode<T>));
     if (validators && validators.length > 0) {
       await this.applyContextualValidators(validators);
     }
@@ -316,7 +317,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       const path = createFieldPath<T>();
       schemaFn(path);
       // ✅ Передаём proxy-инстанс, если доступен (консистентность с applyBehaviorSchema)
-      const formToUse = (this._proxyInstance || this) as any;
+      const formToUse = (this._proxyInstance || this) as GroupNodeWithControls<T>;
       ValidationRegistry.endRegistration(formToUse);
     } catch (error) {
       console.error('Error applying validation schema:', error);
@@ -365,7 +366,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       const path = createBehaviorFieldPath<T>();
       schemaFn(path);
       // ✅ Передаём proxy-инстанс в endRegistration, если доступен
-      const formToUse = (this._proxyInstance || this) as any;
+      const formToUse = (this._proxyInstance || this) as GroupNodeWithControls<T>;
       const result = BehaviorRegistry.endRegistration(formToUse);
       return result.cleanup;
     } catch (error) {
@@ -398,9 +399,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    * Используется для временной валидации (например, в validateForm)
    */
   async applyContextualValidators(validators: any[]): Promise<void> {
-    const { ValidationContextImpl, TreeValidationContextImpl } = await import(
-      '../../validators/validation-context'
-    );
+    // ✅ ИСПРАВЛЕНО: Используем статический import вместо динамического
 
     const validatorsByField = new Map<string, any[]>();
     const treeValidators: any[] = [];

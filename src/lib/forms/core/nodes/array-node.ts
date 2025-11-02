@@ -39,6 +39,13 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
   private itemSchema: DeepFormSchema<T>;
 
   // ============================================================================
+  // Приватные поля для сохранения схем
+  // ============================================================================
+
+  private validationSchemaFn?: any;
+  private behaviorSchemaFn?: any;
+
+  // ============================================================================
   // Публичные computed signals
   // ============================================================================
 
@@ -274,9 +281,13 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
       }
 
       // Применяем validation schema к новому элементу, если она была установлена
-      const validationSchemaFn = (this as any).validationSchemaFn;
-      if (validationSchemaFn && 'applyValidationSchema' in node) {
-        node.applyValidationSchema(validationSchemaFn);
+      if (this.validationSchemaFn && 'applyValidationSchema' in node) {
+        node.applyValidationSchema(this.validationSchemaFn);
+      }
+
+      // ✅ Применяем behavior schema к новому элементу, если она была установлена
+      if (this.behaviorSchemaFn && 'applyBehaviorSchema' in node) {
+        node.applyBehaviorSchema(this.behaviorSchemaFn);
       }
 
       return node as any;
@@ -324,12 +335,38 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
    */
   applyValidationSchema(schemaFn: any): void {
     // Сохраняем validation schema для применения к новым элементам
-    (this as any).validationSchemaFn = schemaFn;
+    this.validationSchemaFn = schemaFn;
 
     // Применяем validation schema ко всем существующим элементам
     this.items.value.forEach((item) => {
       if ('applyValidationSchema' in item && typeof item.applyValidationSchema === 'function') {
         item.applyValidationSchema(schemaFn);
+      }
+    });
+  }
+
+  /**
+   * Применить behavior schema ко всем элементам ArrayNode
+   *
+   * Автоматически применяется к новым элементам при push/insert.
+   *
+   * @param schemaFn - Behavior schema функция
+   *
+   * @example
+   * ```typescript
+   * import { addressBehavior } from './behaviors/address-behavior';
+   *
+   * form.addresses.applyBehaviorSchema(addressBehavior);
+   * ```
+   */
+  applyBehaviorSchema(schemaFn: any): void {
+    // Сохраняем behavior schema для применения к новым элементам
+    this.behaviorSchemaFn = schemaFn;
+
+    // Применяем behavior schema ко всем существующим элементам
+    this.items.value.forEach((item) => {
+      if ('applyBehaviorSchema' in item && typeof item.applyBehaviorSchema === 'function') {
+        item.applyBehaviorSchema(schemaFn);
       }
     });
   }

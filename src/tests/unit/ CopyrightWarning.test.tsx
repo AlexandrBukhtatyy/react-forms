@@ -1,5 +1,5 @@
-import CopyrightWarning from '../components/CopyrightWarning';
-import { screen, setup } from './TestUtils';
+import CopyrightWarning from '@/components/CopyrightWarning';
+import { screen, setup } from '../TestUtils';
 
 describe('GIVEN the CopyrightWarning', () => {
   it('THEN the copyright text should be displayed as expected', () => {

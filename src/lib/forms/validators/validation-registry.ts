@@ -265,7 +265,9 @@ class ValidationRegistryClass {
 
     // Валидаторы сохранены в formStoreMap
     // Они будут применяться при вызове GroupNode.validate()
-    console.log(`Registered ${validators.length} validators for GroupNode`);
+    if (import.meta.env.DEV) {
+      console.log(`Registered ${validators.length} validators for GroupNode`);
+    }
   }
 
   /**

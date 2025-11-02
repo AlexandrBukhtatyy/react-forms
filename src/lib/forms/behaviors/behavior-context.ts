@@ -7,6 +7,7 @@
 import type { GroupNode } from '../core/nodes/group-node';
 import type { FormNode } from '../core/nodes/form-node';
 import type { ValidationError } from '../types';
+import type { GroupNodeWithControls } from '../types/group-node-proxy';
 import type { BehaviorContext, FieldPathNode } from './types';
 
 /**
@@ -18,12 +19,12 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
    * Корневой узел формы с проксированными полями
    * Позволяет обращаться к полям напрямую: ctx.formNode.properties.clear()
    */
-  public readonly formNode: any;
+  public readonly formNode: GroupNodeWithControls<TForm>;
 
   constructor(private form: GroupNode<TForm>) {
     // ✅ Используем _proxyInstance если доступен, иначе fallback на form
     // _proxyInstance устанавливается в GroupNode конструкторе перед применением behavior схем
-    this.formNode = (form as any)._proxyInstance || form;
+    this.formNode = ((form as any)._proxyInstance || form) as GroupNodeWithControls<TForm>;
   }
 
   /**
