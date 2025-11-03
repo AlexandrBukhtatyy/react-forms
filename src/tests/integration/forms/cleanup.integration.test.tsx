@@ -135,19 +135,21 @@ describe('Cleanup Integration Tests', () => {
       });
 
       const callback = vi.fn();
-      form.level1.level2.level3.level4.value.watch(callback);
+      // Поле 'value' получаем через fields.get()
+      const valueField = form.level1.level2.level3.level4.fields.get('value' as any);
+      valueField?.watch(callback);
 
       expect(callback).toHaveBeenCalledTimes(1);
 
       // Change value
-      form.level1.level2.level3.level4.value.setValue('test');
+      valueField?.setValue('test');
       expect(callback).toHaveBeenCalledTimes(2);
 
       // Dispose from root
       form.dispose();
 
       // Should not trigger
-      form.level1.level2.level3.level4.value.setValue('after-dispose');
+      valueField?.setValue('after-dispose');
       expect(callback).toHaveBeenCalledTimes(2);
     });
 

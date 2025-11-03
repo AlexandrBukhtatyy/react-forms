@@ -16,7 +16,9 @@
       "Bash(findstr:*)",
       "Bash(npm test:*)",
       "Bash(npm run test:unit:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(node -e:*)",
+      "Bash(npx tsx:*)"
     ],
     "deny": [],
     "ask": []

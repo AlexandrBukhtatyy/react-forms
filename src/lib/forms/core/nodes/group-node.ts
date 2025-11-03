@@ -73,6 +73,20 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
   private fields: Map<keyof T, FormNode<any>>;
   private _submitting: Signal<boolean>;
+  private _disabled: Signal<boolean>;
+
+  /**
+   * Form-level validation errors (не связанные с конкретным полем)
+   * Используется для server-side errors или кросс-полевой валидации
+   */
+  private _formErrors: Signal<ValidationError[]>;
+
+  /**
+   * Кэш для value computed (reference equality optimization)
+   * Хранит последний возвращенный объект и значения полей
+   */
+  private _cachedValue: T | null = null;
+  private _cachedFieldValues: Map<keyof T, any> = new Map();
 
   /**
    * Массив disposers для централизованного cleanup
@@ -121,6 +135,8 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
     this.fields = new Map();
     this._submitting = signal(false);
+    this._disabled = signal(false);
+    this._formErrors = signal<ValidationError[]>([]);
 
     // Определяем, что передано: schema или config
     const isNewAPI = 'form' in schemaOrConfig;
@@ -136,16 +152,50 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
     // Создать computed signals
     this.value = computed(() => {
+      // Проверяем изменения через shallow comparison
+      let hasChanges = false;
+
+      // Если кэш пустой - создаем первый объект
+      if (!this._cachedValue) {
+        hasChanges = true;
+      } else {
+        // Проверяем каждое поле на изменения
+        this.fields.forEach((field, key) => {
+          const currentValue = field.value.value;
+          const cachedValue = this._cachedFieldValues.get(key);
+
+          // Сравниваем по reference equality
+          if (currentValue !== cachedValue) {
+            hasChanges = true;
+          }
+        });
+      }
+
+      // Если нет изменений - возвращаем кэшированный объект
+      if (!hasChanges && this._cachedValue) {
+        return this._cachedValue;
+      }
+
+      // Создаем новый объект только если есть изменения
       const result = {} as T;
       this.fields.forEach((field, key) => {
-        result[key] = field.value.value;
+        const value = field.value.value;
+        result[key] = value;
+        this._cachedFieldValues.set(key, value);
       });
+
+      this._cachedValue = result;
       return result;
     });
 
-    this.valid = computed(() =>
-      Array.from(this.fields.values()).every((field) => field.valid.value)
-    );
+    this.valid = computed(() => {
+      // Проверяем отсутствие form-level errors
+      const hasFormErrors = this._formErrors.value.length > 0;
+      if (hasFormErrors) return false;
+
+      // Проверяем все поля
+      return Array.from(this.fields.values()).every((field) => field.valid.value);
+    });
 
     this.invalid = computed(() => !this.valid.value);
 
@@ -163,13 +213,20 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
     this.errors = computed(() => {
       const allErrors: ValidationError[] = [];
+
+      // Добавляем form-level errors
+      allErrors.push(...this._formErrors.value);
+
+      // Добавляем field-level errors
       this.fields.forEach((field) => {
         allErrors.push(...field.errors.value);
       });
+
       return allErrors;
     });
 
     this.status = computed(() => {
+      if (this._disabled.value) return 'disabled';
       if (this.pending.value) return 'pending';
       if (this.invalid.value) return 'invalid';
       return 'valid';
@@ -180,12 +237,18 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     // Создать Proxy для прямого доступа к полям
     const proxy = new Proxy(this, {
       get(target, prop: string | symbol) {
-        // Если это поле формы
+        // Приоритет 1: Собственные свойства и методы GroupNode
+        if (prop in target) {
+          return (target as any)[prop];
+        }
+
+        // Приоритет 2: Поля формы
         if (typeof prop === 'string' && target.fields.has(prop as keyof T)) {
           return target.fields.get(prop as keyof T);
         }
-        // Иначе - свойство/метод GroupNode
-        return (target as any)[prop];
+
+        // Fallback
+        return undefined;
       },
     }) as GroupNodeWithControls<T>;
 
@@ -237,10 +300,64 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     }
   }
 
+  /**
+   * Сбросить форму к указанным значениям (или к initialValues)
+   *
+   * @param value - опциональный объект со значениями для сброса
+   *
+   * @remarks
+   * Рекурсивно вызывает reset() для всех полей формы
+   *
+   * @example
+   * ```typescript
+   * // Сброс к initialValues
+   * form.reset();
+   *
+   * // Сброс к новым значениям
+   * form.reset({ email: 'new@mail.com', password: '' });
+   * ```
+   */
   reset(value?: T): void {
     this.fields.forEach((field, key) => {
       const resetValue = value?.[key];
       field.reset(resetValue);
+    });
+  }
+
+  /**
+   * Сбросить форму к исходным значениям (initialValues)
+   *
+   * @remarks
+   * Рекурсивно вызывает resetToInitial() для всех полей формы.
+   * Более явный способ сброса к начальным значениям по сравнению с reset()
+   *
+   * Полезно когда:
+   * - Пользователь нажал "Cancel" - полная отмена изменений
+   * - Форма была изменена через reset(newValues), но нужно вернуться к самому началу
+   * - Явное намерение показать "отмена всех изменений"
+   *
+   * @example
+   * ```typescript
+   * const form = new GroupNode({
+   *   email: { value: 'initial@mail.com', component: Input },
+   *   name: { value: 'John', component: Input }
+   * });
+   *
+   * form.email.setValue('changed@mail.com');
+   * form.reset({ email: 'temp@mail.com', name: 'Jane' });
+   * console.log(form.getValue()); // { email: 'temp@mail.com', name: 'Jane' }
+   *
+   * form.resetToInitial();
+   * console.log(form.getValue()); // { email: 'initial@mail.com', name: 'John' }
+   * ```
+   */
+  resetToInitial(): void {
+    this.fields.forEach((field) => {
+      if ('resetToInitial' in field && typeof field.resetToInitial === 'function') {
+        field.resetToInitial();
+      } else {
+        field.reset();
+      }
     });
   }
 
@@ -262,11 +379,36 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     );
   }
 
+  /**
+   * Установить form-level validation errors
+   * Используется для server-side validation или кросс-полевых ошибок
+   *
+   * @param errors - массив ошибок уровня формы
+   *
+   * @example
+   * ```typescript
+   * // Server-side validation после submit
+   * try {
+   *   await api.createUser(form.getValue());
+   * } catch (error) {
+   *   form.setErrors([
+   *     { code: 'duplicate_email', message: 'Email уже используется' }
+   *   ]);
+   * }
+   * ```
+   */
   setErrors(errors: ValidationError[]): void {
-    // GroupNode errors - можно реализовать позже для form-level ошибок
+    this._formErrors.value = errors;
   }
 
+  /**
+   * Очистить все errors (form-level + field-level)
+   */
   clearErrors(): void {
+    // Очищаем form-level errors
+    this._formErrors.value = [];
+
+    // Очищаем field-level errors
     this.fields.forEach((field) => field.clearErrors());
   }
 
@@ -382,22 +524,123 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   }
 
   /**
-   * Получить вложенное поле по пути (например, "personalData.lastName")
+   * Получить вложенное поле по пути
+   *
+   * Поддерживаемые форматы путей:
+   * - Simple: "email" - получить поле верхнего уровня
+   * - Nested: "address.city" - получить вложенное поле
+   * - Array index: "items[0]" - получить элемент массива по индексу
+   * - Combined: "items[0].name" - получить поле элемента массива
+   *
+   * @param path - Путь к полю
+   * @returns FormNode если найдено, undefined если путь не существует
+   *
+   * @example
+   * ```typescript
+   * const form = new GroupNode({
+   *   email: { value: '', component: Input },
+   *   address: {
+   *     city: { value: '', component: Input }
+   *   },
+   *   items: [{ name: { value: '', component: Input } }]
+   * });
+   *
+   * form.getFieldByPath('email');           // FieldNode
+   * form.getFieldByPath('address.city');    // FieldNode
+   * form.getFieldByPath('items[0]');        // GroupNode
+   * form.getFieldByPath('items[0].name');   // FieldNode
+   * form.getFieldByPath('invalid.path');    // undefined
+   * ```
    */
-  private getFieldByPath(path: string): FormNode<any> | undefined {
-    const parts = path.split('.');
+  public getFieldByPath(path: string): FormNode<any> | undefined {
+    // Проверка на некорректные пути (leading/trailing dots)
+    if (path.startsWith('.') || path.endsWith('.')) {
+      return undefined;
+    }
+
+    const parts = this.parsePathWithArrays(path);
+    if (parts.length === 0) {
+      return undefined;
+    }
+
     let current: FormNode<any> = this;
 
     for (const part of parts) {
-      if (current instanceof GroupNode) {
+      // Проверяем, является ли это array access (например, "items[0]")
+      const arrayMatch = part.match(/^(.+)\[(\d+)\]$/);
+
+      if (arrayMatch) {
+        // Array access: "items[0]"
+        const [, fieldName, indexStr] = arrayMatch;
+        const index = parseInt(indexStr, 10);
+
+        // Сначала получаем поле (ArrayNode) через fields.get
+        if (!(current instanceof GroupNode)) {
+          return undefined;
+        }
+
+        const arrayField = current.fields.get(fieldName as any);
+        if (!arrayField) return undefined;
+
+        // Затем получаем элемент по индексу
+        // Используем duck typing вместо instanceof из-за circular dependency
+        if ('at' in arrayField && 'length' in arrayField && typeof (arrayField as any).at === 'function') {
+          const item = (arrayField as any).at(index);
+          if (!item) return undefined;
+          current = item;
+        } else {
+          return undefined;
+        }
+      } else {
+        // Regular field access
+        if (!(current instanceof GroupNode)) {
+          return undefined;
+        }
+
         current = current.fields.get(part as any);
         if (!current) return undefined;
-      } else {
-        return undefined;
       }
     }
 
     return current;
+  }
+
+  /**
+   * Парсит путь с учетом array notation
+   * @private
+   * @example
+   * parsePathWithArrays("items[0].name") => ["items[0]", "name"]
+   * parsePathWithArrays("address.city") => ["address", "city"]
+   */
+  private parsePathWithArrays(path: string): string[] {
+    const parts: string[] = [];
+    let currentPart = '';
+    let inBrackets = false;
+
+    for (let i = 0; i < path.length; i++) {
+      const char = path[i];
+
+      if (char === '[') {
+        inBrackets = true;
+        currentPart += char;
+      } else if (char === ']') {
+        inBrackets = false;
+        currentPart += char;
+      } else if (char === '.' && !inBrackets) {
+        if (currentPart) {
+          parts.push(currentPart);
+          currentPart = '';
+        }
+      } else {
+        currentPart += char;
+      }
+    }
+
+    if (currentPart) {
+      parts.push(currentPart);
+    }
+
+    return parts;
   }
 
   /**
@@ -525,9 +768,20 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    */
   private createNode(config: any): FormNode<any> {
     // Проверка 1: Массив?
-    if (Array.isArray(config) && config.length === 1) {
-      const [itemSchema] = config;
-      return new ArrayNode(itemSchema);
+    if (Array.isArray(config) && config.length >= 1) {
+      const [itemSchema, ...restItems] = config;
+
+      // Извлекаем значения из всех элементов массива (включая первый)
+      const initialItems = config.map((item: any) => {
+        if (this.isGroupConfig(item)) {
+          // Это schema config - извлекаем значения
+          return this.extractValuesFromSchema(item);
+        }
+        // Это уже values
+        return item;
+      });
+
+      return new ArrayNode(itemSchema, initialItems);
     }
 
     // Проверка 2: Группа?
@@ -537,6 +791,49 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
     // Проверка 3: Поле
     return new FieldNode(config);
+  }
+
+  /**
+   * Извлечь значения из schema config объекта
+   * Преобразует {name: {value: 'John', component: Input}} в {name: 'John'}
+   */
+  private extractValuesFromSchema(schema: any): any {
+    const result: any = {};
+
+    for (const [key, config] of Object.entries(schema)) {
+      if (this.isFieldConfig(config)) {
+        // Это FieldConfig - берем value
+        result[key] = (config as any).value;
+      } else if (this.isGroupConfig(config)) {
+        // Это вложенная группа - рекурсивно извлекаем
+        result[key] = this.extractValuesFromSchema(config);
+      } else if (Array.isArray(config) && config.length > 0) {
+        // Массив - рекурсивно извлекаем значения из всех элементов
+        result[key] = config.map((item: any) => {
+          if (this.isGroupConfig(item)) {
+            return this.extractValuesFromSchema(item);
+          }
+          return item;
+        });
+      } else {
+        // Обычное значение или пустой массив
+        result[key] = config;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Проверить, является ли конфигурация полем (содержит value и component)
+   */
+  private isFieldConfig(config: any): boolean {
+    return (
+      typeof config === 'object' &&
+      config !== null &&
+      'value' in config &&
+      'component' in config
+    );
   }
 
   /**
@@ -676,6 +973,32 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       }
       dispose();
     };
+  }
+
+  /**
+   * Отключить все поля группы
+   * Рекурсивно отключает каждое поле, если у него есть метод disable()
+   */
+  disable(): void {
+    this._disabled.value = true;
+    this.fields.forEach((field) => {
+      if ('disable' in field && typeof field.disable === 'function') {
+        field.disable();
+      }
+    });
+  }
+
+  /**
+   * Включить все поля группы
+   * Рекурсивно включает каждое поле, если у него есть метод enable()
+   */
+  enable(): void {
+    this._disabled.value = false;
+    this.fields.forEach((field) => {
+      if ('enable' in field && typeof field.enable === 'function') {
+        field.enable();
+      }
+    });
   }
 
   /**

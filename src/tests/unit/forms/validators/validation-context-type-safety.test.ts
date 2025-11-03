@@ -447,18 +447,23 @@ describe('ValidationContext - Type Safety', () => {
           },
         },
         validation: (path) => {
+          // Для поля с именем 'value' используем getFieldByPath
+          const fieldPath = 'level1.level2.level3.value';
           validate(path.level1.level2.level3.value, (ctx) => {
-            const value = ctx.getField('level1.level2.level3.value');
+            // ctx.getField() для поля 'value' вернёт FieldNode через getFieldByPath
+            const value = ctx.getField(fieldPath);
             expect(value).toBe('deep');
 
-            ctx.setField('level1.level2.level3.value', 'updated');
+            ctx.setField(fieldPath, 'updated');
             return null;
           });
         },
       });
 
       await deepForm.validate();
-      expect(deepForm.level1.level2.level3.value.value.value).toBe('updated');
+      // Поле 'value' получаем через fields.get()
+      const valueField = deepForm.level1.level2.level3.fields.get('value' as any);
+      expect(valueField?.value.value).toBe('updated');
       expect(consoleWarnSpy).not.toHaveBeenCalled();
     });
 

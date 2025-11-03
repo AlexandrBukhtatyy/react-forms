@@ -77,22 +77,19 @@ export class ValidationContextImpl<TForm = any, TField = any>
    * @private
    */
   private resolveNestedPath(path: string): any {
-    const keys = path.split('.');
-    let current: any = this.form;
+    // Используем getFieldByPath для правильного доступа к полям
+    // Это позволяет корректно обрабатывать поля с именами, конфликтующими с свойствами GroupNode
+    const field = this.form.getFieldByPath(path);
 
-    for (const key of keys) {
-      if (current && current[key]) {
-        current = current[key];
-      } else {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`[ValidationContext] Path '${path}' not found in form`);
-        }
-        return undefined;
+    if (!field) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[ValidationContext] Path '${path}' not found in form`);
       }
+      return undefined;
     }
 
     // Используем type guard
-    return isFormNode(current) ? current.value.value : current;
+    return isFormNode(field) ? field.value.value : field;
   }
 
   /**
@@ -139,26 +136,10 @@ export class ValidationContextImpl<TForm = any, TField = any>
    * @private
    */
   private setNestedPath(path: string, value: any): void {
-    const keys = path.split('.');
-    let current: any = this.form;
+    // Используем getFieldByPath для правильного доступа к полям
+    const field = this.form.getFieldByPath(path);
 
-    // Проходим до предпоследнего ключа
-    for (let i = 0; i < keys.length - 1; i++) {
-      if (current && current[keys[i]]) {
-        current = current[keys[i]];
-      } else {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`[ValidationContext] Path '${path}' not found in form`);
-        }
-        return;
-      }
-    }
-
-    // Устанавливаем значение последнего ключа
-    const lastKey = keys[keys.length - 1];
-    const targetField = current?.[lastKey];
-
-    if (!targetField) {
+    if (!field) {
       if (process.env.NODE_ENV !== 'production') {
         console.warn(`[ValidationContext] Path '${path}' not found in form`);
       }
@@ -166,8 +147,8 @@ export class ValidationContextImpl<TForm = any, TField = any>
     }
 
     // Используем type guard
-    if (isFormNode(targetField)) {
-      targetField.setValue(value);
+    if (isFormNode(field)) {
+      field.setValue(value);
     } else {
       if (process.env.NODE_ENV !== 'production') {
         console.warn(`[ValidationContext] Path '${path}' is not a FormNode`);

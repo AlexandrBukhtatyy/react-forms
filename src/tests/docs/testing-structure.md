@@ -480,4 +480,6 @@ npm run test:integration  # Запустить только integration тест
 npm run test:coverage     # Запустить с coverage репортом
 npm run test:watch        # Watch mode для разработки
 npm run test:ui           # Vitest UI для визуального просмотра тестов
+npm run test:e2e:ci       # Запуск E2E тестов без UI
+npm run test:e2e:ui       # Запуск E2E тестов с UI
 ```

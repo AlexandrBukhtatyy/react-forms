@@ -37,6 +37,7 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
 
   private items: Signal<FormNode<T>[]>;
   private itemSchema: DeepFormSchema<T>;
+  private initialItems: Partial<T>[];
 
   /**
    * Массив disposers для централизованного cleanup
@@ -73,6 +74,7 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
     super();
 
     this.itemSchema = schema;
+    this.initialItems = initialItems;
     this.items = signal<FormNode<T>[]>([]);
 
     // Создать начальные элементы
@@ -196,6 +198,14 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
   setValue(values: T[], options?: SetValueOptions): void {
     this.clear();
     values.forEach((value) => this.push(value));
+
+    // Запускаем валидацию если emitEvent !== false
+    // Fire-and-forget (не ждем результат, как в FieldNode)
+    if (options?.emitEvent !== false) {
+      this.validate().catch(() => {
+        // Игнорируем ошибки валидации (они будут в errors signal)
+      });
+    }
   }
 
   patchValue(values: Partial<T>[]): void {
@@ -206,11 +216,61 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
     });
   }
 
+  /**
+   * Сбросить массив к указанным значениям (или очистить)
+   *
+   * @param values - опциональный массив значений для сброса
+   *
+   * @remarks
+   * Очищает текущий массив и заполняет новыми элементами
+   *
+   * @example
+   * ```typescript
+   * // Очистить массив
+   * arrayNode.reset();
+   *
+   * // Сбросить к новым значениям
+   * arrayNode.reset([{ name: 'Item 1' }, { name: 'Item 2' }]);
+   * ```
+   */
   reset(values?: T[]): void {
     this.clear();
     if (values) {
       values.forEach((value) => this.push(value));
     }
+  }
+
+  /**
+   * Сбросить массив к исходным значениям (initialItems)
+   *
+   * @remarks
+   * Восстанавливает массив в состояние, которое было при создании ArrayNode.
+   * Более явный способ сброса к начальным значениям по сравнению с reset()
+   *
+   * Полезно когда:
+   * - Пользователь нажал "Cancel" - вернуть массив к исходным элементам
+   * - Массив был изменен через reset(newValues), но нужно вернуться к началу
+   * - Явное намерение показать "отмена всех изменений"
+   *
+   * @example
+   * ```typescript
+   * const arrayNode = new ArrayNode(
+   *   { name: { value: '', component: Input } },
+   *   [{ name: 'Initial 1' }, { name: 'Initial 2' }]
+   * );
+   *
+   * arrayNode.push({ name: 'New Item' });
+   * arrayNode.reset([{ name: 'Temp' }]);
+   * console.log(arrayNode.length.value); // 1
+   *
+   * arrayNode.resetToInitial();
+   * console.log(arrayNode.length.value); // 2
+   * console.log(arrayNode.at(0)?.name.value.value); // 'Initial 1'
+   * ```
+   */
+  resetToInitial(): void {
+    this.clear();
+    this.initialItems.forEach((value) => this.push(value));
   }
 
   async validate(): Promise<boolean> {
@@ -500,6 +560,52 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
     this.items.value.forEach((item) => {
       if ('dispose' in item && typeof item.dispose === 'function') {
         item.dispose();
+      }
+    });
+  }
+
+  /**
+   * Отключить все элементы массива
+   * Рекурсивно отключает каждый элемент, если у него есть метод disable()
+   *
+   * @example
+   * ```typescript
+   * // Отключить весь массив полей
+   * form.items.disable();
+   *
+   * // Все элементы становятся disabled
+   * form.items.forEach(item => {
+   *   console.log(item.status.value); // 'disabled'
+   * });
+   * ```
+   */
+  disable(): void {
+    this.items.value.forEach((item) => {
+      if ('disable' in item && typeof item.disable === 'function') {
+        item.disable();
+      }
+    });
+  }
+
+  /**
+   * Включить все элементы массива
+   * Рекурсивно включает каждый элемент, если у него есть метод enable()
+   *
+   * @example
+   * ```typescript
+   * // Включить весь массив полей
+   * form.items.enable();
+   *
+   * // Все элементы становятся enabled
+   * form.items.forEach(item => {
+   *   console.log(item.status.value); // 'valid' или 'invalid'
+   * });
+   * ```
+   */
+  enable(): void {
+    this.items.value.forEach((item) => {
+      if ('enable' in item && typeof item.enable === 'function') {
+        item.enable();
       }
     });
   }

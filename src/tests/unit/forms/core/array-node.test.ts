@@ -911,4 +911,198 @@ describe('ArrayNode', () => {
       });
     });
   });
+
+  describe('disable/enable', () => {
+    it('should disable all items in array', () => {
+      const arrayNode = new ArrayNode<ItemForm>({
+        title: { value: '', component: null as any },
+        price: { value: 0, component: null as any },
+      });
+
+      arrayNode.push({ title: 'Item 1', price: 100 });
+      arrayNode.push({ title: 'Item 2', price: 200 });
+      arrayNode.push({ title: 'Item 3', price: 300 });
+
+      // All items should be enabled initially
+      arrayNode.forEach((item) => {
+        expect(item.status.value).not.toBe('disabled');
+      });
+
+      // Disable all
+      arrayNode.disable();
+
+      // All items should be disabled
+      arrayNode.forEach((item) => {
+        expect(item.status.value).toBe('disabled');
+      });
+    });
+
+    it('should enable all items in array', () => {
+      const arrayNode = new ArrayNode<ItemForm>({
+        title: { value: '', component: null as any },
+        price: { value: 0, component: null as any },
+      });
+
+      arrayNode.push({ title: 'Item 1', price: 100 });
+      arrayNode.push({ title: 'Item 2', price: 200 });
+
+      // Disable all first
+      arrayNode.disable();
+      arrayNode.forEach((item) => {
+        expect(item.status.value).toBe('disabled');
+      });
+
+      // Enable all
+      arrayNode.enable();
+
+      // All items should be enabled (valid or invalid, but not disabled)
+      arrayNode.forEach((item) => {
+        expect(item.status.value).not.toBe('disabled');
+      });
+    });
+
+    it('should handle disable/enable on empty array', () => {
+      const arrayNode = new ArrayNode<ItemForm>({
+        title: { value: '', component: null as any },
+        price: { value: 0, component: null as any },
+      });
+
+      // Should not throw on empty array
+      expect(() => arrayNode.disable()).not.toThrow();
+      expect(() => arrayNode.enable()).not.toThrow();
+    });
+
+    it('should recursively disable nested arrays', () => {
+      interface NestedItem {
+        title: string;
+        subitems: Array<{
+          name: string;
+        }>;
+      }
+
+      const nestedArrayNode = new ArrayNode<NestedItem>({
+        title: { value: '', component: null as any },
+        subitems: [
+          {
+            name: { value: '', component: null as any },
+          },
+        ],
+      });
+
+      // Add item with nested array
+      nestedArrayNode.push({
+        title: 'Parent 1',
+        subitems: [{ name: 'Child 1' }, { name: 'Child 2' }],
+      });
+
+      // Disable parent array
+      nestedArrayNode.disable();
+
+      // Check that nested items are also disabled
+      const item = nestedArrayNode.at(0);
+      expect(item?.status.value).toBe('disabled');
+
+      // Nested subitems should also be affected
+      item?.subitems.forEach((subitem) => {
+        expect(subitem.status.value).toBe('disabled');
+      });
+    });
+
+    it('should recursively enable nested arrays', () => {
+      interface NestedItem {
+        title: string;
+        subitems: Array<{
+          name: string;
+        }>;
+      }
+
+      const nestedArrayNode = new ArrayNode<NestedItem>({
+        title: { value: '', component: null as any },
+        subitems: [
+          {
+            name: { value: '', component: null as any },
+          },
+        ],
+      });
+
+      // Add item with nested array
+      nestedArrayNode.push({
+        title: 'Parent 1',
+        subitems: [{ name: 'Child 1' }],
+      });
+
+      // Disable then enable
+      nestedArrayNode.disable();
+      nestedArrayNode.enable();
+
+      // Check that nested items are enabled
+      const item = nestedArrayNode.at(0);
+      expect(item?.status.value).not.toBe('disabled');
+
+      // Nested subitems should also be enabled
+      item?.subitems.forEach((subitem) => {
+        expect(subitem.status.value).not.toBe('disabled');
+      });
+    });
+
+    it('should work with items added after disable', () => {
+      const arrayNode = new ArrayNode<ItemForm>({
+        title: { value: '', component: null as any },
+        price: { value: 0, component: null as any },
+      });
+
+      // Add and disable
+      arrayNode.push({ title: 'Item 1', price: 100 });
+      arrayNode.disable();
+
+      expect(arrayNode.at(0)?.status.value).toBe('disabled');
+
+      // Add new item after disable
+      arrayNode.push({ title: 'Item 2', price: 200 });
+
+      // New item should NOT be disabled (disable was called before it was added)
+      expect(arrayNode.at(1)?.status.value).not.toBe('disabled');
+
+      // First item should still be disabled
+      expect(arrayNode.at(0)?.status.value).toBe('disabled');
+    });
+
+    it('should disable/enable affect validation', async () => {
+      const arrayNode = new ArrayNode<ItemForm>(
+        {
+          title: {
+            value: '',
+            component: null as any,
+            validators: [(value: string) =>
+              value.length === 0 ? { code: 'required', message: 'Required' } : null
+            ],
+          },
+          price: { value: 0, component: null as any },
+        }
+      );
+
+      // Add item with invalid title
+      arrayNode.push({ title: '', price: 100 });
+
+      // Validate the item
+      await arrayNode.at(0)?.validate();
+
+      // Should be invalid (empty title fails required validation)
+      expect(arrayNode.at(0)?.valid.value).toBe(false);
+
+      // Disable
+      arrayNode.disable();
+
+      // Should be disabled (not invalid)
+      expect(arrayNode.at(0)?.status.value).toBe('disabled');
+
+      // Enable
+      arrayNode.enable();
+
+      // Should be invalid again (validation runs on enable)
+      // Note: enable() calls validate() in FieldNode
+      await arrayNode.at(0)?.validate();
+      expect(arrayNode.at(0)?.valid.value).toBe(false);
+    });
+  });
 });

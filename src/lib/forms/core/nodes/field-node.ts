@@ -153,11 +153,13 @@ export class FieldNode<T = any> extends FormNode<T> {
       return;
     }
 
-    // 2. Если у поля есть ошибки и собственные валидаторы
-    //    → валидируем при каждом изменении
+    // 2. Если updateOn === 'blur' или 'submit':
+    //    Валидируем только если у поля есть ошибки и собственные валидаторы
+    //    Это позволяет скрывать ошибку при исправлении значения
     //    Поведение:
     //    - Если значение некорректно → обновляем/показываем ошибку
     //    - Если значение корректно → скрываем ошибку
+    //    Но первая валидация произойдет только при blur/submit
     if (hasErrors && hasOwnValidators) {
       this.validate();
     }
@@ -167,12 +169,64 @@ export class FieldNode<T = any> extends FormNode<T> {
     this.setValue(value as T);
   }
 
+  /**
+   * Сбросить поле к указанному значению (или к initialValue)
+   *
+   * @param value - опциональное значение для сброса. Если не указано, используется initialValue
+   *
+   * @remarks
+   * Этот метод:
+   * - Устанавливает значение в value или initialValue
+   * - Очищает ошибки валидации
+   * - Сбрасывает touched/dirty флаги
+   * - Устанавливает статус в 'valid'
+   *
+   * Если вам нужно сбросить к исходному значению, используйте resetToInitial()
+   *
+   * @example
+   * ```typescript
+   * // Сброс к initialValue
+   * field.reset();
+   *
+   * // Сброс к новому значению
+   * field.reset('new value');
+   * ```
+   */
   reset(value?: T): void {
     this._value.value = value !== undefined ? value : this.initialValue;
     this._errors.value = [];
     this._touched.value = false;
     this._dirty.value = false;
     this._status.value = 'valid';
+  }
+
+  /**
+   * Сбросить поле к исходному значению (initialValue)
+   *
+   * @remarks
+   * Алиас для reset() без параметров, но более явный:
+   * - resetToInitial() - явно показывает намерение вернуться к начальному значению
+   * - reset() - может принимать новое значение
+   *
+   * Полезно когда:
+   * - Пользователь нажал "Cancel" - вернуть форму в исходное состояние
+   * - Форма была изменена через reset(newValue), но нужно вернуться к самому началу
+   * - Явное намерение показать "отмену всех изменений"
+   *
+   * @example
+   * ```typescript
+   * const field = new FieldNode({ value: 'initial', component: Input });
+   *
+   * field.setValue('changed');
+   * field.reset('temp value');
+   * console.log(field.value.value); // 'temp value'
+   *
+   * field.resetToInitial();
+   * console.log(field.value.value); // 'initial'
+   * ```
+   */
+  resetToInitial(): void {
+    this.reset(this.initialValue);
   }
 
   /**
@@ -279,8 +333,30 @@ export class FieldNode<T = any> extends FormNode<T> {
       this._status.value = 'pending';
 
       // Выполняем все async валидаторы параллельно
+      // Каждый validator обернут в try-catch для обработки исключений
       const asyncResults = await Promise.all(
-        this.asyncValidators.map((validator) => validator(this._value.value))
+        this.asyncValidators.map(async (validator) => {
+          try {
+            return await validator(this._value.value);
+          } catch (error) {
+            // Логируем ошибку в dev-mode
+            if (import.meta.env.DEV) {
+              console.error(
+                '[FieldNode] Async validator threw an error:',
+                error
+              );
+            }
+
+            // Возвращаем ValidationError вместо throw
+            return {
+              code: 'validator_error',
+              message:
+                error instanceof Error
+                  ? error.message
+                  : 'Validator encountered an error',
+            } as ValidationError;
+          }
+        })
       );
 
       // ✅ Проверка #3: после Promise.all (основная проверка)
@@ -378,6 +454,42 @@ export class FieldNode<T = any> extends FormNode<T> {
       ...this._componentProps.value,
       ...props,
     };
+  }
+
+  /**
+   * Динамически изменяет триггер валидации (updateOn)
+   * Полезно для адаптивной валидации - например, переключиться на instant feedback после первого submit
+   *
+   * @param updateOn - новый триггер валидации: 'change' | 'blur' | 'submit'
+   *
+   * @example
+   * ```typescript
+   * // Сценарий 1: Instant feedback после submit
+   * const form = new GroupNode({
+   *   email: {
+   *     value: '',
+   *     component: Input,
+   *     updateOn: 'submit', // Изначально валидация только при submit
+   *     validators: [required, email]
+   *   }
+   * });
+   *
+   * await form.submit(async (values) => {
+   *   // После submit переключаем на instant feedback
+   *   form.email.setUpdateOn('change');
+   *   await api.save(values);
+   * });
+   *
+   * // Теперь валидация происходит при каждом изменении
+   *
+   * // Сценарий 2: Прогрессивное улучшение
+   * form.email.setUpdateOn('blur');  // Сначала только при blur
+   * // ... пользователь начинает вводить ...
+   * form.email.setUpdateOn('change'); // Переключаем на change для real-time feedback
+   * ```
+   */
+  setUpdateOn(updateOn: 'change' | 'blur' | 'submit'): void {
+    this.updateOn = updateOn;
   }
 
   // ============================================================================

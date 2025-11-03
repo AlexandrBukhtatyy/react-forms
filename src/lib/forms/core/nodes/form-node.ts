@@ -150,6 +150,35 @@ export abstract class FormNode<T = any> {
    */
   abstract markAsPristine(): void;
 
+  /**
+   * Пометить все поля (включая вложенные) как touched
+   * Алиас для markAsTouched(), но более явно показывает намерение
+   * пометить ВСЕ поля рекурсивно
+   *
+   * Полезно для:
+   * - Показа всех ошибок валидации перед submit
+   * - Принудительного отображения ошибок при нажатии "Validate All"
+   * - Отображения невалидных полей в wizard/step form
+   *
+   * @example
+   * ```typescript
+   * // Показать все ошибки перед submit
+   * form.touchAll();
+   * const isValid = await form.validate();
+   * if (!isValid) {
+   *   // Все ошибки теперь видны пользователю
+   * }
+   *
+   * // Или использовать submit() который уже вызывает touchAll
+   * await form.submit(async (values) => {
+   *   await api.save(values);
+   * });
+   * ```
+   */
+  touchAll(): void {
+    this.markAsTouched();
+  }
+
   // ============================================================================
   // Опциональные методы (могут быть реализованы в подклассах)
   // ============================================================================
@@ -180,4 +209,89 @@ export abstract class FormNode<T = any> {
    * ```
    */
   dispose?(): void;
+}
+
+// ============================================================================
+// Type Guards
+// ============================================================================
+
+/**
+ * Type guard для проверки, является ли узел FieldNode
+ *
+ * @param node - проверяемый узел
+ * @returns true если node является FieldNode
+ *
+ * @example
+ * ```typescript
+ * if (isFieldNode(node)) {
+ *   // TypeScript знает, что node - это FieldNode
+ *   node.markAsTouched();
+ * }
+ * ```
+ */
+export function isFieldNode<T = any>(node: FormNode<any>): node is import('./field-node').FieldNode<T> {
+  return Boolean(
+    node &&
+    typeof node === 'object' &&
+    'touched' in node &&
+    'dirty' in node &&
+    // FieldNode имеет markAsTouched, но GroupNode/ArrayNode нет (они итерируются)
+    typeof (node as any).markAsTouched === 'function' &&
+    // У FieldNode нет fields/items
+    !('fields' in node) &&
+    !('items' in node)
+  );
+}
+
+/**
+ * Type guard для проверки, является ли узел GroupNode
+ *
+ * @param node - проверяемый узел
+ * @returns true если node является GroupNode
+ *
+ * @example
+ * ```typescript
+ * if (isGroupNode(node)) {
+ *   // TypeScript знает, что node - это GroupNode
+ *   node.applyValidationSchema(schema);
+ * }
+ * ```
+ */
+export function isGroupNode<T = any>(node: FormNode<any>): node is import('./group-node').GroupNode<T> {
+  return Boolean(
+    node &&
+    typeof node === 'object' &&
+    'applyValidationSchema' in node &&
+    'applyBehaviorSchema' in node &&
+    // GroupNode имеет fields Map, но ArrayNode имеет items
+    !('items' in node) &&
+    !('push' in node) &&
+    !('removeAt' in node)
+  );
+}
+
+/**
+ * Type guard для проверки, является ли узел ArrayNode
+ *
+ * @param node - проверяемый узел
+ * @returns true если node является ArrayNode
+ *
+ * @example
+ * ```typescript
+ * if (isArrayNode(node)) {
+ *   // TypeScript знает, что node - это ArrayNode
+ *   node.push({ name: 'New Item' });
+ * }
+ * ```
+ */
+export function isArrayNode<T = any>(node: FormNode<any>): node is import('./array-node').ArrayNode<T> {
+  return Boolean(
+    node &&
+    typeof node === 'object' &&
+    'length' in node &&
+    'push' in node &&
+    'removeAt' in node &&
+    'at' in node &&
+    typeof (node as any).push === 'function'
+  );
 }
