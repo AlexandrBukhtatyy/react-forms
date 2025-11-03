@@ -38,6 +38,12 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
   private items: Signal<FormNode<T>[]>;
   private itemSchema: DeepFormSchema<T>;
 
+  /**
+   * Массив disposers для централизованного cleanup
+   * Хранит все функции отписки от subscriptions
+   */
+  private disposers: Array<() => void> = [];
+
   // ============================================================================
   // Приватные поля для сохранения схем
   // ============================================================================
@@ -405,7 +411,7 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
     fieldKey: K,
     callback: (values: Array<T[K] | undefined>) => void | Promise<void>
   ): () => void {
-    return effect(() => {
+    const dispose = effect(() => {
       // Отслеживаем изменения всех элементов массива
       const values = this.items.value.map((item) => {
         if (item instanceof GroupNode) {
@@ -417,6 +423,18 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
 
       callback(values);
     });
+
+    // Регистрируем disposer для централизованного cleanup
+    this.disposers.push(dispose);
+
+    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
+    return () => {
+      const index = this.disposers.indexOf(dispose);
+      if (index > -1) {
+        this.disposers.splice(index, 1);
+      }
+      dispose();
+    };
   }
 
   /**
@@ -442,9 +460,47 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
    * ```
    */
   watchLength(callback: (length: number) => void | Promise<void>): () => void {
-    return effect(() => {
+    const dispose = effect(() => {
       const currentLength = this.length.value;
       callback(currentLength);
+    });
+
+    // Регистрируем disposer для централизованного cleanup
+    this.disposers.push(dispose);
+
+    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
+    return () => {
+      const index = this.disposers.indexOf(dispose);
+      if (index > -1) {
+        this.disposers.splice(index, 1);
+      }
+      dispose();
+    };
+  }
+
+  /**
+   * Очистить все ресурсы узла
+   * Рекурсивно очищает все subscriptions и элементы массива
+   *
+   * @example
+   * ```typescript
+   * useEffect(() => {
+   *   return () => {
+   *     arrayNode.dispose();
+   *   };
+   * }, []);
+   * ```
+   */
+  dispose(): void {
+    // Очищаем все subscriptions
+    this.disposers.forEach((d) => d());
+    this.disposers = [];
+
+    // Очищаем элементы массива
+    this.items.value.forEach((item) => {
+      if ('dispose' in item && typeof item.dispose === 'function') {
+        item.dispose();
+      }
     });
   }
 }

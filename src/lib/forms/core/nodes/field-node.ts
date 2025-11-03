@@ -77,6 +77,13 @@ export class FieldNode<T = any> extends FormNode<T> {
   private currentValidationId = 0;
   private debounceMs: number;
   private validateDebounceTimer?: ReturnType<typeof setTimeout>;
+  private validateDebounceResolve?: (value: boolean) => void;
+
+  /**
+   * Массив disposers для централизованного cleanup
+   * Хранит все функции отписки от subscriptions
+   */
+  private disposers: Array<() => void> = [];
 
   public readonly component: FieldConfig<T>['component'];
 
@@ -168,18 +175,58 @@ export class FieldNode<T = any> extends FormNode<T> {
     this._status.value = 'valid';
   }
 
+  /**
+   * Запустить валидацию поля
+   * @param options - опции валидации
+   * @returns Promise<boolean> - true если поле валидно
+   *
+   * @remarks
+   * Метод защищен от race conditions через validationId.
+   * При быстром вводе только последняя валидация применяет результаты.
+   *
+   * @example
+   * ```typescript
+   * // Обычная валидация
+   * await field.validate();
+   *
+   * // С debounce
+   * await field.validate({ debounce: 300 });
+   * ```
+   */
   async validate(options?: { debounce?: number }): Promise<boolean> {
     const debounce = options?.debounce ?? this.debounceMs;
 
     // Если задан debounce, откладываем валидацию
     if (debounce > 0 && this.asyncValidators.length > 0) {
       return new Promise((resolve) => {
+        // Запоминаем текущий validationId перед debounce
+        const currentId = this.currentValidationId;
+
+        // Resolve предыдущий promise (если есть) как cancelled
+        if (this.validateDebounceResolve) {
+          this.validateDebounceResolve(false);
+        }
+
         // Отменяем предыдущий таймер
         if (this.validateDebounceTimer) {
           clearTimeout(this.validateDebounceTimer);
         }
 
+        // Сохраняем resolver для возможности отмены
+        this.validateDebounceResolve = resolve;
+
         this.validateDebounceTimer = setTimeout(async () => {
+          // Очищаем resolver
+          this.validateDebounceResolve = undefined;
+
+          // Проверяем, не была ли запущена новая валидация во время debounce
+          // (другой вызов validate увеличил бы currentValidationId в validateImmediate)
+          if (currentId !== this.currentValidationId) {
+            // Эта валидация устарела
+            resolve(false);
+            return;
+          }
+
           const result = await this.validateImmediate();
           resolve(result);
         }, debounce);
@@ -189,6 +236,17 @@ export class FieldNode<T = any> extends FormNode<T> {
     return this.validateImmediate();
   }
 
+  /**
+   * Немедленная валидация без debounce
+   * @private
+   * @remarks
+   * Защищена от race conditions:
+   * - Проверка validationId после синхронной валидации
+   * - Проверка перед установкой pending
+   * - Проверка после Promise.all
+   * - Проверка перед обработкой async результатов
+   * - Проверка перед очисткой errors
+   */
   private async validateImmediate(): Promise<boolean> {
     const validationId = ++this.currentValidationId;
 
@@ -199,6 +257,11 @@ export class FieldNode<T = any> extends FormNode<T> {
       if (error) syncErrors.push(error);
     }
 
+    // ✅ Проверка #1: после синхронной валидации
+    if (validationId !== this.currentValidationId) {
+      return false; // Эта валидация устарела
+    }
+
     if (syncErrors.length > 0) {
       this._errors.value = syncErrors;
       this._status.value = 'invalid';
@@ -207,6 +270,11 @@ export class FieldNode<T = any> extends FormNode<T> {
 
     // Асинхронная валидация - ПАРАЛЛЕЛЬНО
     if (this.asyncValidators.length > 0) {
+      // ✅ Проверка #2: перед установкой pending
+      if (validationId !== this.currentValidationId) {
+        return false;
+      }
+
       this._pending.value = true;
       this._status.value = 'pending';
 
@@ -215,12 +283,18 @@ export class FieldNode<T = any> extends FormNode<T> {
         this.asyncValidators.map((validator) => validator(this._value.value))
       );
 
-      // Проверяем, не была ли запущена новая валидация
+      // ✅ Проверка #3: после Promise.all (основная проверка)
       if (validationId !== this.currentValidationId) {
-        return false; // Эта валидация устарела
+        // Не сбрасываем pending, т.к. новая валидация может еще выполняться
+        return false;
       }
 
       this._pending.value = false;
+
+      // ✅ Проверка #4: перед обработкой async результатов
+      if (validationId !== this.currentValidationId) {
+        return false;
+      }
 
       const asyncErrors = asyncResults.filter(Boolean) as ValidationError[];
       if (asyncErrors.length > 0) {
@@ -228,6 +302,11 @@ export class FieldNode<T = any> extends FormNode<T> {
         this._status.value = 'invalid';
         return false;
       }
+    }
+
+    // ✅ Проверка #5: перед очисткой errors (финальная проверка)
+    if (validationId !== this.currentValidationId) {
+      return false;
     }
 
     // ✅ Очищаем ошибки только если у поля есть собственные валидаторы
@@ -323,10 +402,22 @@ export class FieldNode<T = any> extends FormNode<T> {
    * ```
    */
   watch(callback: (value: T) => void | Promise<void>): () => void {
-    return effect(() => {
+    const dispose = effect(() => {
       const currentValue = this.value.value; // track changes
       callback(currentValue);
     });
+
+    // Регистрируем disposer для централизованного cleanup
+    this.disposers.push(dispose);
+
+    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
+    return () => {
+      const index = this.disposers.indexOf(dispose);
+      if (index > -1) {
+        this.disposers.splice(index, 1);
+      }
+      dispose();
+    };
   }
 
   /**
@@ -355,7 +446,7 @@ export class FieldNode<T = any> extends FormNode<T> {
     sources: ReadonlySignal<TSource[number]>[],
     computeFn: (...values: TSource) => T
   ): () => void {
-    return effect(() => {
+    const dispose = effect(() => {
       // Читаем все источники для отслеживания
       const sourceValues = sources.map((source) => source.value) as TSource;
 
@@ -365,6 +456,18 @@ export class FieldNode<T = any> extends FormNode<T> {
       // Устанавливаем значение без триггера событий (избегаем циклов)
       this.setValue(newValue, { emitEvent: false });
     });
+
+    // Регистрируем disposer для централизованного cleanup
+    this.disposers.push(dispose);
+
+    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
+    return () => {
+      const index = this.disposers.indexOf(dispose);
+      if (index > -1) {
+        this.disposers.splice(index, 1);
+      }
+      dispose();
+    };
   }
 
   /**
@@ -381,6 +484,10 @@ export class FieldNode<T = any> extends FormNode<T> {
    * ```
    */
   dispose(): void {
+    // Очищаем все subscriptions
+    this.disposers.forEach((d) => d());
+    this.disposers = [];
+
     // Очищаем debounce таймер если он есть
     if (this.validateDebounceTimer) {
       clearTimeout(this.validateDebounceTimer);

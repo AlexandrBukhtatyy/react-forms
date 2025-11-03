@@ -75,6 +75,12 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   private _submitting: Signal<boolean>;
 
   /**
+   * Массив disposers для централизованного cleanup
+   * Хранит все функции отписки от subscriptions
+   */
+  private disposers: Array<() => void> = [];
+
+  /**
    * Ссылка на Proxy-инстанс для использования в BehaviorContext
    * Устанавливается в конструкторе до применения behavior schema
    */
@@ -592,7 +598,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       return () => {}; // noop
     }
 
-    return effect(() => {
+    const dispose = effect(() => {
       const sourceValue = sourceField.value.value;
       const transformedValue = transform
         ? transform(sourceValue as T[K1])
@@ -600,6 +606,18 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
       targetField.setValue(transformedValue, { emitEvent: false });
     });
+
+    // Регистрируем disposer для централизованного cleanup
+    this.disposers.push(dispose);
+
+    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
+    return () => {
+      const index = this.disposers.indexOf(dispose);
+      if (index > -1) {
+        this.disposers.splice(index, 1);
+      }
+      dispose();
+    };
   }
 
   /**
@@ -642,9 +660,47 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       return () => {}; // noop
     }
 
-    return effect(() => {
+    const dispose = effect(() => {
       const value = field.value.value;
       callback(value);
+    });
+
+    // Регистрируем disposer для централизованного cleanup
+    this.disposers.push(dispose);
+
+    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
+    return () => {
+      const index = this.disposers.indexOf(dispose);
+      if (index > -1) {
+        this.disposers.splice(index, 1);
+      }
+      dispose();
+    };
+  }
+
+  /**
+   * Очистить все ресурсы узла
+   * Рекурсивно очищает все subscriptions и дочерние узлы
+   *
+   * @example
+   * ```typescript
+   * useEffect(() => {
+   *   return () => {
+   *     form.dispose();
+   *   };
+   * }, []);
+   * ```
+   */
+  dispose(): void {
+    // Очищаем все subscriptions
+    this.disposers.forEach((d) => d());
+    this.disposers = [];
+
+    // Рекурсивно очищаем дочерние узлы
+    this.fields.forEach((field) => {
+      if ('dispose' in field && typeof field.dispose === 'function') {
+        field.dispose();
+      }
     });
   }
 }

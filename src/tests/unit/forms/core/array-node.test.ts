@@ -647,4 +647,268 @@ describe('ArrayNode', () => {
       expect(callback.mock.calls.length).toBe(callCountBefore);
     });
   });
+
+  describe('Cleanup (dispose)', () => {
+    describe('watchItems() cleanup', () => {
+      it('should cleanup watchItems subscription when dispose() is called', () => {
+        arrayNode.push({ title: 'Item 1', price: 100 });
+        arrayNode.push({ title: 'Item 2', price: 200 });
+
+        const callback = vi.fn();
+        arrayNode.watchItems('price', callback);
+
+        // Initial call
+        expect(callback).toHaveBeenCalledTimes(1);
+        expect(callback).toHaveBeenCalledWith([100, 200]);
+
+        // Change item
+        arrayNode.at(0)?.price.setValue(150);
+        expect(callback).toHaveBeenCalledTimes(2);
+        expect(callback).toHaveBeenCalledWith([150, 200]);
+
+        // Dispose
+        arrayNode.dispose();
+
+        // Change after dispose - callback should NOT be called
+        arrayNode.at(0)?.price.setValue(999);
+        expect(callback).toHaveBeenCalledTimes(2); // Still 2
+      });
+
+      it('should cleanup multiple watchItems subscriptions', () => {
+        arrayNode.push({ title: 'Item 1', price: 100 });
+
+        const priceCallback = vi.fn();
+        const titleCallback = vi.fn();
+
+        arrayNode.watchItems('price', priceCallback);
+        arrayNode.watchItems('title', titleCallback);
+
+        expect(priceCallback).toHaveBeenCalledTimes(1);
+        expect(titleCallback).toHaveBeenCalledTimes(1);
+
+        // Change items
+        arrayNode.at(0)?.price.setValue(200);
+        arrayNode.at(0)?.title.setValue('Updated');
+
+        expect(priceCallback).toHaveBeenCalledTimes(2);
+        expect(titleCallback).toHaveBeenCalledTimes(2);
+
+        // Dispose
+        arrayNode.dispose();
+
+        // Changes after dispose
+        arrayNode.at(0)?.price.setValue(300);
+        arrayNode.at(0)?.title.setValue('After Dispose');
+
+        expect(priceCallback).toHaveBeenCalledTimes(2);
+        expect(titleCallback).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('watchLength() cleanup', () => {
+      it('should cleanup watchLength subscription when dispose() is called', () => {
+        const callback = vi.fn();
+        arrayNode.watchLength(callback);
+
+        // Initial call
+        expect(callback).toHaveBeenCalledTimes(1);
+        expect(callback).toHaveBeenCalledWith(0);
+
+        // Add items
+        arrayNode.push({ title: 'Item 1', price: 100 });
+        expect(callback).toHaveBeenCalledTimes(2);
+        expect(callback).toHaveBeenCalledWith(1);
+
+        arrayNode.push({ title: 'Item 2', price: 200 });
+        expect(callback).toHaveBeenCalledTimes(3);
+
+        // Dispose
+        arrayNode.dispose();
+
+        // Add after dispose - callback should NOT be called
+        arrayNode.push({ title: 'Item 3', price: 300 });
+        expect(callback).toHaveBeenCalledTimes(3); // Still 3
+      });
+
+      it('should cleanup multiple watchLength subscriptions', () => {
+        const callback1 = vi.fn();
+        const callback2 = vi.fn();
+        const callback3 = vi.fn();
+
+        arrayNode.watchLength(callback1);
+        arrayNode.watchLength(callback2);
+        arrayNode.watchLength(callback3);
+
+        expect(callback1).toHaveBeenCalledTimes(1);
+        expect(callback2).toHaveBeenCalledTimes(1);
+        expect(callback3).toHaveBeenCalledTimes(1);
+
+        arrayNode.push({ title: 'Item 1', price: 100 });
+
+        expect(callback1).toHaveBeenCalledTimes(2);
+        expect(callback2).toHaveBeenCalledTimes(2);
+        expect(callback3).toHaveBeenCalledTimes(2);
+
+        // Dispose
+        arrayNode.dispose();
+
+        arrayNode.push({ title: 'Item 2', price: 200 });
+
+        expect(callback1).toHaveBeenCalledTimes(2);
+        expect(callback2).toHaveBeenCalledTimes(2);
+        expect(callback3).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('recursive cleanup of array items', () => {
+      it('should recursively dispose all item GroupNode instances', () => {
+        arrayNode.push({ title: 'Item 1', price: 100 });
+        arrayNode.push({ title: 'Item 2', price: 200 });
+
+        const callback1 = vi.fn();
+        const callback2 = vi.fn();
+
+        // Add watchers to items
+        arrayNode.at(0)?.title.watch(callback1);
+        arrayNode.at(1)?.price.watch(callback2);
+
+        expect(callback1).toHaveBeenCalledTimes(1);
+        expect(callback2).toHaveBeenCalledTimes(1);
+
+        // Dispose parent array
+        arrayNode.dispose();
+
+        // Changes to items should NOT trigger watchers
+        arrayNode.at(0)?.title.setValue('After Dispose');
+        arrayNode.at(1)?.price.setValue(999);
+
+        expect(callback1).toHaveBeenCalledTimes(1); // Still 1
+        expect(callback2).toHaveBeenCalledTimes(1); // Still 1
+      });
+
+      it('should dispose items added after initial creation', () => {
+        const callback = vi.fn();
+
+        // Add item and subscribe
+        arrayNode.push({ title: 'Item 1', price: 100 });
+        arrayNode.at(0)?.title.watch(callback);
+
+        expect(callback).toHaveBeenCalledTimes(1);
+
+        // Add more items with subscriptions
+        arrayNode.push({ title: 'Item 2', price: 200 });
+        const callback2 = vi.fn();
+        arrayNode.at(1)?.price.watch(callback2);
+
+        // Dispose all
+        arrayNode.dispose();
+
+        arrayNode.at(0)?.title.setValue('After');
+        arrayNode.at(1)?.price.setValue(999);
+
+        expect(callback).toHaveBeenCalledTimes(1);
+        expect(callback2).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('mixed subscriptions cleanup', () => {
+      it('should cleanup both watchItems and watchLength', () => {
+        const itemsCallback = vi.fn();
+        const lengthCallback = vi.fn();
+
+        arrayNode.watchItems('price', itemsCallback);
+        arrayNode.watchLength(lengthCallback);
+
+        arrayNode.push({ title: 'Item 1', price: 100 });
+
+        expect(itemsCallback).toHaveBeenCalledTimes(2); // Initial + push
+        expect(lengthCallback).toHaveBeenCalledTimes(2); // Initial + push
+
+        // Dispose
+        arrayNode.dispose();
+
+        arrayNode.push({ title: 'Item 2', price: 200 });
+
+        expect(itemsCallback).toHaveBeenCalledTimes(2); // Not triggered
+        expect(lengthCallback).toHaveBeenCalledTimes(2); // Not triggered
+      });
+    });
+
+    describe('edge cases', () => {
+      it('should handle dispose() called multiple times', () => {
+        const callback = vi.fn();
+        arrayNode.watchLength(callback);
+
+        expect(() => {
+          arrayNode.dispose();
+          arrayNode.dispose();
+          arrayNode.dispose();
+        }).not.toThrow();
+
+        arrayNode.push({ title: 'Item 1', price: 100 });
+        expect(callback).toHaveBeenCalledTimes(1); // Only initial
+      });
+
+      it('should handle dispose() on empty array', () => {
+        expect(() => arrayNode.dispose()).not.toThrow();
+      });
+
+      it('should allow new subscriptions after dispose', () => {
+        const callback1 = vi.fn();
+        const callback2 = vi.fn();
+
+        arrayNode.watchLength(callback1);
+        arrayNode.dispose();
+
+        // Add new subscription after dispose
+        arrayNode.watchLength(callback2);
+
+        arrayNode.push({ title: 'Item 1', price: 100 });
+
+        expect(callback1).toHaveBeenCalledTimes(1); // Only initial (before dispose)
+        expect(callback2).toHaveBeenCalledTimes(2); // Initial + push
+
+        // Cleanup
+        arrayNode.dispose();
+      });
+    });
+
+    describe('memory leak prevention', () => {
+      it('should not accumulate disposers', () => {
+        // Create many subscriptions
+        for (let i = 0; i < 50; i++) {
+          const callback = vi.fn();
+          arrayNode.watchLength(callback);
+        }
+
+        // Dispose all
+        arrayNode.dispose();
+
+        // Verify cleanup by adding new subscription
+        const callback = vi.fn();
+        arrayNode.watchLength(callback);
+
+        arrayNode.push({ title: 'Item 1', price: 100 });
+        expect(callback).toHaveBeenCalledTimes(2); // Should work normally
+
+        arrayNode.dispose();
+      });
+
+      it('should handle rapid item additions and disposals', () => {
+        // Add many items
+        for (let i = 0; i < 100; i++) {
+          arrayNode.push({ title: `Item ${i}`, price: i * 100 });
+        }
+
+        // Add watchers to each item
+        for (let i = 0; i < arrayNode.length.value; i++) {
+          const callback = vi.fn();
+          arrayNode.at(i)?.title.watch(callback);
+        }
+
+        // Dispose should cleanup all
+        expect(() => arrayNode.dispose()).not.toThrow();
+      });
+    });
+  });
 });

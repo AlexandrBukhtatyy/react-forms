@@ -164,4 +164,20 @@ export abstract class FormNode<T = any> {
    * Включить узел
    */
   enable?(): void;
+
+  /**
+   * Очистить все ресурсы узла
+   * Должен вызываться при unmount компонента для предотвращения memory leaks
+   *
+   * @example
+   * ```typescript
+   * // React component
+   * useEffect(() => {
+   *   return () => {
+   *     form.dispose(); // Cleanup при unmount
+   *   };
+   * }, []);
+   * ```
+   */
+  dispose?(): void;
 }
