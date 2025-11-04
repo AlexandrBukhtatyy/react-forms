@@ -3,24 +3,24 @@ import { Form } from '@/lib/forms/components/core/form';
 import { cn } from '@/lib/utils';
 import { statusResource } from '../resources/status.resource';
 import { roleResource } from '../resources/role.resource';
-import { FormField, GroupNode } from '@/lib/forms';
+import { FormField, GroupNode, type GroupNodeWithControls } from '@/lib/forms';
 import { Input, InputSearch, Select } from '@/lib/forms/components';
 
 interface UsersFilterModel {
   login: string | null;
   email: string | null;
-  status: string | null;
+  userStatus: string | null; // TODO: из за того что это название зарезервировано выдает ошибку при использовании status
   role: string | null;
   registrationDate: string | null;
 }
 
 interface FilterFormProps {
   className?: string;
-  control: GroupNode<UsersFilterModel>;
+  control: GroupNodeWithControls<UsersFilterModel>;
 }
 
-export const makeUsersFilterForm = (): GroupNode<UsersFilterModel> => {
-  return new GroupNode({
+export const createUsersFilterForm = (): GroupNodeWithControls<UsersFilterModel> => {
+  const formSchema = {
       login: {
         value: null,
         component: InputSearch,
@@ -37,7 +37,7 @@ export const makeUsersFilterForm = (): GroupNode<UsersFilterModel> => {
           debounce: 300
         }
       },
-      status: {
+      userStatus: {
         value: null,
         component: Select,
         componentProps: {
@@ -60,17 +60,18 @@ export const makeUsersFilterForm = (): GroupNode<UsersFilterModel> => {
         component: Input, // TODO: Реализовать дату
         componentProps: { placeholder: 'Дата регистрации' }
       },
-    });
+    }
+  return new GroupNode(formSchema) as GroupNodeWithControls<UsersFilterModel>;
 }
 
 const UsersFilterForm: React.FC<FilterFormProps> = ({ className, control }) => {
   return (
     <Form className={cn(className, "flex gap-4")}>
-      <FormField control={(control as any).login}/>
-      <FormField control={(control as any).email}/>
-      <FormField control={(control as any).status}/>
-      <FormField control={(control as any).role}/>
-      <FormField control={(control as any).registrationDate}/>
+      <FormField control={control.login}/>
+      <FormField control={control.email}/>
+      <FormField control={control.userStatus}/>
+      <FormField control={control.role}/>
+      <FormField control={control.registrationDate}/>
     </Form>
   );
 };

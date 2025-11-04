@@ -76,6 +76,7 @@ export const addressFormSchema: DeepFormSchema<Address> = {
 }
 
 interface AddressFormProps {
+  // TODO: Убрать
   // GroupProxy для вложенной формы address (используем any для обхода ограничений TypeScript)
   control: any;
 }

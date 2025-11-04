@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
-import UsersFilterForm, { makeUsersFilterForm } from "./UsersFilterForm";
+import UsersFilterForm, { createUsersFilterForm } from "./UsersFilterForm";
 import { usersTable } from '../store/usersTableStore';
 import TableToolbar from '@/lib/tables/components/TableToolbar';
 import Table from '@/lib/tables/components/Table';
@@ -12,7 +12,7 @@ interface UsersTableProps {
 
 const UsersTable: React.FC<UsersTableProps> = ({ className }) => {
   useSignals();
-  const form = useMemo(makeUsersFilterForm, []);
+  const form = useMemo(createUsersFilterForm, []);
   const isInitializedRef = useRef(false);
 
   // Автоматическая фильтрация при изменении значений
