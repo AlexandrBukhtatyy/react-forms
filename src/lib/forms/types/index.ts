@@ -54,7 +54,7 @@ export type {
 // ============================================================================
 
 export type {
-  DeepFormSchema,
+  FormSchema as DeepFormSchema,
   DeepControls,
   GroupControlProxy,
   ArrayControlProxy,
@@ -77,7 +77,7 @@ export type {
 
 import type { BehaviorSchemaFn } from '../behaviors/types';
 import type { ValidationSchemaFn } from './validation-schema';
-import type { DeepFormSchema } from './deep-schema';
+import type { FormSchema } from './deep-schema';
 
 /**
  * Конфигурация GroupNode с поддержкой схем
@@ -85,7 +85,7 @@ import type { DeepFormSchema } from './deep-schema';
  */
 export interface GroupNodeConfig<T extends Record<string, any>> {
   /** Схема структуры формы (поля и их конфигурация) */
-  form: DeepFormSchema<T>;
+  form: FormSchema<T>;
 
   /** Схема реактивного поведения (copyFrom, enableWhen, computeFrom и т.д.) */
   behavior?: BehaviorSchemaFn<T>;

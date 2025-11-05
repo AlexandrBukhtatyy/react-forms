@@ -1,7 +1,6 @@
 import { memo } from 'react';
-import { FormField } from '@/lib/forms/components/core/form-field';
-import { Checkbox, Input, Select, Textarea } from '@/lib/forms/components';
-import type { DeepFormSchema } from '@/lib/forms';
+import { Checkbox, FormField, Input, Select, Textarea } from '@/lib/forms/components';
+import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 export type PropertyType = 'apartment' | 'house' | 'car' | 'land' | 'none';
 
@@ -61,7 +60,7 @@ export const propertyFormSchema: DeepFormSchema<Property> = {
 
 interface PropertyFormProps {
   // GroupProxy для элемента массива properties
-  control: any;
+  control: GroupNodeWithControls<Property>;
 }
 
 const PropertyFormComponent = ({ control }: PropertyFormProps) => {

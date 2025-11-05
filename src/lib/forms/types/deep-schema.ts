@@ -35,7 +35,7 @@ export interface FieldConfig<T = any> {
  * Конфигурация массива (внутренняя)
  */
 export interface ArrayConfig<T extends Record<string, any>> {
-  itemSchema: DeepFormSchema<T>;
+  itemSchema: FormSchema<T>;
   initial?: Partial<T>[];
 }
 
@@ -78,15 +78,15 @@ export interface ArrayConfig<T extends Record<string, any>> {
  * };
  * ```
  */
-export type DeepFormSchema<T> = {
+export type FormSchema<T> = {
   [K in keyof T]: NonNullable<T[K]> extends Array<infer U>
     ? U extends Record<string, any>
-      ? [DeepFormSchema<U>]  // Массив объектов
+      ? [FormSchema<U>]  // Массив объектов
       : FieldConfig<T[K]>     // Массив примитивов (как обычное поле)
     : NonNullable<T[K]> extends Record<string, any>
     ? NonNullable<T[K]> extends Date | File | Blob
       ? FieldConfig<T[K]>  // Специальные объекты
-      : DeepFormSchema<NonNullable<T[K]>> | FieldConfig<T[K]>  // Группа или поле с объектным типом
+      : FormSchema<NonNullable<T[K]>> | FieldConfig<T[K]>  // Группа или поле с объектным типом
     : FieldConfig<T[K]>;  // Примитивное поле
 };
 

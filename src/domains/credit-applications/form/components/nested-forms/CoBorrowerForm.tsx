@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, InputMask, Select } from '@/lib/forms/components';
 import { RELATIONSHIPS } from '../../constants/credit-application';
-import type { DeepFormSchema } from '@/lib/forms';
+import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 export interface CoBorrower {
   id?: string;
@@ -95,7 +95,7 @@ export const coBorrowersFormSchema: DeepFormSchema<CoBorrower> = {
 
 interface CoBorrowerFormProps {
   // GroupProxy для элемента массива coBorrowers
-  control: any;
+  control: GroupNodeWithControls<CoBorrower>;
 }
 
 const CoBorrowerFormComponent = ({ control }: CoBorrowerFormProps) => {

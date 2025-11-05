@@ -5,7 +5,7 @@
  * These tests verify TypeScript type inference at compile time
  */
 
-import type { DeepFormSchema, DeepControls } from '../deep-schema';
+import type { FormSchema, DeepControls } from '../deep-schema';
 
 // TODO: Add actual test framework and implement these tests
 // TODO: Install Vitest or Jest for testing

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, InputMask, Textarea } from '@/lib/forms/components';
-import type { DeepFormSchema } from '@/lib/forms';
+import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 /**
  * Паспортные данные (вложенная форма)
@@ -68,7 +68,7 @@ export const passportDataSchema: DeepFormSchema<PassportData> = {
 
 interface PassportDataFormProps {
   // GroupProxy для вложенной формы passportData (используем any для обхода ограничений TypeScript)
-  control: any;
+  control: GroupNodeWithControls<PassportData>;
 }
 
 const PassportDataFormComponent = ({ control }: PassportDataFormProps) => {

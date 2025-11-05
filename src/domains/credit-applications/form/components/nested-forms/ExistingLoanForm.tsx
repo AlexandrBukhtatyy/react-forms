@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, Select } from '@/lib/forms/components';
 import { EXISTING_LOAN_TYPES } from '../../constants/credit-application';
-import type { DeepFormSchema } from '@/lib/forms';
+import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 export interface ExistingLoan {
   id?: string;
@@ -76,8 +76,7 @@ export const existingLoansFormSchema: DeepFormSchema<ExistingLoan> = {
 };
 
 interface ExistingLoanFormProps {
-  // GroupProxy для элемента массива existingLoans
-  control: any;
+  control: GroupNodeWithControls<ExistingLoan>;
 }
 
 const ExistingLoanFormComponent = ({ control }: ExistingLoanFormProps) => {

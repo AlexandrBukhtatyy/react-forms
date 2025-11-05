@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, RadioGroup } from '@/lib/forms/components';
 import { GENDERS } from '../../constants/credit-application';
-import type { DeepFormSchema } from '@/lib/forms';
+import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 /**
  * Личные данные
@@ -77,7 +77,7 @@ export const personalDataSchema: DeepFormSchema<PersonalData> = {
 
 interface PersonalDataFormProps {
   // GroupProxy для вложенной формы personalData (используем any для обхода ограничений TypeScript)
-  control: any;
+  control: GroupNodeWithControls<PersonalData>;
 }
 
 const PersonalDataFormComponent = ({ control }: PersonalDataFormProps) => {

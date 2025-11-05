@@ -12,7 +12,7 @@ import type { Signal, ReadonlySignal } from '@preact/signals-react';
 import { FormNode,  type SetValueOptions } from './form-node';
 import { GroupNode } from './group-node';
 import type { FieldStatus, ValidationError } from '../../types';
-import type { DeepFormSchema } from '../../types/deep-schema';
+import type { FormSchema } from '../../types/deep-schema';
 import type { GroupNodeWithControls } from '../../types/group-node-proxy';
 
 /**
@@ -36,7 +36,7 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
   // ============================================================================
 
   private items: Signal<FormNode<T>[]>;
-  private itemSchema: DeepFormSchema<T>;
+  private itemSchema: FormSchema<T>;
   private initialItems: Partial<T>[];
 
   /**
@@ -70,7 +70,7 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
   // Конструктор
   // ============================================================================
 
-  constructor(schema: DeepFormSchema<T>, initialItems: Partial<T>[] = []) {
+  constructor(schema: FormSchema<T>, initialItems: Partial<T>[] = []) {
     super();
 
     this.itemSchema = schema;

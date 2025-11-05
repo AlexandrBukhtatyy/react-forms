@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, InputMask } from '@/lib/forms/components';
-import type { DeepFormSchema } from '@/lib/forms';
+import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 /**
  * Адрес (вложенная форма)
@@ -78,7 +78,7 @@ export const addressFormSchema: DeepFormSchema<Address> = {
 interface AddressFormProps {
   // TODO: Убрать
   // GroupProxy для вложенной формы address (используем any для обхода ограничений TypeScript)
-  control: any;
+  control: GroupNodeWithControls<Address>;
 }
 
 const AddressFormComponent = ({ control }: AddressFormProps) => {

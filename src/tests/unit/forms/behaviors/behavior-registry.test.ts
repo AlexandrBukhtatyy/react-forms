@@ -4,7 +4,6 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import { BehaviorRegistry } from '@/lib/forms/behaviors/behavior-registry';
 import { copyFrom, watchField } from '@/lib/forms/behaviors/schema-behaviors';
 import type { BehaviorSchemaFn } from '@/lib/forms/behaviors/types';
 
