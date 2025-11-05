@@ -4,6 +4,7 @@
 
 import type { FormNode } from '../core/nodes/form-node';
 import type { ValidationError } from '../types';
+import type { FieldPath, FieldPathNode } from '../types/field-path';
 import type { GroupNodeWithControls } from '../types/group-node-proxy';
 
 /**
@@ -11,28 +12,6 @@ import type { GroupNodeWithControls } from '../types/group-node-proxy';
  * Принимает FieldPath и описывает поведение формы
  */
 export type BehaviorSchemaFn<T> = (path: FieldPath<T>) => void;
-
-/**
- * FieldPath - типизированный путь к полям формы
- * Генерируется через createFieldPath() аналогично ValidationSchema
- */
-export type FieldPath<T> = {
-  [K in keyof T]: FieldPathNode<T, T[K]>;
-};
-
-/**
- * Узел пути к полю с метаданными
- */
-export interface FieldPathNode<TForm, TField> {
-  /** Строковый путь к полю (например, "address.city") */
-  readonly __path: string;
-  /** Ключ поля (последняя часть пути) */
-  readonly __key: string;
-  /** Тип формы */
-  readonly __formType?: TForm;
-  /** Тип поля */
-  readonly __fieldType?: TField;
-}
 
 /**
  * Контекст для behavior callback функций

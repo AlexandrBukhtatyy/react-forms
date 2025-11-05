@@ -1,5 +1,3 @@
-import type { ComponentType } from "react";
-
 // ============================================================================
 // Validator Types
 // ============================================================================
@@ -25,9 +23,7 @@ export type FieldStatus = 'valid' | 'invalid' | 'pending' | 'disabled';
 
 // Import and re-export FieldConfig from deep-schema for single source of truth
 export type { FieldConfig } from './deep-schema';
-
-// Import for use in FormSchema
-import type { FieldConfig } from './deep-schema';
+export type { FieldPath, FieldPathNode} from '../types/field-path'
 
 // ============================================================================
 // Re-exports from validation-schema
@@ -40,8 +36,6 @@ export type {
   ContextualAsyncValidatorFn,
   TreeValidatorFn,
   ConditionFn,
-  FieldPath,
-  FieldPathNode,
   ValidateOptions,
   ValidateAsyncOptions,
   ValidateTreeOptions,
@@ -54,7 +48,7 @@ export type {
 // ============================================================================
 
 export type {
-  FormSchema as FormSchema,
+  FormSchema,
   DeepControls,
   GroupControlProxy,
   ArrayControlProxy,
@@ -76,8 +70,8 @@ export type {
 // ============================================================================
 
 import type { BehaviorSchemaFn } from '../behaviors/types';
-import type { ValidationSchemaFn } from './validation-schema';
 import type { FormSchema } from './deep-schema';
+import type { ValidationSchemaFn } from './validation-schema';
 
 /**
  * Конфигурация GroupNode с поддержкой схем

@@ -26,14 +26,14 @@ export interface CreditApplicationForm {
   loanPurpose: string;
 
   // Специфичные поля для ипотеки
-  propertyValue?: number;
-  initialPayment?: number;
+  propertyValue: number;
+  initialPayment: number;
 
   // Специфичные поля для автокредита
-  carBrand?: string;
-  carModel?: string;
-  carYear?: number;
-  carPrice?: number;
+  carBrand: string;
+  carModel: string;
+  carYear: number;
+  carPrice: number;
 
   // Шаг 2: Персональные данные
   personalData: PersonalData;
@@ -43,39 +43,39 @@ export interface CreditApplicationForm {
 
   // Шаг 3: Контактная информация
   phoneMain: string;
-  phoneAdditional?: string;
+  phoneAdditional: string;
   email: string;
-  emailAdditional?: string;
+  emailAdditional: string;
   registrationAddress: Address;
   sameAsRegistration: boolean;
-  residenceAddress?: Address;
+  residenceAddress: Address;
 
   // Шаг 4: Информация о занятости
   employmentStatus: EmploymentStatus;
-  companyName?: string;
-  companyInn?: string;
-  companyPhone?: string;
-  companyAddress?: string;
-  position?: string;
-  workExperienceTotal?: number;
-  workExperienceCurrent?: number;
+  companyName: string;
+  companyInn: string;
+  companyPhone: string;
+  companyAddress: string;
+  position: string;
+  workExperienceTotal: number;
+  workExperienceCurrent: number;
   monthlyIncome: number;
-  additionalIncome?: number;
-  additionalIncomeSource?: string;
-  businessType?: string;
-  businessInn?: string;
-  businessActivity?: string;
+  additionalIncome: number;
+  additionalIncomeSource: string;
+  businessType: string;
+  businessInn: string;
+  businessActivity: string;
 
   // Шаг 5: Дополнительная информация
   maritalStatus: MaritalStatus;
   dependents: number;
   education: EducationLevel;
   hasProperty: boolean;
-  properties?: Property[];
+  properties: Property[];
   hasExistingLoans: boolean;
-  existingLoans?: ExistingLoan[];
+  existingLoans: ExistingLoan[];
   hasCoBorrower: boolean;
-  coBorrowers?: CoBorrower[];
+  coBorrowers: CoBorrower[];
 
   // Шаг 6: Согласия
   agreePersonalData: boolean;

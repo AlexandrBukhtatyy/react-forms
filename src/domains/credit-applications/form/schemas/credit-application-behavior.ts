@@ -18,8 +18,7 @@
  * - 2 revalidateWhen
  */
 
-import type { BehaviorSchemaFn, FieldPath } from '@/lib/forms';
-import { copyFrom, enableWhen, computeFrom, watchField, revalidateWhen, apply } from '@/lib/forms/behaviors';
+import { copyFrom, enableWhen, computeFrom, watchField, revalidateWhen, apply, type BehaviorSchemaFn, type FieldPath } from '@/lib/forms/behaviors';
 import type { CreditApplicationForm } from '../types/credit-application';
 
 // Импортируем модульные behavior схемы

@@ -7,8 +7,6 @@
 // Типы и интерфейсы
 export type {
   BehaviorSchemaFn,
-  FieldPath,
-  FieldPathNode,
   BehaviorContext,
   BehaviorType,
   BehaviorRegistration,
