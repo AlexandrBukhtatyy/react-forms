@@ -8,7 +8,7 @@ export type {
   ValidationError,
   FieldStatus,
   FieldConfig,
-} from './types';
+} from './core/types';
 
 // Variant 5 types
 export type {
@@ -17,14 +17,14 @@ export type {
   GroupControlProxy,
   ArrayControlProxy,
   ArrayConfig,
-} from './types';
+} from './core/types';
 
 // Typed Proxy Access (решение проблемы типизации)
 export type {
   FormNodeControls,
   GroupNodeWithControls,
   ArrayNodeWithControls,
-} from './types';
+} from './core/types';
 
 // ============================================================================
 // Core - New Architecture (рекомендуется)
@@ -46,7 +46,7 @@ export { Form } from './components/core/form';
 // ============================================================================
 // Validators
 // ============================================================================
-export { validateForm } from './validators/validate-form';
+export { validateForm } from './core/validators/validate-form';
 
 // ============================================================================
 // Hooks

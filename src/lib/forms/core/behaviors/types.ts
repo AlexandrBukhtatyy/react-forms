@@ -2,7 +2,7 @@
  * Типы и интерфейсы для Behavior Schema API
  */
 
-import type { FormNode } from '../core/nodes/form-node';
+import type { FormNode } from '../nodes/form-node';
 import type { ValidationError } from '../types';
 import type { FieldPath, FieldPathNode } from '../types/field-path';
 import type { GroupNodeWithControls } from '../types/group-node-proxy';

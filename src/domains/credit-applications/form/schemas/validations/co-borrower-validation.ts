@@ -16,7 +16,7 @@ import {
   email,
   min,
   validateTree,
-} from '@/lib/forms/validators';
+} from '@/lib/forms/core/validators';
 import type { CoBorrower } from '../../components/nested-forms/CoBorrowerForm';
 
 /**

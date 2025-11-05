@@ -2,7 +2,7 @@
  * Mock data для тестов
  */
 
-import type { FormSchema } from '@/lib/forms/types';
+import type { FormSchema } from '@/lib/forms/core/types';
 import { mockComponent } from './test-utils';
 
 // ============================================================================

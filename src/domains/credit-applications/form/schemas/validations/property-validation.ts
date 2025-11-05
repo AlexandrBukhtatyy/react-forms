@@ -5,7 +5,7 @@
  * Применяется к каждому элементу через ArrayNode.applyValidationSchema()
  */
 
-import { createFieldPath, required, minLength, maxLength, min } from '@/lib/forms/validators';
+import { createFieldPath, required, minLength, maxLength, min } from '@/lib/forms/core/validators';
 import type { Property } from '../../components/nested-forms/PropertyForm';
 
 /**

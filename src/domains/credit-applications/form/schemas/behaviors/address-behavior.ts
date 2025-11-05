@@ -10,9 +10,9 @@
  * - Очистку зависимых полей при изменении вышестоящих
  */
 
-import type { BehaviorSchemaFn, FieldPath } from '@/lib/forms';
-import { watchField } from '@/lib/forms/behaviors';
+import { watchField, type BehaviorSchemaFn } from '@/lib/forms/core/behaviors';
 import type { Address } from '../../components/nested-forms/AddressForm';
+import type { FieldPath } from '@/lib/forms/core/types';
 
 // API функции (заглушки, т.к. в примере они импортируются из domain API)
 // В реальном приложении эти функции будут в domains/credit-applications/api

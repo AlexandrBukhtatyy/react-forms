@@ -20,13 +20,13 @@ import type {
   ValidationSchemaFn,
   FormSchema,
   GroupNodeConfig,
-} from '../../types';
-import type { GroupNodeWithControls } from '../../types/group-node-proxy';
-import { ValidationRegistry, createFieldPath } from '../../validators';
-import { ValidationContextImpl, TreeValidationContextImpl } from '../../validators/validation-context';
-import type { BehaviorSchemaFn } from '../../behaviors/types';
-import { BehaviorRegistry } from '../../behaviors/behavior-registry';
-import { createFieldPath as createBehaviorFieldPath } from '../../behaviors/create-field-path';
+} from '../types';
+import type { GroupNodeWithControls } from '../types/group-node-proxy';
+import { ValidationRegistry, createFieldPath } from '../validators';
+import { ValidationContextImpl, TreeValidationContextImpl } from '../validators/validation-context';
+import type { BehaviorSchemaFn } from '../behaviors/types';
+import { BehaviorRegistry } from '../behaviors/behavior-registry';
+import { createFieldPath as createBehaviorFieldPath } from '../behaviors/create-field-path';
 
 /**
  * GroupNode - узел для группы полей
@@ -482,7 +482,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    *
    * @example
    * ```typescript
-   * import { copyFrom, enableWhen, computeFrom } from '@/lib/forms/behaviors';
+   * import { copyFrom, enableWhen, computeFrom } from '@/lib/forms/core/behaviors';
    *
    * const behaviorSchema: BehaviorSchemaFn<MyForm> = (path) => {
    *   // Копирование адреса

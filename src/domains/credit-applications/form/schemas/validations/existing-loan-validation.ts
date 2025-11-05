@@ -13,7 +13,7 @@ import {
   min,
   max,
   validateTree,
-} from '@/lib/forms/validators';
+} from '@/lib/forms/core/validators';
 import type { ExistingLoan } from '../../components/nested-forms/ExistingLoanForm';
 
 /**

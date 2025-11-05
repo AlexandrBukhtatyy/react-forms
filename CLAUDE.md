@@ -200,7 +200,7 @@ console.log(form.items.length.value); // текущее количество
 
 **Validation Schema**:
 ```typescript
-import { apply, createFieldPath, required, email, minLength } from '@/lib/forms/validators';
+import { apply, createFieldPath, required, email, minLength } from '@/lib/forms/core/validators';
 
 const validationSchema = (path: FieldPath<MyForm>) => {
   required(path.email, { message: 'Email обязателен' });
@@ -232,7 +232,7 @@ form.applyValidationSchema(validationSchema);
 
 **Behavior Schema**:
 ```typescript
-import { copyFrom, enableWhen, computeFrom, watchField } from '@/lib/forms/behaviors';
+import { copyFrom, enableWhen, computeFrom, watchField } from '@/lib/forms/core/behaviors';
 
 const behaviorSchema = (path: FieldPath<MyForm>) => {
   // Копирование полей
@@ -326,7 +326,7 @@ export const addressBehavior: BehaviorSchemaFn<Address> = (path) => {
 };
 
 // user-behavior.ts - применение через композицию
-import { apply, applyWhen, toBehaviorFieldPath } from '@/lib/forms/behaviors';
+import { apply, applyWhen, toBehaviorFieldPath } from '@/lib/forms/core/behaviors';
 
 export const userBehavior: BehaviorSchemaFn<UserForm> = (path) => {
   // ✅ Применить одну схему к нескольким полям
@@ -373,7 +373,7 @@ export const addressValidation: ValidationSchemaFn<Address> = (path) => {
 };
 
 // user-validation.ts - применение через композицию
-import { apply, applyWhen } from '@/lib/forms/validators';
+import { apply, applyWhen } from '@/lib/forms/core/validators';
 
 export const userValidation: ValidationSchemaFn<UserForm> = (path) => {
   // ✅ Применить одну схему к нескольким полям

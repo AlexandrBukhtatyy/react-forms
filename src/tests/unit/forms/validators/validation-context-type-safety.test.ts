@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import { validate, validateTree } from '@/lib/forms/validators';
+import { validate, validateTree } from '@/lib/forms/core/validators';
 
 describe('ValidationContext - Type Safety', () => {
   interface TestForm {

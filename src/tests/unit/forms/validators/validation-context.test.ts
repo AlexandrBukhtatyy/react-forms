@@ -7,8 +7,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import { required, validate, validateTree, email, minLength } from '@/lib/forms/validators';
-import type { GroupNodeWithControls } from '@/lib/forms/types/group-node-proxy';
+import { required, validate, validateTree, email, minLength } from '@/lib/forms/core/validators';
+import type { GroupNodeWithControls } from '@/lib/forms/core/types/group-node-proxy';
 
 describe('ValidationContext через публичный API', () => {
   interface TestForm {

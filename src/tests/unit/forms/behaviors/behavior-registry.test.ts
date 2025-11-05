@@ -4,8 +4,8 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import { copyFrom, watchField } from '@/lib/forms/behaviors/schema-behaviors';
-import type { BehaviorSchemaFn } from '@/lib/forms/behaviors/types';
+import { copyFrom, watchField } from '@/lib/forms/core/behaviors/schema-behaviors';
+import type { BehaviorSchemaFn } from '@/lib/forms/core/behaviors/types';
 
 describe('BehaviorRegistry', () => {
   interface TestForm {

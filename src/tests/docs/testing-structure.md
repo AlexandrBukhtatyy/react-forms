@@ -251,7 +251,7 @@ describe('ArrayNode', () => {
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import { required, email } from '@/lib/forms/validators';
+import { required, email } from '@/lib/forms/core/validators';
 
 describe('Form Validation Integration', () => {
   it('should validate entire form with nested fields', async () => {
@@ -300,7 +300,7 @@ test.describe('Credit Application Form', () => {
 
 ```typescript
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import type { DeepFormSchema } from '@/lib/forms/types';
+import type { DeepFormSchema } from '@/lib/forms/core/types';
 
 /**
  * Создать тестовую форму с дефолтными значениями

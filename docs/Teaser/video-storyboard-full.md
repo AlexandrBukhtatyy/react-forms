@@ -515,7 +515,7 @@ import {
   email,
   minLength,
   validate
-} from '@/lib/forms/validators';
+} from '@/lib/forms/core/validators';
 
 interface RegistrationForm {
   email: string;

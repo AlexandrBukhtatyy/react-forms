@@ -4,7 +4,7 @@
 
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { ArrayNode } from '@/lib/forms/core/nodes/array-node';
-import type { FormSchema } from '@/lib/forms/types';
+import type { FormSchema } from '@/lib/forms/core/types';
 
 /**
  * Создать тестовую форму с дефолтными значениями

@@ -18,7 +18,7 @@
  * - 2 revalidateWhen
  */
 
-import { copyFrom, enableWhen, computeFrom, watchField, revalidateWhen, apply, type BehaviorSchemaFn, type FieldPath } from '@/lib/forms/behaviors';
+import { copyFrom, enableWhen, computeFrom, watchField, revalidateWhen, apply, type BehaviorSchemaFn } from '@/lib/forms/core/behaviors';
 import type { CreditApplicationForm } from '../types/credit-application';
 
 // Импортируем модульные behavior схемы
@@ -39,6 +39,7 @@ import {
 // API функции из api (уровень домена)
 // ПРИМЕЧАНИЕ: fetchRegions, fetchCities теперь используются в addressBehavior
 import { fetchCarModels } from '../../api';
+import type { FieldPath } from '@/lib/forms/core/types';
 
 /**
  * Главная схема поведения формы заявки на кредит

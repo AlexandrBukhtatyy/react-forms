@@ -6,8 +6,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ArrayNode } from '@/lib/forms/core/nodes/array-node';
-import type { ValidationSchemaFn } from '@/lib/forms/types';
-import { required, minLength } from '@/lib/forms/validators';
+import type { ValidationSchemaFn } from '@/lib/forms/core/types';
+import { required, minLength } from '@/lib/forms/core/validators';
 
 describe('ArrayNode - setValue() Validation', () => {
   interface ItemForm {

@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FieldNode } from '@/lib/forms/core/nodes/field-node';
-import type { AsyncValidatorFn } from '@/lib/forms/types';
+import type { AsyncValidatorFn } from '@/lib/forms/core/types';
 
 describe('FieldNode - Async Validator Error Handling', () => {
   describe('Single validator throws error', () => {

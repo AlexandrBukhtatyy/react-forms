@@ -5,8 +5,8 @@
  * к любому полю типа Address через композицию.
  */
 
-import type { ValidationSchemaFn, FieldPath } from '@/lib/forms/types';
-import { required, minLength, maxLength, pattern } from '@/lib/forms/validators';
+import type { ValidationSchemaFn, FieldPath } from '@/lib/forms/core/types';
+import { required, minLength, maxLength, pattern } from '@/lib/forms/core/validators';
 import type { Address } from '../../components/nested-forms/AddressForm';
 
 /**

@@ -4,9 +4,9 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { ArrayNode } from '@/lib/forms/core/nodes/array-node';
-import type { BehaviorSchemaFn } from '@/lib/forms/behaviors/types';
-import { required, minLength } from '@/lib/forms/validators';
-import type { ValidationSchemaFn } from '@/lib/forms/types';
+import type { BehaviorSchemaFn } from '@/lib/forms/core/behaviors/types';
+import { required, minLength } from '@/lib/forms/core/validators';
+import type { ValidationSchemaFn } from '@/lib/forms/core/types';
 
 describe('ArrayNode', () => {
   interface ItemForm {

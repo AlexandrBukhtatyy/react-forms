@@ -1,11 +1,11 @@
-import type { FieldPath } from '@/lib/forms/types';
+import type { FieldPath } from '@/lib/forms/core/types';
 import {
   validateAsync,
   required,
   minLength,
   maxLength,
   pattern,
-} from '@/lib/forms/validators';
+} from '@/lib/forms/core/validators';
 import type { CreditApplicationForm } from '../../types/credit-application';
 
 /**

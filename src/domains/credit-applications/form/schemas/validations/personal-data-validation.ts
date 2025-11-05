@@ -1,4 +1,4 @@
-import type { FieldPath } from '@/lib/forms/types';
+import type { FieldPath } from '@/lib/forms/core/types';
 import {
   validate,
   validateTree,
@@ -6,7 +6,7 @@ import {
   minLength,
   maxLength,
   pattern,
-} from '@/lib/forms/validators';
+} from '@/lib/forms/core/validators';
 import type { CreditApplicationForm } from '../../types/credit-application';
 
 /**

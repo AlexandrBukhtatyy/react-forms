@@ -8,10 +8,9 @@
  * - Отправки формы
  */
 
+import type { GroupNodeWithControls, ValidationSchemaFn } from '@/lib/forms/core/types';
+import { validateForm } from '@/lib/forms/core/validators';
 import { useState, useCallback } from 'react';
-import type { GroupNodeWithControls } from '../../../../types';
-import type { ValidationSchemaFn } from '../../../../types';
-import { validateForm } from '../../../../validators/validate-form';
 
 /**
  * Конфигурация multi-step формы

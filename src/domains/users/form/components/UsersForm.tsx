@@ -9,7 +9,7 @@ import {
   Select,
   Form,
 } from '@/lib/forms/components';
-import type { FormSchema } from '@/lib/forms/types';
+import type { FormSchema } from '@/lib/forms/core/types';
 import { searchResource } from '../resources/search.resource';
 import { selectResource } from '../resources/select.resource';
 import { fileUploader } from '../resources/file-uploader.resource';

@@ -64,7 +64,7 @@ describe('ExampleComponent', () => {
 // src/tests/integration/forms/example.integration.test.ts
 import { describe, it, expect } from 'vitest';
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import { required } from '@/lib/forms/validators';
+import { required } from '@/lib/forms/core/validators';
 
 describe('Form Validation Integration', () => {
   it('should validate entire form', async () => {

@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import type { ValidationError } from '@/lib/forms/types';
+import type { ValidationError } from '@/lib/forms/core/types';
 
 describe('GroupNode - Form-level Errors', () => {
   interface TestForm {

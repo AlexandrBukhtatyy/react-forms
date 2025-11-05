@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FieldNode } from '@/lib/forms/core/nodes/field-node';
-import type { AsyncValidatorFn } from '@/lib/forms/types';
+import type { AsyncValidatorFn } from '@/lib/forms/core/types';
 
 describe('FieldNode - Race Condition Protection', () => {
   describe('Async validation race conditions', () => {

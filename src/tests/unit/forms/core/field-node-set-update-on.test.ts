@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { FieldNode } from '@/lib/forms/core/nodes/field-node';
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import type { ValidatorFn } from '@/lib/forms/types';
+import type { ValidatorFn } from '@/lib/forms/core/types';
 
 const requiredValidator: ValidatorFn<string> = (value: string) => {
   return value.trim() === '' ? { code: 'required', message: 'Field is required' } : null;
