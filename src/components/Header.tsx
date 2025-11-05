@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router';
 
 interface NavItem {
@@ -9,9 +8,9 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: 'form', path: '/', label: 'Form Page', icon: '📝' },
-  { id: 'form2', path: '/form2', label: 'Form 2 Page', icon: '📋' },
-  { id: 'table', path: '/table', label: 'Table Page', icon: '📊' },
+  { id: 'form2', path: '/', label: 'Credit Form', icon: '📋' },
+  { id: 'form', path: '/form', label: 'User form', icon: '📝' },
+  { id: 'table', path: '/table', label: 'Users Table', icon: '📊' },
 ];
 
 export function Header() {
