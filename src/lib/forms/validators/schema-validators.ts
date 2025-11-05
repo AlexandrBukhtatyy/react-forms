@@ -5,7 +5,6 @@
 import { ValidationRegistry } from './validation-registry';
 import { extractPath, createFieldPath } from './field-path';
 import type {
-  FieldPathNode,
   ContextualValidatorFn,
   ContextualAsyncValidatorFn,
   TreeValidatorFn,
@@ -13,8 +12,8 @@ import type {
   ValidateOptions,
   ValidateAsyncOptions,
   ValidateTreeOptions,
-  FieldPath,
 } from '../types/validation-schema';
+import type { FieldPathNode } from '../types';
 
 // ============================================================================
 // validate - Кастомная валидация поля

@@ -9,10 +9,10 @@
  * Аналог toFieldPath и applyWhen из validation API.
  */
 
-import type { FieldPathNode, BehaviorSchemaFn } from '../types';
+import type { FieldPath, FieldPathNode } from '../types';
 import { createFieldPath } from './create-field-path';
 import { watchField } from './schema-behaviors';
-import type { FieldPath } from './types';
+import type { BehaviorSchemaFn } from './types';
 
 // ============================================================================
 // toBehaviorFieldPath - Преобразование FieldPath во вложенный путь

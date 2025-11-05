@@ -2,7 +2,7 @@
  * FieldPath proxy - типобезопасный доступ к путям полей формы
  */
 
-import type { FieldPath, FieldPathNode } from '../types/validation-schema';
+import type { FieldPath, FieldPathNode } from '../types';
 
 /**
  * Создать FieldPath proxy для формы

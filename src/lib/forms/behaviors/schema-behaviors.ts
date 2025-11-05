@@ -4,9 +4,9 @@
  * Используются внутри BehaviorSchemaFn для описания реактивного поведения
  */
 
+import type { FieldPathNode } from '../types';
 import { BehaviorRegistry } from './behavior-registry';
 import type {
-  FieldPathNode,
   BehaviorContext,
   CopyFromOptions,
   EnableWhenOptions,

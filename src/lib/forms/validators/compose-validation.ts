@@ -7,7 +7,7 @@
  * Дополняет существующий toFieldPath и applyWhen.
  */
 
-import type { FieldPathNode, ValidationSchemaFn } from '../types/validation-schema';
+import type { ValidationSchemaFn } from '../types/validation-schema';
 import { toFieldPath } from './field-path';
 
 // ============================================================================

@@ -6,9 +6,9 @@
 
 import type { GroupNode } from '../core/nodes/group-node';
 import type { FormNode } from '../core/nodes/form-node';
-import type { ValidationError } from '../types';
+import type { FieldPathNode, ValidationError } from '../types';
 import type { GroupNodeWithControls } from '../types/group-node-proxy';
-import type { BehaviorContext, FieldPathNode } from './types';
+import type { BehaviorContext } from './types';
 
 /**
  * Реализация BehaviorContext

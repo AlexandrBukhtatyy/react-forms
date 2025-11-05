@@ -3,7 +3,8 @@
  * Аналогично createFieldPath из validators
  */
 
-import type { FieldPath, FieldPathNode } from './types';
+import type { FieldPath, FieldPathNode } from "../types";
+
 
 /**
  * Создать типизированный путь к полям формы

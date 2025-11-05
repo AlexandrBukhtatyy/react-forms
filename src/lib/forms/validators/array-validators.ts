@@ -10,10 +10,10 @@ import { ValidationRegistry } from './validation-registry';
 import { extractPath } from './field-path';
 import { minLength } from './schema-validators';
 import type {
-  FieldPathNode,
   ValidateOptions,
   ValidationSchemaFn,
 } from '../types/validation-schema';
+import type { FieldPathNode } from '../types';
 
 // ============================================================================
 // notEmpty - Проверка что массив не пустой
