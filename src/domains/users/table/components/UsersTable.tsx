@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useSignals } from '@preact/signals-react/runtime';
-import UsersFilterForm, { createUsersFilterForm } from "./UsersFilterForm";
+import UsersFilterForm, { createUsersFilterForm } from './UsersFilterForm';
 import { usersTable } from '../store/usersTableStore';
 import TableToolbar from '@/lib/tables/components/TableToolbar';
 import Table from '@/lib/tables/components/Table';
@@ -36,7 +36,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ className }) => {
     <>
       <UsersFilterForm className="mb-6" control={form} />
       {/* TODO: Сделать тулбар унифицированным */}
-      <TableToolbar className="mb-6"/>
+      <TableToolbar className="mb-6" />
       <Table className="mb-6" control={usersTable} />
       <TablePagination control={usersTable} />
     </>
