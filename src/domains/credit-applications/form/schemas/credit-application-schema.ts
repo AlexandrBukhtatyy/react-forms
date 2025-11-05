@@ -8,7 +8,7 @@
  * - 8 вычисляемых полей
  */
 
-import type { DeepFormSchema } from '@/lib/forms';
+import type { FormSchema } from '@/lib/forms';
 import { Input, Select, Textarea, Checkbox, RadioGroup, InputMask } from '@/lib/forms/components';
 import {
   LOAN_TYPES,
@@ -25,7 +25,7 @@ import { coBorrowersFormSchema } from '../components/nested-forms/CoBorrowerForm
 
 import type { CreditApplicationForm } from '../types/credit-application';
 
-export const creditApplicationSchema: DeepFormSchema<CreditApplicationForm> = {
+export const creditApplicationSchema: FormSchema<CreditApplicationForm> = {
   // ========================================================================
   // Шаг 1: Основная информация
   // ========================================================================

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Checkbox, FormField, Input, Select, Textarea } from '@/lib/forms/components';
-import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
+import type { FormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 export type PropertyType = 'apartment' | 'house' | 'car' | 'land' | 'none';
 
@@ -12,7 +12,7 @@ export interface Property {
   hasEncumbrance: boolean;
 }
 
-export const propertyFormSchema: DeepFormSchema<Property> = {
+export const propertyFormSchema: FormSchema<Property> = {
   type: {
     value: 'apartment',
     component: Select,

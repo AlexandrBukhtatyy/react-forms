@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, InputMask } from '@/lib/forms/components';
-import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
+import type { FormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 /**
  * Адрес (вложенная форма)
@@ -18,7 +18,7 @@ export interface Address {
 /**
  * Переиспользуемая схема формы
  */
-export const addressFormSchema: DeepFormSchema<Address> = {
+export const addressFormSchema: FormSchema<Address> = {
   region: {
     value: '',
     component: Input,

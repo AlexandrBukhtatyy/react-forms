@@ -12,7 +12,7 @@ export type {
 
 // Variant 5 types
 export type {
-  DeepFormSchema,
+  FormSchema,
   DeepControls,
   GroupControlProxy,
   ArrayControlProxy,

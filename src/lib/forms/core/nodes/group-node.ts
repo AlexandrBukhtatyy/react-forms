@@ -18,7 +18,7 @@ import type {
   ValidationError,
   FieldStatus,
   ValidationSchemaFn,
-  DeepFormSchema,
+  FormSchema,
   GroupNodeConfig,
 } from '../../types';
 import type { GroupNodeWithControls } from '../../types/group-node-proxy';
@@ -121,7 +121,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   /**
    * Создать GroupNode только со схемой формы (обратная совместимость)
    */
-  constructor(schema: DeepFormSchema<T>);
+  constructor(schema: FormSchema<T>);
 
   /**
    * Создать GroupNode с полной конфигурацией (form, behavior, validation)
@@ -129,7 +129,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   constructor(config: GroupNodeConfig<T>);
 
   constructor(
-    schemaOrConfig: DeepFormSchema<T> | GroupNodeConfig<T>
+    schemaOrConfig: FormSchema<T> | GroupNodeConfig<T>
   ) {
     super();
 

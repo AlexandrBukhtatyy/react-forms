@@ -9,7 +9,7 @@ import {
   Select,
   Form,
 } from '@/lib/forms/components';
-import type { DeepFormSchema } from '@/lib/forms/types';
+import type { FormSchema } from '@/lib/forms/types';
 import { searchResource } from '../resources/search.resource';
 import { selectResource } from '../resources/select.resource';
 import { fileUploader } from '../resources/file-uploader.resource';
@@ -34,7 +34,7 @@ interface UsersFormModel {
 // ============================================================================
 
 const createUsersForm = (): GroupNodeWithControls<UsersFormModel> => {
-  const schema: DeepFormSchema<UsersFormModel> = {
+  const schema: FormSchema<UsersFormModel> = {
     input: {
       value: null,
       component: Input,

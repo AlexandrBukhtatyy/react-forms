@@ -2,7 +2,7 @@
  * Mock data для тестов
  */
 
-import type { DeepFormSchema } from '@/lib/forms/types';
+import type { FormSchema } from '@/lib/forms/types';
 import { mockComponent } from './test-utils';
 
 // ============================================================================
@@ -46,7 +46,7 @@ export interface TestPersonalInfoForm {
 /**
  * Создать простую форму логина
  */
-export function createLoginSchema(): DeepFormSchema<TestUserForm> {
+export function createLoginSchema(): FormSchema<TestUserForm> {
   return {
     email: { value: '', component: mockComponent },
     password: { value: '', component: mockComponent },
@@ -57,7 +57,7 @@ export function createLoginSchema(): DeepFormSchema<TestUserForm> {
 /**
  * Создать форму адреса
  */
-export function createAddressSchema(): DeepFormSchema<TestAddressForm> {
+export function createAddressSchema(): FormSchema<TestAddressForm> {
   return {
     country: { value: '', component: mockComponent },
     region: { value: '', component: mockComponent },
@@ -71,7 +71,7 @@ export function createAddressSchema(): DeepFormSchema<TestAddressForm> {
 /**
  * Создать схему элемента для ArrayNode
  */
-export function createItemSchema(): DeepFormSchema<TestItemForm> {
+export function createItemSchema(): FormSchema<TestItemForm> {
   return {
     title: { value: '', component: mockComponent },
     price: { value: 0, component: mockComponent },
@@ -82,7 +82,7 @@ export function createItemSchema(): DeepFormSchema<TestItemForm> {
 /**
  * Создать схему персональной информации
  */
-export function createPersonalInfoSchema(): DeepFormSchema<TestPersonalInfoForm> {
+export function createPersonalInfoSchema(): FormSchema<TestPersonalInfoForm> {
   return {
     lastName: { value: '', component: mockComponent },
     firstName: { value: '', component: mockComponent },

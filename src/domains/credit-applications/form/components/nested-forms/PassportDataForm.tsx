@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, InputMask, Textarea } from '@/lib/forms/components';
-import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
+import type { FormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 /**
  * Паспортные данные (вложенная форма)
@@ -14,7 +14,7 @@ export interface PassportData {
   departmentCode: string;
 }
 
-export const passportDataSchema: DeepFormSchema<PassportData> = {
+export const passportDataSchema: FormSchema<PassportData> = {
   series: {
     value: '',
     component: InputMask,

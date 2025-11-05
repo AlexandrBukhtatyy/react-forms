@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, RadioGroup } from '@/lib/forms/components';
 import { GENDERS } from '../../constants/credit-application';
-import type { DeepFormSchema, GroupNodeWithControls } from '@/lib/forms';
+import type { FormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 /**
  * Личные данные
@@ -19,7 +19,7 @@ export interface PersonalData {
 /**
  * Схема формы с личными данными
  */
-export const personalDataSchema: DeepFormSchema<PersonalData> = {
+export const personalDataSchema: FormSchema<PersonalData> = {
   lastName: {
     value: '',
     component: Input,

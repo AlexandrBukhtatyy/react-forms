@@ -45,8 +45,8 @@ export interface ArrayConfig<T extends Record<string, any>> {
 
 /**
  * Автоматически определяет тип схемы на основе TypeScript типа:
- * - T[] -> [DeepFormSchema<T>] (массив с одним элементом)
- * - object -> DeepFormSchema<T> (группа)
+ * - T[] -> [FormSchema<T>] (массив с одним элементом)
+ * - object -> FormSchema<T> (группа)
  * - primitive -> FieldConfig<T> (поле)
  *
  * Использует NonNullable для корректной обработки опциональных полей
@@ -55,17 +55,17 @@ export interface ArrayConfig<T extends Record<string, any>> {
  * ```typescript
  * interface Form {
  *   name: string;                    // → FieldConfig<string>
- *   address: {                       // → DeepFormSchema<Address>
+ *   address: {                       // → FormSchema<Address>
  *     city: string;
  *     street: string;
  *   };
- *   items?: Array<{                  // → [DeepFormSchema<Item>] (опциональный)
+ *   items?: Array<{                  // → [FormSchema<Item>] (опциональный)
  *     title: string;
  *     price: number;
  *   }>;
  * }
  *
- * const schema: DeepFormSchema<Form> = {
+ * const schema: FormSchema<Form> = {
  *   name: { value: '', component: Input },
  *   address: {
  *     city: { value: '', component: Input },

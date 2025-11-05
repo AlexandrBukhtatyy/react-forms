@@ -4,7 +4,7 @@
 
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { ArrayNode } from '@/lib/forms/core/nodes/array-node';
-import type { DeepFormSchema } from '@/lib/forms/types';
+import type { FormSchema } from '@/lib/forms/types';
 
 /**
  * Создать тестовую форму с дефолтными значениями
@@ -17,7 +17,7 @@ import type { DeepFormSchema } from '@/lib/forms/types';
  * });
  * ```
  */
-export function createTestForm<T>(schema: DeepFormSchema<T>): GroupNode<T> {
+export function createTestForm<T>(schema: FormSchema<T>): GroupNode<T> {
   return new GroupNode(schema);
 }
 
@@ -33,7 +33,7 @@ export function createTestForm<T>(schema: DeepFormSchema<T>): GroupNode<T> {
  * ```
  */
 export function createTestArray<T>(
-  schema: DeepFormSchema<T>,
+  schema: FormSchema<T>,
   initialItems: Partial<T>[] = []
 ): ArrayNode<T> {
   return new ArrayNode(schema, initialItems);

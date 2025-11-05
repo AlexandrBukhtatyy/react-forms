@@ -54,7 +54,7 @@ export type {
 // ============================================================================
 
 export type {
-  FormSchema as DeepFormSchema,
+  FormSchema as FormSchema,
   DeepControls,
   GroupControlProxy,
   ArrayControlProxy,
