@@ -11,10 +11,10 @@
 
 import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField, FormArrayManager } from '@/lib/forms/components';
-import { PropertyForm } from '../nested-forms/PropertyForm';
-import { ExistingLoanForm } from '../nested-forms/ExistingLoanForm';
-import { CoBorrowerForm } from '../nested-forms/CoBorrowerForm';
-import type { CreditApplicationForm } from '../../types/credit-application';
+import { PropertyForm } from '../../nested-forms/Property/PropertyForm';
+import { ExistingLoanForm } from '../../nested-forms/ExistingLoan/ExistingLoanForm';
+import { CoBorrowerForm } from '../../nested-forms/CoBorrower/CoBorrowerForm';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 
 interface AdditionalInfoFormProps {
   control: GroupNodeWithControls<CreditApplicationForm>;

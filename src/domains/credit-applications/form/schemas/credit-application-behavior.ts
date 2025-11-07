@@ -22,7 +22,7 @@ import { copyFrom, enableWhen, computeFrom, watchField, revalidateWhen, apply, t
 import type { CreditApplicationForm } from '../types/credit-application';
 
 // Импортируем модульные behavior схемы
-import { addressBehavior } from './behaviors/address-behavior';
+import { addressBehavior } from '../components/nested-forms/Address/address-behavior';
 
 // Compute функции из utils
 import {

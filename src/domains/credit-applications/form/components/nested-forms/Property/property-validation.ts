@@ -6,7 +6,7 @@
  */
 
 import { createFieldPath, required, minLength, maxLength, min } from '@/lib/forms/core/validators';
-import type { Property } from '../../components/nested-forms/PropertyForm';
+import type { Property } from './PropertyForm';
 
 /**
  * Валидация элемента имущества

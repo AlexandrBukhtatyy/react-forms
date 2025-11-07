@@ -7,12 +7,12 @@ import {
   notEmpty,
   validateItems,
 } from '@/lib/forms/core/validators';
-import type { CreditApplicationForm } from '../../types/credit-application';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 
 // Импортируем validation схемы для элементов массивов
-import { propertyValidation } from './property-validation';
-import { existingLoanValidation } from './existing-loan-validation';
-import { coBorrowerValidation } from './co-borrower-validation';
+import { propertyValidation } from '../../nested-forms/Property/property-validation';
+import { existingLoanValidation } from '../../nested-forms/ExistingLoan/existing-loan-validation';
+import { coBorrowerValidation } from '../../nested-forms/CoBorrower/co-borrower-validation';
 
 /**
  * Схема валидации для Шага 5: Дополнительная информация

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, InputMask, Select } from '@/lib/forms/components';
-import { RELATIONSHIPS } from '../../constants/credit-application';
+import { RELATIONSHIPS } from '../../../constants/credit-application';
 import type { FormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 export interface CoBorrower {

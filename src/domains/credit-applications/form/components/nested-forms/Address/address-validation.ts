@@ -7,7 +7,7 @@
 
 import type { ValidationSchemaFn, FieldPath } from '@/lib/forms/core/types';
 import { required, minLength, maxLength, pattern } from '@/lib/forms/core/validators';
-import type { Address } from '../../components/nested-forms/AddressForm';
+import type { Address } from './AddressForm';
 
 /**
  * Validation схема для Address

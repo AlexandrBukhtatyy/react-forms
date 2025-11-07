@@ -1,6 +1,6 @@
 import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField } from '@/lib/forms/components';
-import type { CreditApplicationForm } from '../../types/credit-application';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 
 interface ConfirmationFormProps {
   control: GroupNodeWithControls<CreditApplicationForm>;

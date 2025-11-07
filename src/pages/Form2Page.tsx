@@ -1,4 +1,4 @@
-import CreditApplicationForm from '@/domains/credit-applications/form/components/CreditApplicationForm';
+import CreditApplicationForm from '@/domains/credit-applications/form/CreditApplicationForm';
 
 function Form2Page() {
   return (

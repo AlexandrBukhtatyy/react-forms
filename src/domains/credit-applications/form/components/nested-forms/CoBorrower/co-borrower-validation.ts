@@ -17,7 +17,7 @@ import {
   min,
   validateTree,
 } from '@/lib/forms/core/validators';
-import type { CoBorrower } from '../../components/nested-forms/CoBorrowerForm';
+import type { CoBorrower } from './CoBorrowerForm';
 
 /**
  * Валидация элемента созаемщика

@@ -11,7 +11,7 @@
  */
 
 import { watchField, type BehaviorSchemaFn } from '@/lib/forms/core/behaviors';
-import type { Address } from '../../components/nested-forms/AddressForm';
+import type { Address } from './AddressForm';
 import type { FieldPath } from '@/lib/forms/core/types';
 
 // API функции (заглушки, т.к. в примере они импортируются из domain API)

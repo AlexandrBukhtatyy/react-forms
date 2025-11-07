@@ -11,18 +11,18 @@
 
 import { useState, useMemo } from 'react';
 import { useStepForm } from '@/lib/forms';
-import { createCreditApplicationForm } from '../schemas/create-credit-application-form';
-import { BasicInfoForm } from './steps/BasicInfoForm';
-import { PersonalInfoForm } from './steps/PersonalInfoForm';
-import { ContactInfoForm } from './steps/ContactInfoForm';
-import { EmploymentForm } from './steps/EmploymentForm';
-import { AdditionalInfoForm } from './steps/AdditionalInfoForm';
-import { ConfirmationForm } from './steps/ConfirmationForm';
-import { STEPS } from '../constants/credit-application';
+import { createCreditApplicationForm } from './schemas/create-credit-application-form';
+import { BasicInfoForm } from './components/steps/BasicInfo/BasicInfoForm';
+import { PersonalInfoForm } from './components/steps/PersonalInfo/PersonalInfoForm';
+import { ContactInfoForm } from './components/steps/ContactInfo/ContactInfoForm';
+import { EmploymentForm } from './components/steps/Employment/EmploymentForm';
+import { AdditionalInfoForm } from './components/steps/AdditionalInfo/AdditionalInfoForm';
+import { ConfirmationForm } from './components/steps/Confirmation/ConfirmationForm';
+import { STEPS } from './constants/credit-application';
 import { NavigationButtons, StepIndicator } from '@/lib/forms/components';
-import creditApplicationValidation, { STEP_VALIDATIONS } from '../schemas/credit-application-validation';
-import { useLoadCreditApplication } from '../hooks/useLoadCreditApplication';
-import { setSimulateError, getSimulateError } from '../../api/mock-credit-application-api';
+import creditApplicationValidation, { STEP_VALIDATIONS } from './schemas/credit-application-validation';
+import { useLoadCreditApplication } from './hooks/useLoadCreditApplication';
+import { setSimulateError, getSimulateError } from '../api/mock-credit-application-api';
 
 // ============================================================================
 // Компонент формы

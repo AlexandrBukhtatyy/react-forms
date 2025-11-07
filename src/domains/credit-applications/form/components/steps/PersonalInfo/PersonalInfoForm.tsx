@@ -8,9 +8,9 @@
 
 import type { GroupNodeWithControls } from '@/lib/forms';
 import { FormField } from '@/lib/forms/components';
-import { PersonalDataForm } from '../nested-forms/PersonalDataForm';
-import { PassportDataForm } from '../nested-forms/PassportDataForm';
-import type { CreditApplicationForm } from '../../types/credit-application';
+import { PersonalDataForm } from '../../nested-forms/PersonalData/PersonalDataForm';
+import { PassportDataForm } from '../../nested-forms/PassportData/PassportDataForm';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 
 interface PersonalInfoFormProps {
   control: GroupNodeWithControls<CreditApplicationForm>;

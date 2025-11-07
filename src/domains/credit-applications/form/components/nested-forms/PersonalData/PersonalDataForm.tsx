@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, RadioGroup } from '@/lib/forms/components';
-import { GENDERS } from '../../constants/credit-application';
+import { GENDERS } from '../../../constants/credit-application';
 import type { FormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 /**

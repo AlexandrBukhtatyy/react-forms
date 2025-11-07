@@ -7,10 +7,10 @@ import {
   pattern,
   email,
 } from '@/lib/forms/core/validators';
-import type { CreditApplicationForm } from '../../types/credit-application';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 
 // Импортируем модульную validation схему для Address
-import { addressValidation } from './address-validation';
+import { addressValidation } from '../../nested-forms/Address/address-validation';
 
 /**
  * Схема валидации для Шага 3: Контактная информация

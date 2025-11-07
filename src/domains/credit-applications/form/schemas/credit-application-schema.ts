@@ -16,12 +16,12 @@ import {
   MARITAL_STATUSES,
   EDUCATIONS,
 } from '../constants/credit-application';
-import { personalDataSchema } from '../components/nested-forms/PersonalDataForm';
-import { passportDataSchema } from '../components/nested-forms/PassportDataForm';
-import { addressFormSchema } from '../components/nested-forms/AddressForm';
-import { propertyFormSchema } from '../components/nested-forms/PropertyForm';
-import { existingLoansFormSchema } from '../components/nested-forms/ExistingLoanForm';
-import { coBorrowersFormSchema } from '../components/nested-forms/CoBorrowerForm';
+import { personalDataSchema } from '../components/nested-forms/PersonalData/PersonalDataForm';
+import { passportDataSchema } from '../components/nested-forms/PassportData/PassportDataForm';
+import { addressFormSchema } from '../components/nested-forms/Address/AddressForm';
+import { propertyFormSchema } from '../components/nested-forms/Property/PropertyForm';
+import { existingLoansFormSchema } from '../components/nested-forms/ExistingLoan/ExistingLoanForm';
+import { coBorrowersFormSchema } from '../components/nested-forms/CoBorrower/CoBorrowerForm';
 
 import type { CreditApplicationForm } from '../types/credit-application';
 

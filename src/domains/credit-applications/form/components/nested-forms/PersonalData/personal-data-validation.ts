@@ -7,7 +7,7 @@ import {
   maxLength,
   pattern,
 } from '@/lib/forms/core/validators';
-import type { CreditApplicationForm } from '../../types/credit-application';
+import type { CreditApplicationForm } from '../../../types/credit-application';
 
 /**
  * Схема валидации для Шага 2: Персональные данные

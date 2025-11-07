@@ -14,7 +14,7 @@ import {
   max,
   validateTree,
 } from '@/lib/forms/core/validators';
-import type { ExistingLoan } from '../../components/nested-forms/ExistingLoanForm';
+import type { ExistingLoan } from './ExistingLoanForm';
 
 /**
  * Валидация элемента существующего кредита

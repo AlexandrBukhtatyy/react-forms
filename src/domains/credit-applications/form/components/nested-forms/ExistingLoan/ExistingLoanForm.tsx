@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { FormField } from '@/lib/forms/components/core/form-field';
 import { Input, Select } from '@/lib/forms/components';
-import { EXISTING_LOAN_TYPES } from '../../constants/credit-application';
+import { EXISTING_LOAN_TYPES } from '../../../constants/credit-application';
 import type { FormSchema, GroupNodeWithControls } from '@/lib/forms';
 
 export interface ExistingLoan {
