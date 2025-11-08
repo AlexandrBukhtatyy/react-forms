@@ -23,7 +23,7 @@ import { behaviorHandlers } from './behavior-handlers';
  * @example
  * ```typescript
  * class GroupNode {
- *   private readonly behaviorRegistry = new BehaviorRegistryClass();
+ *   private readonly behaviorRegistry = new BehaviorRegistry();
  *
  *   applyBehaviorSchema(schemaFn) {
  *     this.behaviorRegistry.beginRegistration(); // Pushes this to stack
@@ -33,12 +33,12 @@ import { behaviorHandlers } from './behavior-handlers';
  * }
  * ```
  */
-export class BehaviorRegistryClass {
+export class BehaviorRegistry {
   /**
    * Stack активных контекстов регистрации
    * Используется для изоляции форм друг от друга
    */
-  private static contextStack: BehaviorRegistryClass[] = [];
+  private static contextStack: BehaviorRegistry[] = [];
 
   private registrations: BehaviorRegistration[] = [];
   private isRegistering = false;
@@ -52,15 +52,15 @@ export class BehaviorRegistryClass {
    * ```typescript
    * // В schema-behaviors.ts
    * export function copyFrom(...) {
-   *   const registry = BehaviorRegistryClass.getCurrent();
+   *   const registry = BehaviorRegistry.getCurrent();
    *   if (registry) {
    *     registry.register({ ... });
    *   }
    * }
    * ```
    */
-  static getCurrent(): BehaviorRegistryClass | null {
-    const stack = BehaviorRegistryClass.contextStack;
+  static getCurrent(): BehaviorRegistry | null {
+    const stack = BehaviorRegistry.contextStack;
     return stack.length > 0 ? stack[stack.length - 1] : null;
   }
 
@@ -74,7 +74,7 @@ export class BehaviorRegistryClass {
     this.isRegistering = true;
     this.registrations = [];
     // Помещаем this в stack для tracking текущего активного реестра
-    BehaviorRegistryClass.contextStack.push(this);
+    BehaviorRegistry.contextStack.push(this);
   }
 
   /**
@@ -109,7 +109,7 @@ export class BehaviorRegistryClass {
     this.isRegistering = false;
 
     // Извлекаем из stack
-    const popped = BehaviorRegistryClass.contextStack.pop();
+    const popped = BehaviorRegistry.contextStack.pop();
     if (popped !== this && import.meta.env.DEV) {
       console.warn(
         'BehaviorRegistry: Context stack mismatch. Expected this, got:',
@@ -203,12 +203,12 @@ export class BehaviorRegistryClass {
 // Ранее здесь был глобальный Singleton экземпляр BehaviorRegistry,
 // который создавал race conditions и нарушал изоляцию форм.
 //
-// ✅ Теперь каждый GroupNode создает собственный экземпляр BehaviorRegistryClass:
+// ✅ Теперь каждый GroupNode создает собственный экземпляр BehaviorRegistry:
 //
 // @example
 // ```typescript
 // class GroupNode {
-//   private readonly behaviorRegistry = new BehaviorRegistryClass();
+//   private readonly behaviorRegistry = new BehaviorRegistry();
 //
 //   applyBehaviorSchema(schemaFn) {
 //     this.behaviorRegistry.beginRegistration();

@@ -5,7 +5,7 @@
  */
 
 import type { FieldPathNode } from '../types';
-import { BehaviorRegistryClass } from './behavior-registry';
+import { BehaviorRegistry } from './behavior-registry';
 import type {
   BehaviorContext,
   CopyFromOptions,
@@ -20,8 +20,8 @@ import type {
  * Helper: получить текущий активный реестр или выбросить ошибку
  * @private
  */
-function getCurrentRegistry(): BehaviorRegistryClass {
-  const registry = BehaviorRegistryClass.getCurrent();
+function getCurrentRegistry(): BehaviorRegistry {
+  const registry = BehaviorRegistry.getCurrent();
   if (!registry) {
     if (import.meta.env.DEV) {
       throw new Error(

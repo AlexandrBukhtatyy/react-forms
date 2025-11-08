@@ -75,7 +75,7 @@ class RegistrationContext {
  * @example
  * ```typescript
  * class GroupNode {
- *   private readonly validationRegistry = new ValidationRegistryClass();
+ *   private readonly validationRegistry = new ValidationRegistry();
  *
  *   applyValidationSchema(schemaFn) {
  *     this.validationRegistry.beginRegistration(); // Pushes this to global stack
@@ -85,12 +85,12 @@ class RegistrationContext {
  * }
  * ```
  */
-export class ValidationRegistryClass {
+export class ValidationRegistry {
   /**
    * Global stack активных реестров
    * Используется для изоляции форм друг от друга
    */
-  private static registryStack: ValidationRegistryClass[] = [];
+  private static registryStack: ValidationRegistry[] = [];
 
   private contextStack: RegistrationContext[] = [];
   private validators: ValidatorRegistration[] = [];
@@ -104,15 +104,15 @@ export class ValidationRegistryClass {
    * ```typescript
    * // В schema-validators.ts
    * export function required(...) {
-   *   const registry = ValidationRegistryClass.getCurrent();
+   *   const registry = ValidationRegistry.getCurrent();
    *   if (registry) {
    *     registry.registerSync(...);
    *   }
    * }
    * ```
    */
-  static getCurrent(): ValidationRegistryClass | null {
-    const stack = ValidationRegistryClass.registryStack;
+  static getCurrent(): ValidationRegistry | null {
+    const stack = ValidationRegistry.registryStack;
     return stack.length > 0 ? stack[stack.length - 1] : null;
   }
 
@@ -125,7 +125,7 @@ export class ValidationRegistryClass {
     const context = new RegistrationContext();
     this.contextStack.push(context);
     // Помещаем this в global stack для tracking текущего активного реестра
-    ValidationRegistryClass.registryStack.push(this);
+    ValidationRegistry.registryStack.push(this);
     return context;
   }
 
@@ -143,7 +143,7 @@ export class ValidationRegistryClass {
     }
 
     // Извлекаем из global stack
-    const popped = ValidationRegistryClass.registryStack.pop();
+    const popped = ValidationRegistry.registryStack.pop();
     if (popped !== this && import.meta.env.DEV) {
       console.warn(
         'ValidationRegistry: Global stack mismatch. Expected this, got:',
@@ -174,7 +174,7 @@ export class ValidationRegistryClass {
     }
 
     // Извлекаем из global stack
-    const popped = ValidationRegistryClass.registryStack.pop();
+    const popped = ValidationRegistry.registryStack.pop();
     if (popped !== this && import.meta.env.DEV) {
       console.warn(
         'ValidationRegistry: Global stack mismatch on cancel. Expected this, got:',
@@ -386,12 +386,12 @@ export class ValidationRegistryClass {
 // Ранее здесь был глобальный Singleton экземпляр ValidationRegistry,
 // который создавал race conditions и нарушал изоляцию форм.
 //
-// ✅ Теперь каждый GroupNode создает собственный экземпляр ValidationRegistryClass:
+// ✅ Теперь каждый GroupNode создает собственный экземпляр ValidationRegistry:
 //
 // @example
 // ```typescript
 // class GroupNode {
-//   private readonly validationRegistry = new ValidationRegistryClass();
+//   private readonly validationRegistry = new ValidationRegistry();
 //
 //   applyValidationSchema(schemaFn) {
 //     this.validationRegistry.beginRegistration();

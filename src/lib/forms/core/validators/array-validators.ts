@@ -6,7 +6,7 @@
  * - validateItems: применение validation schema к каждому элементу
  */
 
-import { ValidationRegistryClass } from './validation-registry';
+import { ValidationRegistry } from './validation-registry';
 import { extractPath } from './field-path';
 import { minLength } from './schema-validators';
 import type {
@@ -24,11 +24,11 @@ import type { FieldPathNode } from '../types';
  *
  * Используется внутри array-validators для доступа к контекстному реестру
  *
- * @returns Текущий активный ValidationRegistryClass
+ * @returns Текущий активный ValidationRegistry
  * @throws Error если нет активного контекста (только в DEV режиме)
  */
-function getCurrentRegistry(): ValidationRegistryClass {
-  const registry = ValidationRegistryClass.getCurrent();
+function getCurrentRegistry(): ValidationRegistry {
+  const registry = ValidationRegistry.getCurrent();
   if (!registry) {
     if (import.meta.env.DEV) {
       throw new Error(

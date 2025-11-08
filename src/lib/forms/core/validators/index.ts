@@ -30,10 +30,10 @@ export { createFieldPath, extractPath, extractKey, toFieldPath } from './field-p
 // Утилита для валидации формы по схеме
 export { validateForm } from './validate-form';
 
-// ValidationRegistryClass (для внутреннего использования)
+// ValidationRegistry (для внутреннего использования)
 // Примечание: ValidationRegistry (глобальный singleton) был удален в пользу
-// локальных экземпляров ValidationRegistryClass в каждом GroupNode
-export { ValidationRegistryClass } from './validation-registry';
+// локальных экземпляров ValidationRegistry в каждом GroupNode
+export { ValidationRegistry } from './validation-registry';
 
 // Контексты валидации
 export { ValidationContextImpl, TreeValidationContextImpl } from './validation-context';

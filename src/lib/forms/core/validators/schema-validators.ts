@@ -2,7 +2,7 @@
  * Функции валидации для validation schema
  */
 
-import { ValidationRegistryClass } from './validation-registry';
+import { ValidationRegistry } from './validation-registry';
 import { extractPath, createFieldPath } from './field-path';
 import type {
   ContextualValidatorFn,
@@ -19,8 +19,8 @@ import type { FieldPathNode } from '../types';
  * Helper: получить текущий активный реестр или выбросить ошибку
  * @private
  */
-function getCurrentRegistry(): ValidationRegistryClass {
-  const registry = ValidationRegistryClass.getCurrent();
+function getCurrentRegistry(): ValidationRegistry {
+  const registry = ValidationRegistry.getCurrent();
   if (!registry) {
     if (import.meta.env.DEV) {
       throw new Error(

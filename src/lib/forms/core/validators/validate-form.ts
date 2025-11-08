@@ -12,7 +12,7 @@
 
 import type { GroupNode } from '../core/nodes/group-node';
 import type { ValidationSchemaFn } from '../types';
-import { ValidationRegistryClass } from './validation-registry';
+import { ValidationRegistry } from './validation-registry';
 import { createFieldPath } from './field-path';
 
 /**
@@ -51,7 +51,7 @@ export async function validateForm<T extends Record<string, any>>(
 ): Promise<boolean> {
   // ✅ Создаем временный реестр для этой валидации
   // Это изолирует валидацию от других форм и не затрагивает постоянный реестр формы
-  const tempRegistry = new ValidationRegistryClass();
+  const tempRegistry = new ValidationRegistry();
 
   // Начинаем регистрацию валидаторов в временном реестре
   tempRegistry.beginRegistration();

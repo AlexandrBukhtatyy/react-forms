@@ -24,12 +24,12 @@ import type { GroupNodeWithControls } from '../types/group-node-proxy';
 import { createFieldPath } from '../validators';
 import { ValidationContextImpl, TreeValidationContextImpl } from '../validators/validation-context';
 import type { BehaviorSchemaFn } from '../behaviors/types';
-import { BehaviorRegistryClass } from '../behaviors/behavior-registry';
+import { BehaviorRegistry } from '../behaviors/behavior-registry';
 import { createFieldPath as createBehaviorFieldPath } from '../behaviors/create-field-path';
 import { FieldPathNavigator } from '../utils/field-path-navigator';
 import { NodeFactory } from '../factories/node-factory';
 import { SubscriptionManager } from '../utils/subscription-manager';
-import { ValidationRegistryClass } from '../validators/validation-registry';
+import { ValidationRegistry } from '../validators/validation-registry';
 
 /**
  * GroupNode - узел для группы полей
@@ -113,14 +113,14 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    * Использует композицию вместо глобального Singleton
    * Обеспечивает полную изоляцию форм друг от друга
    */
-  private readonly validationRegistry = new ValidationRegistryClass();
+  private readonly validationRegistry = new ValidationRegistry();
 
   /**
    * Реестр behaviors для этой формы
    * Использует композицию вместо глобального Singleton
    * Обеспечивает полную изоляцию форм друг от друга
    */
-  private readonly behaviorRegistry = new BehaviorRegistryClass();
+  private readonly behaviorRegistry = new BehaviorRegistry();
 
   // ============================================================================
   // Публичные computed signals
