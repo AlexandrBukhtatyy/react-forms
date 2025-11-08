@@ -151,6 +151,12 @@ domains/
 
 ### Ключевые файлы
 
+**Документация и планы**:
+- [architecture-analysis.md](architecture-analysis.md): Анализ архитектурных проблем и рекомендации по рефакторингу
+- [REFACTORING_PLAN.md](REFACTORING_PLAN.md): Детальный план рефакторинга в 4 фазы
+- [class-diagram-clean.md](class-diagram-clean.md): Описание диаграммы классов библиотеки форм
+- [class-diagram-clean.mmd](class-diagram-clean.mmd): Mermaid диаграмма классов (для draw.io)
+
 **Формы (новая архитектура)**:
 - [src/lib/forms/core/nodes/form-node.ts](src/lib/forms/core/nodes/form-node.ts): Абстрактный базовый класс FormNode
 - [src/lib/forms/core/nodes/field-node.ts](src/lib/forms/core/nodes/field-node.ts): FieldNode с валидацией и debounce
@@ -159,9 +165,9 @@ domains/
 - [src/lib/forms/validators/](src/lib/forms/validators/): Validation schema API
 - [src/lib/forms/MIGRATION.md](src/lib/forms/MIGRATION.md): Руководство по миграции на новую архитектуру
 
-**Формы (legacy, deprecated)**:
-- [src/lib/forms/core/legacy/form-store.old.ts](src/lib/forms/core/legacy/form-store.old.ts): Старая реализация FormStore
-- [src/lib/forms/core/legacy/field-controller.old.ts](src/lib/forms/core/legacy/field-controller.old.ts): Старая реализация FieldController
+**Формы (реестры)**:
+- [src/lib/forms/core/validators/validation-registry.ts](src/lib/forms/core/validators/validation-registry.ts): ValidationRegistry (Singleton → будет заменён на композицию)
+- [src/lib/forms/core/behaviors/behavior-registry.ts](src/lib/forms/core/behaviors/behavior-registry.ts): BehaviorRegistry (Singleton → будет заменён на композицию)
 
 **Таблицы**:
 - [src/lib/tables/store/TableStore.ts](src/lib/tables/store/TableStore.ts): TableStore с полным управлением состоянием таблицы
@@ -169,7 +175,6 @@ domains/
 **Behavior Schema**:
 - [src/lib/forms/behaviors/](src/lib/forms/behaviors/): Behavior Schema API
 - [src/lib/forms/behaviors/schema-behaviors.ts](src/lib/forms/behaviors/schema-behaviors.ts): Декларативные функции (copyFrom, enableWhen, computeFrom и т.д.)
-- [src/lib/forms/behaviors/behavior-registry.ts](src/lib/forms/behaviors/behavior-registry.ts): Регистрация и управление behaviors
 
 **React Hooks**:
 - [src/lib/forms/hooks/](src/lib/forms/hooks/): React хуки для форм
@@ -179,10 +184,61 @@ domains/
 - [src/lib/forms/hooks/useEnableWhen.ts](src/lib/forms/hooks/useEnableWhen.ts): Условное включение/выключение
 
 **Примеры**:
-- [src/examples/validation-example.ts](src/examples/validation-example.ts): Комплексные примеры API валидации
-- [src/examples/behavior-schema-example.ts](src/examples/behavior-schema-example.ts): 8 примеров Behavior Schema API
-- [src/examples/react-hooks-example.tsx](src/examples/react-hooks-example.tsx): 12 примеров React хуков
-- [src/examples/group-node-config-example.ts](src/examples/group-node-config-example.ts): 7 примеров GroupNode с конфигурацией
+- [src/examples/validation-example.ts](src/examples/validation-example.ts): Комплексные примеры Validation Schema API
+- [src/examples/behavior-schema-example.ts](src/examples/behavior-schema-example.ts): Примеры Behavior Schema API
+- [src/examples/react-hooks-example.tsx](src/examples/react-hooks-example.tsx): Примеры React хуков
+- [src/examples/group-node-config-example.ts](src/examples/group-node-config-example.ts): Примеры GroupNode с конфигурацией
+
+### Статус рефакторинга библиотеки форм
+
+**Текущее состояние** (2025-01): Библиотека форм находится в процессе архитектурного рефакторинга.
+
+**Проблемы текущей архитектуры** (см. [architecture-analysis.md](architecture-analysis.md)):
+
+🔴 **Критичные**:
+1. **God Class**: GroupNode имеет 30+ методов, смешивает 7+ ответственностей
+2. **Singleton анти-паттерн**: ValidationRegistry/BehaviorRegistry — глобальное состояние, race conditions
+3. **Дублирование**: парсинг путей в 4 местах, каждый узел дублирует disable/enable/markAs*
+
+🟡 **Средние**:
+4. **Ручное кеширование**: O(n) вместо computed signals
+5. **7 методов behaviors**: без абстракции (нужен Strategy паттерн)
+6. **Парсинг путей**: дублируется в 4 классах
+
+🟢 **Желательные**:
+7. **ISP нарушен**: FormNode имеет optional методы
+8. **Управление подписками**: просто массив функций
+9. **FieldNode перегружен**: смешивает валидацию, UI, состояние
+
+**План рефакторинга** (см. [REFACTORING_PLAN.md](REFACTORING_PLAN.md)):
+
+**Фаза 1** (в процессе): Централизация и инфраструктура
+- ✅ Создать FieldPathNavigator (централизация парсинга путей)
+- ⏳ Создать SubscriptionManager (управление подписками)
+- ⏳ Перенести общую логику в FormNode (Template Method)
+
+**Фаза 2**: Декомпозиция GroupNode
+- NodeFactory (фабрика узлов)
+- Заменить ручное кеширование на computed signals
+- Интегрировать FieldPathNavigator
+
+**Фаза 3**: Устранение Singleton → Композиция
+- ValidationRegistry/BehaviorRegistry: убрать глобальное состояние
+- GroupNode владеет собственными реестрами
+- Полная изоляция форм
+
+**Фаза 4**: Strategy паттерн и рефайнмент
+- Strategy паттерн для BehaviorRegistry (7 стратегий)
+- Разделение интерфейсов по ISP (опционально)
+- Декомпозиция FieldNode (опционально)
+
+**Ожидаемый результат**:
+- GroupNode: ~500 строк → ~200 строк (**-60%**)
+- Методов в GroupNode: 30+ → ~15 (**-50%**)
+- Дублирование парсинга: 4 места → 1 место (**-75%**)
+- BehaviorRegistry: ~500 строк → ~150 строк (**-70%**)
+- Изоляция форм: ❌ → ✅ (**100%**)
+- Покрытие тестами: ~30% → 100% (**+233%**)
 
 ### Path Aliases
 
@@ -485,27 +541,88 @@ apply([path.homeAddress, path.workAddress], addressValidation);
 
 ## TODO List
 
-**Завершено (2025-10-31)**:
+### Завершено (2025-10-31)
+
+**Базовая архитектура**:
 - ✅ Архитектура FormNode (FormNode, FieldNode, GroupNode, ArrayNode)
 - ✅ Вложенные формы и массивы
 - ✅ Computed signals для производительности
 - ✅ Параллельная async валидация с debounce
-- ✅ Validation Schema API (вдохновлено Angular Signal Forms)
-- ✅ Behavior Schema API - декларативное реактивное поведение
-- ✅ React Hooks для форм (useFormEffect, useComputedField, useCopyField и т.д.)
-- ✅ GroupNode с перегрузками конструктора (автоматическое применение схем)
 - ✅ Прямой доступ к полям через Proxy
-- ✅ Композиция validation схем (apply, toFieldPath, applyWhen)
-- ✅ Композиция behavior схем (apply, applyWhen, toBehaviorFieldPath)
-- ✅ Полный паритет API между validation и behavior схемами
+
+**Validation Schema API**:
+- ✅ Validation Schema API (вдохновлено Angular Signal Forms)
+- ✅ Синхронные/асинхронные валидаторы с контекстом
+- ✅ Кросс-полевая валидация (validateTree)
+- ✅ Условная валидация (applyWhen)
+- ✅ Композиция схем (apply, toFieldPath, applyWhen)
 - ✅ Поддержка вложенных путей в ValidationContext
 
-**Текущие приоритеты**:
-- Мигрировать CreditApplicationForm на новую архитектуру
+**Behavior Schema API**:
+- ✅ Behavior Schema API - декларативное реактивное поведение
+- ✅ Декларативные функции (copyFrom, enableWhen, computeFrom и т.д.)
+- ✅ Композиция behavior схем (apply, applyWhen, toBehaviorFieldPath)
+- ✅ Полный паритет API между validation и behavior схемами
+
+**React Integration**:
+- ✅ React Hooks для форм (useFormEffect, useComputedField, useCopyField и т.д.)
+- ✅ GroupNode с перегрузками конструктора (автоматическое применение схем)
+
+**Документация**:
+- ✅ Анализ архитектуры ([architecture-analysis.md](architecture-analysis.md))
+- ✅ План рефакторинга ([REFACTORING_PLAN.md](REFACTORING_PLAN.md))
+- ✅ Диаграмма классов ([class-diagram-clean.md](class-diagram-clean.md), [class-diagram-clean.mmd](class-diagram-clean.mmd))
+- ✅ Примеры использования ([src/examples/](src/examples/))
+
+---
+
+### Рефакторинг (в процессе, 2025-01)
+
+**Фаза 1: Централизация и инфраструктура** (в процессе):
+- ✅ Создать FieldPathNavigator (централизация парсинга путей)
+- ⏳ Создать SubscriptionManager (управление подписками)
+- ⏳ Перенести общую логику в FormNode (Template Method паттерн)
+
+**Фаза 2: Декомпозиция GroupNode**:
+- ⏳ Создать NodeFactory (фабрика узлов)
+- ⏳ Заменить ручное кеширование на computed signals
+- ⏳ Интегрировать FieldPathNavigator в GroupNode/ValidationContext/BehaviorContext
+- ⏳ Использовать SubscriptionManager во всех узлах
+
+**Фаза 3: Устранение Singleton → Композиция**:
+- ⏳ ValidationRegistry: убрать глобальное состояние (WeakMap, contextStack)
+- ⏳ BehaviorRegistry: убрать глобальное состояние
+- ⏳ GroupNode владеет собственными реестрами (композиция)
+- ⏳ Обновить validation/behavior API
+
+**Фаза 4: Strategy паттерн и рефайнмент**:
+- ⏳ Strategy паттерн для BehaviorRegistry (7 стратегий)
+- ⏳ Разделение интерфейсов FormNode по ISP (опционально)
+- ⏳ Декомпозиция FieldNode (опционально)
+
+**Критерии завершения рефакторинга**:
+- [ ] GroupNode: ~500 строк → ~200 строк (-60%)
+- [ ] Методов в GroupNode: 30+ → ~15 (-50%)
+- [ ] Дублирование парсинга: 4 места → 1 место (-75%)
+- [ ] BehaviorRegistry: ~500 строк → ~150 строк (-70%)
+- [ ] Изоляция форм: ❌ → ✅ (100%)
+- [ ] Покрытие тестами: ~30% → 100% (+233%)
+- [ ] Все примеры работают
+- [ ] npm run build проходит без ошибок
+- [ ] Документация обновлена (JSDoc на русском)
+
+---
+
+### Бэклог (после рефакторинга)
+
+**Формы**:
+- Мигрировать CreditApplicationForm на новую архитектуру (использовать рефакторенный код)
 - Использовать ArrayNode для массивов (имущество, кредиты, созаемщики)
 - Реализовать крупный пример с вложенными формами/массивами
-- Добавить unit/integration тесты
 - Исправить возвращаемые значения для компонентов Select, Search, Files
 - Добавить базовые поля форм (DatePicker, period, Segment, Checkbox, Radio)
-- Сделать компоненты таблицы независимыми
 - Интеграция ресурсов в FieldNode (опционально)
+
+**Таблицы**:
+- Сделать компоненты таблицы независимыми
+- Рефакторинг TableStore (если потребуется)
