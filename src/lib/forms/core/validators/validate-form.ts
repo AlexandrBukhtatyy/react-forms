@@ -12,7 +12,7 @@
 
 import type { GroupNode } from '../core/nodes/group-node';
 import type { ValidationSchemaFn } from '../types';
-import { ValidationRegistry } from './validation-registry';
+import { ValidationRegistryClass } from './validation-registry';
 import { createFieldPath } from './field-path';
 
 /**
@@ -49,23 +49,28 @@ export async function validateForm<T extends Record<string, any>>(
   form: GroupNode<T>,
   schema: ValidationSchemaFn<T>
 ): Promise<boolean> {
-  // Начинаем регистрацию валидаторов
-  ValidationRegistry.beginRegistration();
+  // ✅ Создаем временный реестр для этой валидации
+  // Это изолирует валидацию от других форм и не затрагивает постоянный реестр формы
+  const tempRegistry = new ValidationRegistryClass();
+
+  // Начинаем регистрацию валидаторов в временном реестре
+  tempRegistry.beginRegistration();
 
   let tempValidators: any[] = [];
   let cancelled = false;
 
   try {
     // Регистрируем валидаторы из схемы
+    // schema() будет использовать tempRegistry через getCurrent() из context stack
     const path = createFieldPath<T>();
     schema(path);
 
     // Получаем валидаторы БЕЗ сохранения в реестр
-    const context = ValidationRegistry.getCurrentContext();
+    const context = tempRegistry.getCurrentContext();
     tempValidators = context?.getValidators() || [];
 
-    // Отменяем регистрацию (не сохраняем в глобальный реестр)
-    ValidationRegistry.cancelRegistration();
+    // Отменяем регистрацию (не сохраняем в реестр формы)
+    tempRegistry.cancelRegistration();
     cancelled = true;
 
     // Очищаем текущие ошибки полей
@@ -89,7 +94,7 @@ export async function validateForm<T extends Record<string, any>>(
   } catch (error) {
     // В случае ошибки отменяем регистрацию только если еще не отменили
     if (!cancelled) {
-      ValidationRegistry.cancelRegistration();
+      tempRegistry.cancelRegistration();
     }
     throw error;
   }

@@ -35,6 +35,8 @@ export {
 export { apply, applyWhen, toBehaviorFieldPath } from './compose-behavior';
 
 // Вспомогательные классы и функции
-export { BehaviorRegistry } from './behavior-registry';
+// Примечание: BehaviorRegistry (глобальный singleton) был удален в пользу
+// локальных экземпляров BehaviorRegistryClass в каждом GroupNode
+export { BehaviorRegistryClass } from './behavior-registry';
 export { BehaviorContextImpl } from './behavior-context';
 export { createFieldPath } from './create-field-path';

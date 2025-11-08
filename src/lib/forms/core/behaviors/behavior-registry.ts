@@ -196,21 +196,29 @@ export class BehaviorRegistryClass {
 
 }
 
-/**
- * Глобальный экземпляр для обратной совместимости (deprecated)
- *
- * @deprecated Используйте локальный экземпляр в GroupNode вместо глобального.
- * Этот экземпляр будет удален в следующей версии.
- *
- * @example
- * ```typescript
- * // ❌ Старый способ (deprecated)
- * BehaviorRegistry.beginRegistration();
- *
- * // ✅ Новый способ (рекомендуется)
- * class GroupNode {
- *   private readonly behaviorRegistry = new BehaviorRegistryClass();
- * }
- * ```
- */
-export const BehaviorRegistry = new BehaviorRegistryClass();
+// ============================================================================
+// Глобальный экземпляр BehaviorRegistry УДАЛЕН
+// ============================================================================
+//
+// Ранее здесь был глобальный Singleton экземпляр BehaviorRegistry,
+// который создавал race conditions и нарушал изоляцию форм.
+//
+// ✅ Теперь каждый GroupNode создает собственный экземпляр BehaviorRegistryClass:
+//
+// @example
+// ```typescript
+// class GroupNode {
+//   private readonly behaviorRegistry = new BehaviorRegistryClass();
+//
+//   applyBehaviorSchema(schemaFn) {
+//     this.behaviorRegistry.beginRegistration();
+//     schemaFn(createBehaviorFieldPath(this));
+//     return this.behaviorRegistry.endRegistration(this);
+//   }
+// }
+// ```
+//
+// Это обеспечивает:
+// - Полную изоляцию форм друг от друга
+// - Отсутствие race conditions при параллельной регистрации
+// - Возможность применять разные behavior схемы к разным формам одновременно

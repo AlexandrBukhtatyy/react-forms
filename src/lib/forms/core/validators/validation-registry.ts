@@ -379,21 +379,29 @@ export class ValidationRegistryClass {
   }
 }
 
-/**
- * Глобальный экземпляр для обратной совместимости (deprecated)
- *
- * @deprecated Используйте локальный экземпляр в GroupNode вместо глобального.
- * Этот экземпляр будет удален в следующей версии.
- *
- * @example
- * ```typescript
- * // ❌ Старый способ (deprecated)
- * ValidationRegistry.beginRegistration();
- *
- * // ✅ Новый способ (рекомендуется)
- * class GroupNode {
- *   private readonly validationRegistry = new ValidationRegistryClass();
- * }
- * ```
- */
-export const ValidationRegistry = new ValidationRegistryClass();
+// ============================================================================
+// Глобальный экземпляр ValidationRegistry УДАЛЕН
+// ============================================================================
+//
+// Ранее здесь был глобальный Singleton экземпляр ValidationRegistry,
+// который создавал race conditions и нарушал изоляцию форм.
+//
+// ✅ Теперь каждый GroupNode создает собственный экземпляр ValidationRegistryClass:
+//
+// @example
+// ```typescript
+// class GroupNode {
+//   private readonly validationRegistry = new ValidationRegistryClass();
+//
+//   applyValidationSchema(schemaFn) {
+//     this.validationRegistry.beginRegistration();
+//     schemaFn(createFieldPath(this));
+//     this.validationRegistry.endRegistration(this);
+//   }
+// }
+// ```
+//
+// Это обеспечивает:
+// - Полную изоляцию форм друг от друга
+// - Отсутствие race conditions при параллельной регистрации
+// - Возможность применять разные validation схемы к разным формам одновременно

@@ -6,7 +6,7 @@
  * - validateItems: применение validation schema к каждому элементу
  */
 
-import { ValidationRegistry } from './validation-registry';
+import { ValidationRegistryClass } from './validation-registry';
 import { extractPath } from './field-path';
 import { minLength } from './schema-validators';
 import type {
@@ -14,6 +14,34 @@ import type {
   ValidationSchemaFn,
 } from '../types/validation-schema';
 import type { FieldPathNode } from '../types';
+
+// ============================================================================
+// Helper: получить текущий активный реестр
+// ============================================================================
+
+/**
+ * Helper: получить текущий активный реестр или выбросить ошибку
+ *
+ * Используется внутри array-validators для доступа к контекстному реестру
+ *
+ * @returns Текущий активный ValidationRegistryClass
+ * @throws Error если нет активного контекста (только в DEV режиме)
+ */
+function getCurrentRegistry(): ValidationRegistryClass {
+  const registry = ValidationRegistryClass.getCurrent();
+  if (!registry) {
+    if (import.meta.env.DEV) {
+      throw new Error(
+        'No active ValidationRegistry context. Make sure to call beginRegistration() before using array validation functions.'
+      );
+    }
+    // В production возвращаем заглушку
+    return {
+      registerArrayItemValidation: () => {},
+    } as any;
+  }
+  return registry;
+}
 
 // ============================================================================
 // notEmpty - Проверка что массив не пустой
@@ -93,5 +121,6 @@ export function validateItems<TForm = any, TItem = any>(
   const path = extractPath(fieldPath);
 
   // Регистрируем схему валидации для элементов массива
-  ValidationRegistry.registerArrayItemValidation(path, itemSchemaFn);
+  // ✅ Используем текущий активный реестр из context stack
+  getCurrentRegistry().registerArrayItemValidation(path, itemSchemaFn);
 }
