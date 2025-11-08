@@ -22,10 +22,10 @@ import type {
   GroupNodeConfig,
 } from '../types';
 import type { GroupNodeWithControls } from '../types/group-node-proxy';
-import { ValidationRegistry, createFieldPath } from '../validators';
+import { ValidationRegistry, ValidationRegistryClass, createFieldPath } from '../validators';
 import { ValidationContextImpl, TreeValidationContextImpl } from '../validators/validation-context';
 import type { BehaviorSchemaFn } from '../behaviors/types';
-import { BehaviorRegistry } from '../behaviors/behavior-registry';
+import { BehaviorRegistry, BehaviorRegistryClass } from '../behaviors/behavior-registry';
 import { createFieldPath as createBehaviorFieldPath } from '../behaviors/create-field-path';
 import { FieldPathNavigator } from '../utils/field-path-navigator';
 import { NodeFactory } from '../factories/node-factory';
@@ -107,6 +107,20 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    * Использует композицию для централизованного создания FieldNode/GroupNode/ArrayNode
    */
   private readonly nodeFactory = new NodeFactory();
+
+  /**
+   * Реестр валидаторов для этой формы
+   * Использует композицию вместо глобального Singleton
+   * Обеспечивает полную изоляцию форм друг от друга
+   */
+  private readonly validationRegistry = new ValidationRegistryClass();
+
+  /**
+   * Реестр behaviors для этой формы
+   * Использует композицию вместо глобального Singleton
+   * Обеспечивает полную изоляцию форм друг от друга
+   */
+  private readonly behaviorRegistry = new BehaviorRegistryClass();
 
   // ============================================================================
   // Публичные computed signals
@@ -350,7 +364,8 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     );
 
     // Шаг 2: Применение contextual валидаторов из validation schema
-    const validators = ValidationRegistry.getValidators(this._proxyInstance || (this as GroupNode<T>));
+    // Используем локальный реестр вместо глобального
+    const validators = this.validationRegistry.getValidators();
     if (validators && validators.length > 0) {
       await this.applyContextualValidators(validators);
     }
@@ -463,16 +478,19 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
   /**
    * Применить validation schema к форме
+   *
+   * Использует локальный реестр валидаторов (this.validationRegistry)
+   * вместо глобального Singleton для изоляции форм друг от друга.
    */
   applyValidationSchema(schemaFn: ValidationSchemaFn<T>): void {
-    ValidationRegistry.beginRegistration();
+    this.validationRegistry.beginRegistration();
 
     try {
       const path = createFieldPath<T>();
       schemaFn(path);
       // ✅ Передаём proxy-инстанс, если доступен (консистентность с applyBehaviorSchema)
       const formToUse = (this._proxyInstance || this) as GroupNodeWithControls<T>;
-      ValidationRegistry.endRegistration(formToUse);
+      this.validationRegistry.endRegistration(formToUse);
     } catch (error) {
       console.error('Error applying validation schema:', error);
       throw error;
@@ -514,14 +532,14 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    * ```
    */
   applyBehaviorSchema(schemaFn: BehaviorSchemaFn<T>): () => void {
-    BehaviorRegistry.beginRegistration();
+    this.behaviorRegistry.beginRegistration();
 
     try {
       const path = createBehaviorFieldPath<T>();
       schemaFn(path);
       // ✅ Передаём proxy-инстанс в endRegistration, если доступен
       const formToUse = (this._proxyInstance || this) as GroupNodeWithControls<T>;
-      const result = BehaviorRegistry.endRegistration(formToUse);
+      const result = this.behaviorRegistry.endRegistration(formToUse);
       return result.cleanup;
     } catch (error) {
       console.error('Error applying behavior schema:', error);

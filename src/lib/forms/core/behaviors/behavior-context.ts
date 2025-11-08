@@ -4,8 +4,8 @@
  * Предоставляет методы для работы с формой в behavior схемах
  */
 
-import type { GroupNode } from '../core/nodes/group-node';
-import type { FormNode } from '../core/nodes/form-node';
+import type { GroupNode } from '../nodes/group-node';
+import type { FormNode } from '../nodes/form-node';
 import type { FieldPathNode, ValidationError } from '../types';
 import type { GroupNodeWithControls } from '../types/group-node-proxy';
 import type { BehaviorContext } from './types';

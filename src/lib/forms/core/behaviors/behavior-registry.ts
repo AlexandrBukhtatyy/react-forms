@@ -5,8 +5,8 @@
  */
 
 import { effect } from '@preact/signals-react';
-import type { GroupNode } from '../core/nodes/group-node';
-import type { FormNode } from '../core/nodes/form-node';
+import type { GroupNode } from '../nodes/group-node';
+import type { FormNode } from '../nodes/form-node';
 import type { BehaviorRegistration } from './types';
 import { BehaviorContextImpl } from './behavior-context';
 
