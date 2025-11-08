@@ -412,19 +412,43 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     this.fields.forEach((field) => field.clearErrors());
   }
 
-  markAsTouched(): void {
+  // ============================================================================
+  // Protected hooks (Template Method pattern)
+  // ============================================================================
+
+  /**
+   * Hook: вызывается после markAsTouched()
+   *
+   * Для GroupNode: рекурсивно помечаем все дочерние поля как touched
+   */
+  protected onMarkAsTouched(): void {
     this.fields.forEach((field) => field.markAsTouched());
   }
 
-  markAsUntouched(): void {
+  /**
+   * Hook: вызывается после markAsUntouched()
+   *
+   * Для GroupNode: рекурсивно помечаем все дочерние поля как untouched
+   */
+  protected onMarkAsUntouched(): void {
     this.fields.forEach((field) => field.markAsUntouched());
   }
 
-  markAsDirty(): void {
+  /**
+   * Hook: вызывается после markAsDirty()
+   *
+   * Для GroupNode: рекурсивно помечаем все дочерние поля как dirty
+   */
+  protected onMarkAsDirty(): void {
     this.fields.forEach((field) => field.markAsDirty());
   }
 
-  markAsPristine(): void {
+  /**
+   * Hook: вызывается после markAsPristine()
+   *
+   * Для GroupNode: рекурсивно помечаем все дочерние поля как pristine
+   */
+  protected onMarkAsPristine(): void {
     this.fields.forEach((field) => field.markAsPristine());
   }
 
@@ -976,28 +1000,30 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   }
 
   /**
-   * Отключить все поля группы
-   * Рекурсивно отключает каждое поле, если у него есть метод disable()
+   * Hook: вызывается после disable()
+   *
+   * Для GroupNode: рекурсивно отключаем все дочерние поля
    */
-  disable(): void {
+  protected onDisable(): void {
+    // Синхронизируем _disabled signal с _status для обратной совместимости
     this._disabled.value = true;
+
     this.fields.forEach((field) => {
-      if ('disable' in field && typeof field.disable === 'function') {
-        field.disable();
-      }
+      field.disable();
     });
   }
 
   /**
-   * Включить все поля группы
-   * Рекурсивно включает каждое поле, если у него есть метод enable()
+   * Hook: вызывается после enable()
+   *
+   * Для GroupNode: рекурсивно включаем все дочерние поля
    */
-  enable(): void {
+  protected onEnable(): void {
+    // Синхронизируем _disabled signal с _status для обратной совместимости
     this._disabled.value = false;
+
     this.fields.forEach((field) => {
-      if ('enable' in field && typeof field.enable === 'function') {
-        field.enable();
-      }
+      field.enable();
     });
   }
 

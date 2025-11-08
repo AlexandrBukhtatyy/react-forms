@@ -289,19 +289,43 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
     this.items.value.forEach((item) => item.clearErrors());
   }
 
-  markAsTouched(): void {
+  // ============================================================================
+  // Protected hooks (Template Method pattern)
+  // ============================================================================
+
+  /**
+   * Hook: вызывается после markAsTouched()
+   *
+   * Для ArrayNode: рекурсивно помечаем все элементы массива как touched
+   */
+  protected onMarkAsTouched(): void {
     this.items.value.forEach((item) => item.markAsTouched());
   }
 
-  markAsUntouched(): void {
+  /**
+   * Hook: вызывается после markAsUntouched()
+   *
+   * Для ArrayNode: рекурсивно помечаем все элементы массива как untouched
+   */
+  protected onMarkAsUntouched(): void {
     this.items.value.forEach((item) => item.markAsUntouched());
   }
 
-  markAsDirty(): void {
+  /**
+   * Hook: вызывается после markAsDirty()
+   *
+   * Для ArrayNode: рекурсивно помечаем все элементы массива как dirty
+   */
+  protected onMarkAsDirty(): void {
     this.items.value.forEach((item) => item.markAsDirty());
   }
 
-  markAsPristine(): void {
+  /**
+   * Hook: вызывается после markAsPristine()
+   *
+   * Для ArrayNode: рекурсивно помечаем все элементы массива как pristine
+   */
+  protected onMarkAsPristine(): void {
     this.items.value.forEach((item) => item.markAsPristine());
   }
 
@@ -565,8 +589,9 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
   }
 
   /**
-   * Отключить все элементы массива
-   * Рекурсивно отключает каждый элемент, если у него есть метод disable()
+   * Hook: вызывается после disable()
+   *
+   * Для ArrayNode: рекурсивно отключаем все элементы массива
    *
    * @example
    * ```typescript
@@ -579,17 +604,16 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
    * });
    * ```
    */
-  disable(): void {
+  protected onDisable(): void {
     this.items.value.forEach((item) => {
-      if ('disable' in item && typeof item.disable === 'function') {
-        item.disable();
-      }
+      item.disable();
     });
   }
 
   /**
-   * Включить все элементы массива
-   * Рекурсивно включает каждый элемент, если у него есть метод enable()
+   * Hook: вызывается после enable()
+   *
+   * Для ArrayNode: рекурсивно включаем все элементы массива
    *
    * @example
    * ```typescript
@@ -602,11 +626,9 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
    * });
    * ```
    */
-  enable(): void {
+  protected onEnable(): void {
     this.items.value.forEach((item) => {
-      if ('enable' in item && typeof item.enable === 'function') {
-        item.enable();
-      }
+      item.enable();
     });
   }
 }

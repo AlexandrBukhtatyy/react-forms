@@ -3,9 +3,13 @@
  *
  * Аналог AbstractControl из Angular Forms
  * Унифицирует работу с полями (FieldNode), группами (GroupNode) и массивами (ArrayNode)
+ *
+ * Использует Template Method паттерн для управления состоянием:
+ * - Публичные методы (markAsTouched, disable и т.д.) реализованы в базовом классе
+ * - Protected hooks (onMarkAsTouched, onDisable и т.д.) переопределяются в наследниках
  */
 
-import type { ReadonlySignal } from '@preact/signals-react';
+import { signal, computed, type ReadonlySignal, type Signal } from '@preact/signals-react';
 import type { ValidationError, FieldStatus } from '../../types';
 
 /**
@@ -23,8 +27,81 @@ export interface SetValueOptions {
  *
  * Все узлы (поля, группы, массивы) наследуют от этого класса
  * и реализуют единый интерфейс для работы с состоянием и валидацией
+ *
+ * Template Method паттерн используется для управления состоянием:
+ * - Общие signals (_touched, _dirty, _status) определены в базовом классе
+ * - Публичные методы (markAsTouched, disable и т.д.) реализованы здесь
+ * - Protected hooks (onMarkAsTouched, onDisable и т.д.) переопределяются в наследниках
  */
 export abstract class FormNode<T = any> {
+  // ============================================================================
+  // Protected состояние (для Template Method паттерна)
+  // ============================================================================
+
+  /**
+   * Пользователь взаимодействовал с узлом (touched)
+   * Protected: наследники могут читать/изменять через методы
+   */
+  protected _touched: Signal<boolean> = signal(false);
+
+  /**
+   * Значение узла было изменено (dirty)
+   * Protected: наследники могут читать/изменять через методы
+   */
+  protected _dirty: Signal<boolean> = signal(false);
+
+  /**
+   * Текущий статус узла
+   * Protected: наследники могут читать/изменять через методы
+   */
+  protected _status: Signal<FieldStatus> = signal<FieldStatus>('valid');
+
+  // ============================================================================
+  // Публичные computed signals (readonly для внешнего мира)
+  // ============================================================================
+
+  /**
+   * Пользователь взаимодействовал с узлом (touched)
+   * Computed из _touched для предоставления readonly интерфейса
+   */
+  readonly touched: ReadonlySignal<boolean> = computed(() => this._touched.value);
+
+  /**
+   * Пользователь не взаимодействовал с узлом (untouched)
+   */
+  readonly untouched: ReadonlySignal<boolean> = computed(() => !this._touched.value);
+
+  /**
+   * Значение узла было изменено (dirty)
+   * Computed из _dirty для предоставления readonly интерфейса
+   */
+  readonly dirty: ReadonlySignal<boolean> = computed(() => this._dirty.value);
+
+  /**
+   * Значение узла не было изменено (pristine)
+   */
+  readonly pristine: ReadonlySignal<boolean> = computed(() => !this._dirty.value);
+
+  /**
+   * Текущий статус узла
+   * Computed из _status для предоставления readonly интерфейса
+   */
+  readonly status: ReadonlySignal<FieldStatus> = computed(() => this._status.value);
+
+  /**
+   * Узел отключен (disabled)
+   */
+  readonly disabled: ReadonlySignal<boolean> = computed(
+    () => this._status.value === 'disabled'
+  );
+
+  /**
+   * Узел включен (enabled)
+   */
+  readonly enabled: ReadonlySignal<boolean> = computed(
+    () => this._status.value !== 'disabled'
+  );
+
   // ============================================================================
   // Реактивные signals (должны быть реализованы в подклассах)
   // ============================================================================
@@ -48,16 +125,6 @@ export abstract class FormNode<T = any> {
   abstract readonly invalid: ReadonlySignal<boolean>;
 
   /**
-   * Пользователь взаимодействовал с узлом (touched)
-   */
-  abstract readonly touched: ReadonlySignal<boolean>;
-
-  /**
-   * Значение узла было изменено (dirty)
-   */
-  abstract readonly dirty: ReadonlySignal<boolean>;
-
-  /**
    * Выполняется асинхронная валидация
    */
   abstract readonly pending: ReadonlySignal<boolean>;
@@ -66,11 +133,6 @@ export abstract class FormNode<T = any> {
    * Массив ошибок валидации
    */
   abstract readonly errors: ReadonlySignal<ValidationError[]>;
-
-  /**
-   * Текущий статус узла
-   */
-  abstract readonly status: ReadonlySignal<FieldStatus>;
 
   // ============================================================================
   // Методы управления значениями
@@ -127,28 +189,52 @@ export abstract class FormNode<T = any> {
   abstract clearErrors(): void;
 
   // ============================================================================
-  // Методы управления состоянием
+  // Методы управления состоянием (Template Method)
   // ============================================================================
 
   /**
    * Отметить узел как touched (пользователь взаимодействовал)
+   *
+   * Template Method: обновляет signal в базовом классе,
+   * вызывает hook для кастомной логики в наследниках
    */
-  abstract markAsTouched(): void;
+  markAsTouched(): void {
+    this._touched.value = true;
+    this.onMarkAsTouched();
+  }
 
   /**
    * Отметить узел как untouched
+   *
+   * Template Method: обновляет signal в базовом классе,
+   * вызывает hook для кастомной логики в наследниках
    */
-  abstract markAsUntouched(): void;
+  markAsUntouched(): void {
+    this._touched.value = false;
+    this.onMarkAsUntouched();
+  }
 
   /**
    * Отметить узел как dirty (значение изменено)
+   *
+   * Template Method: обновляет signal в базовом классе,
+   * вызывает hook для кастомной логики в наследниках
    */
-  abstract markAsDirty(): void;
+  markAsDirty(): void {
+    this._dirty.value = true;
+    this.onMarkAsDirty();
+  }
 
   /**
    * Отметить узел как pristine (значение не изменено)
+   *
+   * Template Method: обновляет signal в базовом классе,
+   * вызывает hook для кастомной логики в наследниках
    */
-  abstract markAsPristine(): void;
+  markAsPristine(): void {
+    this._dirty.value = false;
+    this.onMarkAsPristine();
+  }
 
   /**
    * Пометить все поля (включая вложенные) как touched
@@ -180,19 +266,32 @@ export abstract class FormNode<T = any> {
   }
 
   // ============================================================================
-  // Опциональные методы (могут быть реализованы в подклассах)
+  // Методы управления доступностью (Template Method)
   // ============================================================================
 
   /**
    * Отключить узел
+   *
+   * Template Method: обновляет статус в базовом классе,
+   * вызывает hook для кастомной логики в наследниках
+   *
    * Отключенные узлы не проходят валидацию и не включаются в getValue()
    */
-  disable?(): void;
+  disable(): void {
+    this._status.value = 'disabled';
+    this.onDisable();
+  }
 
   /**
    * Включить узел
+   *
+   * Template Method: обновляет статус в базовом классе,
+   * вызывает hook для кастомной логики в наследниках
    */
-  enable?(): void;
+  enable(): void {
+    this._status.value = 'valid';
+    this.onEnable();
+  }
 
   /**
    * Очистить все ресурсы узла
@@ -209,6 +308,99 @@ export abstract class FormNode<T = any> {
    * ```
    */
   dispose?(): void;
+
+  // ============================================================================
+  // Protected hooks (для переопределения в наследниках)
+  // ============================================================================
+
+  /**
+   * Hook: вызывается после markAsTouched()
+   *
+   * Переопределите в наследниках для дополнительной логики:
+   * - GroupNode: пометить все дочерние узлы как touched
+   * - ArrayNode: пометить все элементы массива как touched
+   * - FieldNode: пустая реализация (нет дочерних узлов)
+   *
+   * @example
+   * ```typescript
+   * // GroupNode
+   * protected onMarkAsTouched(): void {
+   *   this.fields.forEach(field => field.markAsTouched());
+   * }
+   * ```
+   */
+  protected onMarkAsTouched(): void {
+    // Пустая реализация по умолчанию
+    // Наследники переопределяют при необходимости
+  }
+
+  /**
+   * Hook: вызывается после markAsUntouched()
+   *
+   * Переопределите в наследниках для дополнительной логики:
+   * - GroupNode: пометить все дочерние узлы как untouched
+   * - ArrayNode: пометить все элементы массива как untouched
+   * - FieldNode: пустая реализация (нет дочерних узлов)
+   */
+  protected onMarkAsUntouched(): void {
+    // Пустая реализация по умолчанию
+  }
+
+  /**
+   * Hook: вызывается после markAsDirty()
+   *
+   * Переопределите в наследниках для дополнительной логики:
+   * - GroupNode: может обновить родительскую форму
+   * - ArrayNode: может обновить родительскую форму
+   * - FieldNode: пустая реализация
+   */
+  protected onMarkAsDirty(): void {
+    // Пустая реализация по умолчанию
+  }
+
+  /**
+   * Hook: вызывается после markAsPristine()
+   *
+   * Переопределите в наследниках для дополнительной логики:
+   * - GroupNode: пометить все дочерние узлы как pristine
+   * - ArrayNode: пометить все элементы массива как pristine
+   * - FieldNode: пустая реализация
+   */
+  protected onMarkAsPristine(): void {
+    // Пустая реализация по умолчанию
+  }
+
+  /**
+   * Hook: вызывается после disable()
+   *
+   * Переопределите в наследниках для дополнительной логики:
+   * - GroupNode: отключить все дочерние узлы
+   * - ArrayNode: отключить все элементы массива
+   * - FieldNode: очистить ошибки валидации
+   *
+   * @example
+   * ```typescript
+   * // GroupNode
+   * protected onDisable(): void {
+   *   this.fields.forEach(field => field.disable());
+   * }
+   * ```
+   */
+  protected onDisable(): void {
+    // Пустая реализация по умолчанию
+  }
+
+  /**
+   * Hook: вызывается после enable()
+   *
+   * Переопределите в наследниках для дополнительной логики:
+   * - GroupNode: включить все дочерние узлы
+   * - ArrayNode: включить все элементы массива
+   * - FieldNode: пустая реализация
+   */
+  protected onEnable(): void {
+    // Пустая реализация по умолчанию
+  }
 }
 
 // ============================================================================

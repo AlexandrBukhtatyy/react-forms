@@ -40,9 +40,7 @@ export class FieldNode<T = any> extends FormNode<T> {
 
   private _value: Signal<T>;
   private _errors: Signal<ValidationError[]>;
-  private _touched: Signal<boolean>;
-  private _dirty: Signal<boolean>;
-  private _status: Signal<FieldStatus>;
+  // _touched, _dirty, _status наследуются от FormNode (protected)
   private _pending: Signal<boolean>;
   private _componentProps: Signal<Record<string, any>>;
 
@@ -53,11 +51,9 @@ export class FieldNode<T = any> extends FormNode<T> {
   public readonly value: ReadonlySignal<T>;
   public readonly valid: ReadonlySignal<boolean>;
   public readonly invalid: ReadonlySignal<boolean>;
-  public readonly touched: ReadonlySignal<boolean>;
-  public readonly dirty: ReadonlySignal<boolean>;
+  // touched, dirty, status наследуются от FormNode
   public readonly pending: ReadonlySignal<boolean>;
   public readonly errors: ReadonlySignal<ValidationError[]>;
-  public readonly status: ReadonlySignal<FieldStatus>;
   public readonly componentProps: ReadonlySignal<Record<string, any>>;
 
   /**
@@ -105,21 +101,22 @@ export class FieldNode<T = any> extends FormNode<T> {
     // Инициализация приватных сигналов
     this._value = signal(config.value);
     this._errors = signal<ValidationError[]>([]);
-    this._touched = signal(false);
-    this._dirty = signal(false);
-    this._status = signal<FieldStatus>(config.disabled ? 'disabled' : 'valid');
+    // _touched, _dirty, _status инициализируются в FormNode
     this._pending = signal(false);
     this._componentProps = signal(config.componentProps || {});
+
+    // Установка начального статуса если поле отключено
+    if (config.disabled) {
+      this._status.value = 'disabled';
+    }
 
     // Создание computed signals
     this.value = computed(() => this._value.value);
     this.valid = computed(() => this._status.value === 'valid');
     this.invalid = computed(() => this._status.value === 'invalid');
-    this.touched = computed(() => this._touched.value);
-    this.dirty = computed(() => this._dirty.value);
+    // touched, dirty, status создаются в FormNode
     this.pending = computed(() => this._pending.value);
     this.errors = computed(() => this._errors.value);
-    this.status = computed(() => this._status.value);
     this.componentProps = computed(() => this._componentProps.value);
     this.shouldShowError = computed(
       () =>
@@ -409,32 +406,36 @@ export class FieldNode<T = any> extends FormNode<T> {
     this._status.value = 'valid';
   }
 
-  markAsTouched(): void {
-    this._touched.value = true;
+  // ============================================================================
+  // Protected hooks (Template Method pattern)
+  // ============================================================================
 
+  /**
+   * Hook: вызывается после markAsTouched()
+   *
+   * Для FieldNode: если updateOn === 'blur', запускаем валидацию
+   */
+  protected onMarkAsTouched(): void {
     if (this.updateOn === 'blur') {
       this.validate();
     }
   }
 
-  markAsUntouched(): void {
-    this._touched.value = false;
+  /**
+   * Hook: вызывается после disable()
+   *
+   * Для FieldNode: очищаем ошибки валидации
+   */
+  protected onDisable(): void {
+    this._errors.value = [];
   }
 
-  markAsDirty(): void {
-    this._dirty.value = true;
-  }
-
-  markAsPristine(): void {
-    this._dirty.value = false;
-  }
-
-  disable(): void {
-    this._status.value = 'disabled';
-  }
-
-  enable(): void {
-    this._status.value = 'valid';
+  /**
+   * Hook: вызывается после enable()
+   *
+   * Для FieldNode: запускаем валидацию
+   */
+  protected onEnable(): void {
     this.validate();
   }
 
