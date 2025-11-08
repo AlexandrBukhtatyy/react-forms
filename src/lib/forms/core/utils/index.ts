@@ -5,3 +5,4 @@
  */
 
 export { FieldPathNavigator, type PathSegment } from './field-path-navigator';
+export { SubscriptionManager } from './subscription-manager';
