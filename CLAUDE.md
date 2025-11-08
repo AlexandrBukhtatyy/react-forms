@@ -18,6 +18,70 @@ npm run lint         # Запуск ESLint
 npm run preview      # Предпросмотр production-сборки
 ```
 
+## Правила разработки
+
+### Документирование кода
+
+**Обязательно документировать**:
+- ✅ Все публичные классы, методы, функции
+- ✅ Сложная бизнес-логика
+- ✅ Нетривиальные алгоритмы
+- ✅ Примеры использования (`@example` в JSDoc)
+
+**Формат**: JSDoc с комментариями на **русском языке**
+
+**Зачем**: Хорошая документация улучшает качество работы ИИ-ассистентов (Claude, Copilot) и упрощает понимание кода разработчиками.
+
+**Пример**:
+```typescript
+/**
+ * Узел формы для группы полей (объект)
+ *
+ * Поддерживает вложенность: может содержать FieldNode, GroupNode, ArrayNode.
+ * Каждый экземпляр имеет собственные реестры валидации и поведения.
+ *
+ * @template T Тип значения группы (объект)
+ *
+ * @example
+ * ```typescript
+ * const form = new GroupNode({
+ *   email: { value: '', component: Input },
+ *   password: { value: '', component: Input }
+ * });
+ *
+ * form.email.setValue('test@mail.com');
+ * await form.validate();
+ * ```
+ */
+export class GroupNode<T extends object> extends FormNode<T> {
+  /**
+   * Применяет validation схему к форме
+   *
+   * @param schemaFn Функция-схема валидации
+   *
+   * @example
+   * ```typescript
+   * form.applyValidationSchema((path) => {
+   *   required(path.email, { message: 'Email обязателен' });
+   *   email(path.email);
+   * });
+   * ```
+   */
+  applyValidationSchema(schemaFn: ValidationSchemaFn<T>): void {
+    // ...
+  }
+}
+```
+
+### Принципы SOLID
+
+При разработке следовать принципам:
+- **SRP**: Один класс = одна ответственность (< 200 строк)
+- **OCP**: Открыт для расширения, закрыт для изменения
+- **LSP**: Подтипы должны быть взаимозаменяемы
+- **ISP**: Интерфейсы разделены по ответственностям
+- **DIP**: Зависимость от абстракций, не от конкретных классов
+
 ## Архитектура
 
 ### Ключевые концепции
