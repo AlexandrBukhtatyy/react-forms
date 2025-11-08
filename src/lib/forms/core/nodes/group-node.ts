@@ -12,7 +12,6 @@
 import { signal, computed, effect } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
 import { FormNode, type SetValueOptions } from './form-node';
-import { FieldNode } from './field-node';
 import { ArrayNode } from './array-node';
 import type {
   ValidationError,
@@ -22,14 +21,15 @@ import type {
   GroupNodeConfig,
 } from '../types';
 import type { GroupNodeWithControls } from '../types/group-node-proxy';
-import { ValidationRegistry, ValidationRegistryClass, createFieldPath } from '../validators';
+import { createFieldPath } from '../validators';
 import { ValidationContextImpl, TreeValidationContextImpl } from '../validators/validation-context';
 import type { BehaviorSchemaFn } from '../behaviors/types';
-import { BehaviorRegistry, BehaviorRegistryClass } from '../behaviors/behavior-registry';
+import { BehaviorRegistryClass } from '../behaviors/behavior-registry';
 import { createFieldPath as createBehaviorFieldPath } from '../behaviors/create-field-path';
 import { FieldPathNavigator } from '../utils/field-path-navigator';
 import { NodeFactory } from '../factories/node-factory';
 import { SubscriptionManager } from '../utils/subscription-manager';
+import { ValidationRegistryClass } from '../validators/validation-registry';
 
 /**
  * GroupNode - узел для группы полей

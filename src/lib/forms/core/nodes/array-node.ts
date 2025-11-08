@@ -11,9 +11,9 @@ import { signal, computed, effect } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
 import { FormNode,  type SetValueOptions } from './form-node';
 import { GroupNode } from './group-node';
-import type { FieldStatus, ValidationError } from '../../types';
-import type { FormSchema } from '../../types/deep-schema';
-import type { GroupNodeWithControls } from '../../types/group-node-proxy';
+import type { FieldStatus, ValidationError } from '../types';
+import type { FormSchema } from '../types/deep-schema';
+import type { GroupNodeWithControls } from '../types/group-node-proxy';
 import { SubscriptionManager } from '../utils/subscription-manager';
 
 /**

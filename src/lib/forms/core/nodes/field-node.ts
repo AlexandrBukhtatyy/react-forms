@@ -12,10 +12,9 @@ import type { SetValueOptions }  from "./form-node"
 import type {
   FieldConfig,
   ValidationError,
-  FieldStatus,
   ValidatorFn,
   AsyncValidatorFn,
-} from '../../types';
+} from '../types';
 import { SubscriptionManager } from '../utils/subscription-manager';
 
 /**

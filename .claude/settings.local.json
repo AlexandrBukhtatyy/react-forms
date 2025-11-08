@@ -18,7 +18,8 @@
       "Bash(npm run test:unit:*)",
       "Bash(tree:*)",
       "Bash(node -e:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(npx vite:*)"
     ],
     "deny": [],
     "ask": []

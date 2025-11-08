@@ -10,7 +10,7 @@
 import type { ComponentType } from 'react';
 import type { ReadonlySignal } from '@preact/signals-react';
 import type { ValidatorFn, AsyncValidatorFn, ValidationError } from './index';
-import type { FieldNode } from '../core/nodes/field-node';
+import type { FieldNode } from '../nodes/field-node';
 
 // ============================================================================
 // Базовые типы

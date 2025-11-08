@@ -10,7 +10,7 @@
  */
 
 import { signal, computed, type ReadonlySignal, type Signal } from '@preact/signals-react';
-import type { ValidationError, FieldStatus } from '../../types';
+import type { FieldStatus, ValidationError } from '../types';
 
 /**
  * Опции для setValue
