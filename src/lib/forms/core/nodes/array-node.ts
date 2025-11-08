@@ -14,6 +14,7 @@ import { GroupNode } from './group-node';
 import type { FieldStatus, ValidationError } from '../../types';
 import type { FormSchema } from '../../types/deep-schema';
 import type { GroupNodeWithControls } from '../../types/group-node-proxy';
+import { SubscriptionManager } from '../utils/subscription-manager';
 
 /**
  * ArrayNode - массив форм с реактивным состоянием
@@ -40,10 +41,10 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
   private initialItems: Partial<T>[];
 
   /**
-   * Массив disposers для централизованного cleanup
-   * Хранит все функции отписки от subscriptions
+   * Менеджер подписок для централизованного cleanup
+   * Использует SubscriptionManager вместо массива для управления подписками
    */
-  private disposers: Array<() => void> = [];
+  private disposers = new SubscriptionManager();
 
   // ============================================================================
   // Приватные поля для сохранения схем
@@ -508,17 +509,8 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
       callback(values);
     });
 
-    // Регистрируем disposer для централизованного cleanup
-    this.disposers.push(dispose);
-
-    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
-    return () => {
-      const index = this.disposers.indexOf(dispose);
-      if (index > -1) {
-        this.disposers.splice(index, 1);
-      }
-      dispose();
-    };
+    // Регистрируем через SubscriptionManager и возвращаем unsubscribe
+    return this.disposers.add(dispose);
   }
 
   /**
@@ -549,17 +541,8 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
       callback(currentLength);
     });
 
-    // Регистрируем disposer для централизованного cleanup
-    this.disposers.push(dispose);
-
-    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
-    return () => {
-      const index = this.disposers.indexOf(dispose);
-      if (index > -1) {
-        this.disposers.splice(index, 1);
-      }
-      dispose();
-    };
+    // Регистрируем через SubscriptionManager и возвращаем unsubscribe
+    return this.disposers.add(dispose);
   }
 
   /**
@@ -576,9 +559,8 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
    * ```
    */
   dispose(): void {
-    // Очищаем все subscriptions
-    this.disposers.forEach((d) => d());
-    this.disposers = [];
+    // Очищаем все subscriptions через SubscriptionManager
+    this.disposers.unsubscribeAll();
 
     // Очищаем элементы массива
     this.items.value.forEach((item) => {

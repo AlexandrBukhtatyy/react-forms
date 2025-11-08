@@ -27,6 +27,9 @@ import { ValidationContextImpl, TreeValidationContextImpl } from '../validators/
 import type { BehaviorSchemaFn } from '../behaviors/types';
 import { BehaviorRegistry } from '../behaviors/behavior-registry';
 import { createFieldPath as createBehaviorFieldPath } from '../behaviors/create-field-path';
+import { FieldPathNavigator } from '../utils/field-path-navigator';
+import { NodeFactory } from '../factories/node-factory';
+import { SubscriptionManager } from '../utils/subscription-manager';
 
 /**
  * GroupNode - узел для группы полей
@@ -82,16 +85,28 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   private _formErrors: Signal<ValidationError[]>;
 
   /**
-   * Массив disposers для централизованного cleanup
-   * Хранит все функции отписки от subscriptions
+   * Менеджер подписок для централизованного cleanup
+   * Использует SubscriptionManager вместо массива для управления подписками
    */
-  private disposers: Array<() => void> = [];
+  private disposers = new SubscriptionManager();
 
   /**
    * Ссылка на Proxy-инстанс для использования в BehaviorContext
    * Устанавливается в конструкторе до применения behavior schema
    */
   private _proxyInstance?: GroupNodeWithControls<T>;
+
+  /**
+   * Навигатор для работы с путями к полям
+   * Использует композицию вместо дублирования логики парсинга путей
+   */
+  private readonly pathNavigator = new FieldPathNavigator();
+
+  /**
+   * Фабрика для создания узлов формы
+   * Использует композицию для централизованного создания FieldNode/GroupNode/ArrayNode
+   */
+  private readonly nodeFactory = new NodeFactory();
 
   // ============================================================================
   // Публичные computed signals
@@ -756,15 +771,18 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   /**
    * Создать узел на основе конфигурации
    * Автоматически определяет тип: FieldNode, GroupNode или ArrayNode
+   *
+   * Использует NodeFactory для централизованного создания узлов.
+   * Специальная обработка массива-как-конфига остается в GroupNode.
    */
   private createNode(config: any): FormNode<any> {
-    // Проверка 1: Массив?
+    // Проверка 1: Массив? (специфическое поведение GroupNode)
     if (Array.isArray(config) && config.length >= 1) {
       const [itemSchema, ...restItems] = config;
 
       // Извлекаем значения из всех элементов массива (включая первый)
       const initialItems = config.map((item: any) => {
-        if (this.isGroupConfig(item)) {
+        if (this.nodeFactory.isGroupConfig(item)) {
           // Это schema config - извлекаем значения
           return this.extractValuesFromSchema(item);
         }
@@ -775,33 +793,30 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       return new ArrayNode(itemSchema, initialItems);
     }
 
-    // Проверка 2: Группа?
-    if (this.isGroupConfig(config)) {
-      return new GroupNode(config);
-    }
-
-    // Проверка 3: Поле
-    return new FieldNode(config);
+    // Проверка 2-3: Делегируем NodeFactory (FieldNode, GroupNode)
+    return this.nodeFactory.createNode(config);
   }
 
   /**
    * Извлечь значения из schema config объекта
    * Преобразует {name: {value: 'John', component: Input}} в {name: 'John'}
+   *
+   * Использует NodeFactory для определения типа конфига.
    */
   private extractValuesFromSchema(schema: any): any {
     const result: any = {};
 
     for (const [key, config] of Object.entries(schema)) {
-      if (this.isFieldConfig(config)) {
+      if (this.nodeFactory.isFieldConfig(config)) {
         // Это FieldConfig - берем value
         result[key] = (config as any).value;
-      } else if (this.isGroupConfig(config)) {
+      } else if (this.nodeFactory.isGroupConfig(config)) {
         // Это вложенная группа - рекурсивно извлекаем
         result[key] = this.extractValuesFromSchema(config);
       } else if (Array.isArray(config) && config.length > 0) {
         // Массив - рекурсивно извлекаем значения из всех элементов
         result[key] = config.map((item: any) => {
-          if (this.isGroupConfig(item)) {
+          if (this.nodeFactory.isGroupConfig(item)) {
             return this.extractValuesFromSchema(item);
           }
           return item;
@@ -815,29 +830,6 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     return result;
   }
 
-  /**
-   * Проверить, является ли конфигурация полем (содержит value и component)
-   */
-  private isFieldConfig(config: any): boolean {
-    return (
-      typeof config === 'object' &&
-      config !== null &&
-      'value' in config &&
-      'component' in config
-    );
-  }
-
-  /**
-   * Проверить, является ли конфигурация групповой (объект полей)
-   */
-  private isGroupConfig(config: any): boolean {
-    return (
-      typeof config === 'object' &&
-      config !== null &&
-      !('component' in config) &&
-      !Array.isArray(config)
-    );
-  }
 
   // ============================================================================
   // Методы-помощники для реактивности (Фаза 1)
@@ -895,17 +887,8 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       targetField.setValue(transformedValue, { emitEvent: false });
     });
 
-    // Регистрируем disposer для централизованного cleanup
-    this.disposers.push(dispose);
-
-    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
-    return () => {
-      const index = this.disposers.indexOf(dispose);
-      if (index > -1) {
-        this.disposers.splice(index, 1);
-      }
-      dispose();
-    };
+    // Регистрируем через SubscriptionManager и возвращаем unsubscribe
+    return this.disposers.add(dispose);
   }
 
   /**
@@ -953,17 +936,8 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       callback(value);
     });
 
-    // Регистрируем disposer для централизованного cleanup
-    this.disposers.push(dispose);
-
-    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
-    return () => {
-      const index = this.disposers.indexOf(dispose);
-      if (index > -1) {
-        this.disposers.splice(index, 1);
-      }
-      dispose();
-    };
+    // Регистрируем через SubscriptionManager и возвращаем unsubscribe
+    return this.disposers.add(dispose);
   }
 
   /**
@@ -1008,9 +982,8 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    * ```
    */
   dispose(): void {
-    // Очищаем все subscriptions
-    this.disposers.forEach((d) => d());
-    this.disposers = [];
+    // Очищаем все subscriptions через SubscriptionManager
+    this.disposers.unsubscribeAll();
 
     // Рекурсивно очищаем дочерние узлы
     this.fields.forEach((field) => {

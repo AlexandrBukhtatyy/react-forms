@@ -16,6 +16,7 @@ import type {
   ValidatorFn,
   AsyncValidatorFn,
 } from '../../types';
+import { SubscriptionManager } from '../utils/subscription-manager';
 
 /**
  * FieldNode - узел для отдельного поля формы
@@ -76,10 +77,10 @@ export class FieldNode<T = any> extends FormNode<T> {
   private validateDebounceResolve?: (value: boolean) => void;
 
   /**
-   * Массив disposers для централизованного cleanup
-   * Хранит все функции отписки от subscriptions
+   * Менеджер подписок для централизованного cleanup
+   * Использует SubscriptionManager вместо массива для управления подписками
    */
-  private disposers: Array<() => void> = [];
+  private disposers = new SubscriptionManager();
 
   public readonly component: FieldConfig<T>['component'];
 
@@ -520,17 +521,8 @@ export class FieldNode<T = any> extends FormNode<T> {
       callback(currentValue);
     });
 
-    // Регистрируем disposer для централизованного cleanup
-    this.disposers.push(dispose);
-
-    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
-    return () => {
-      const index = this.disposers.indexOf(dispose);
-      if (index > -1) {
-        this.disposers.splice(index, 1);
-      }
-      dispose();
-    };
+    // Регистрируем через SubscriptionManager и возвращаем unsubscribe
+    return this.disposers.add(dispose);
   }
 
   /**
@@ -570,17 +562,8 @@ export class FieldNode<T = any> extends FormNode<T> {
       this.setValue(newValue, { emitEvent: false });
     });
 
-    // Регистрируем disposer для централизованного cleanup
-    this.disposers.push(dispose);
-
-    // Возвращаем обертку, которая удаляет из массива и вызывает dispose
-    return () => {
-      const index = this.disposers.indexOf(dispose);
-      if (index > -1) {
-        this.disposers.splice(index, 1);
-      }
-      dispose();
-    };
+    // Регистрируем через SubscriptionManager и возвращаем unsubscribe
+    return this.disposers.add(dispose);
   }
 
   /**
@@ -597,9 +580,8 @@ export class FieldNode<T = any> extends FormNode<T> {
    * ```
    */
   dispose(): void {
-    // Очищаем все subscriptions
-    this.disposers.forEach((d) => d());
-    this.disposers = [];
+    // Очищаем все subscriptions через SubscriptionManager
+    this.disposers.unsubscribeAll();
 
     // Очищаем debounce таймер если он есть
     if (this.validateDebounceTimer) {
