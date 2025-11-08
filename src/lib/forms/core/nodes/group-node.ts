@@ -82,13 +82,6 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   private _formErrors: Signal<ValidationError[]>;
 
   /**
-   * Кэш для value computed (reference equality optimization)
-   * Хранит последний возвращенный объект и значения полей
-   */
-  private _cachedValue: T | null = null;
-  private _cachedFieldValues: Map<keyof T, any> = new Map();
-
-  /**
    * Массив disposers для централизованного cleanup
    * Хранит все функции отписки от subscriptions
    */
@@ -151,40 +144,14 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     }
 
     // Создать computed signals
+    // Computed signal автоматически кеширует результат (мемоизация)
+    // Если зависимости (field.value.value) не изменились, вернет закешированный объект
+    // Это обеспечивает reference equality и O(1) при повторных вызовах
     this.value = computed(() => {
-      // Проверяем изменения через shallow comparison
-      let hasChanges = false;
-
-      // Если кэш пустой - создаем первый объект
-      if (!this._cachedValue) {
-        hasChanges = true;
-      } else {
-        // Проверяем каждое поле на изменения
-        this.fields.forEach((field, key) => {
-          const currentValue = field.value.value;
-          const cachedValue = this._cachedFieldValues.get(key);
-
-          // Сравниваем по reference equality
-          if (currentValue !== cachedValue) {
-            hasChanges = true;
-          }
-        });
-      }
-
-      // Если нет изменений - возвращаем кэшированный объект
-      if (!hasChanges && this._cachedValue) {
-        return this._cachedValue;
-      }
-
-      // Создаем новый объект только если есть изменения
       const result = {} as T;
       this.fields.forEach((field, key) => {
-        const value = field.value.value;
-        result[key] = value;
-        this._cachedFieldValues.set(key, value);
+        result[key] = field.value.value;
       });
-
-      this._cachedValue = result;
       return result;
     });
 
