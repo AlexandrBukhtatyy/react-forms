@@ -203,14 +203,16 @@ export const watchHandler: BehaviorHandler = (registration, form, context, withD
   // Вызвать сразу если immediate: true
   if (immediate) {
     const value = node.value.value;
-    callback(value, node, context);
+    // watchField callback принимает (value, context)
+    callback(value, context as any);
   }
 
   return effect(() => {
     const value = node.value.value;
 
     withDebounce(() => {
-      callback(value, node, context);
+      // watchField callback принимает (value, context)
+      callback(value, context as any);
     });
   });
 };
