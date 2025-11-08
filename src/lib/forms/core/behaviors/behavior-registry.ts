@@ -15,30 +15,66 @@ import { behaviorHandlers } from './behavior-handlers';
  * Каждый экземпляр GroupNode создает собственный реестр (композиция).
  * Устраняет race conditions и изолирует формы друг от друга.
  *
+ * Context stack используется для tracking текущего активного реестра:
+ * - beginRegistration() помещает this в stack
+ * - endRegistration() извлекает из stack
+ * - getCurrent() возвращает текущий активный реестр
+ *
  * @example
  * ```typescript
  * class GroupNode {
  *   private readonly behaviorRegistry = new BehaviorRegistryClass();
  *
  *   applyBehaviorSchema(schemaFn) {
- *     this.behaviorRegistry.beginRegistration();
- *     schemaFn(createBehaviorFieldPath(this));
- *     return this.behaviorRegistry.endRegistration(this);
+ *     this.behaviorRegistry.beginRegistration(); // Pushes this to stack
+ *     schemaFn(createBehaviorFieldPath(this));   // Uses getCurrent()
+ *     return this.behaviorRegistry.endRegistration(this); // Pops from stack
  *   }
  * }
  * ```
  */
 export class BehaviorRegistryClass {
+  /**
+   * Stack активных контекстов регистрации
+   * Используется для изоляции форм друг от друга
+   */
+  private static contextStack: BehaviorRegistryClass[] = [];
+
   private registrations: BehaviorRegistration[] = [];
   private isRegistering = false;
 
   /**
+   * Получить текущий активный реестр из context stack
+   *
+   * @returns Текущий активный реестр или null
+   *
+   * @example
+   * ```typescript
+   * // В schema-behaviors.ts
+   * export function copyFrom(...) {
+   *   const registry = BehaviorRegistryClass.getCurrent();
+   *   if (registry) {
+   *     registry.register({ ... });
+   *   }
+   * }
+   * ```
+   */
+  static getCurrent(): BehaviorRegistryClass | null {
+    const stack = BehaviorRegistryClass.contextStack;
+    return stack.length > 0 ? stack[stack.length - 1] : null;
+  }
+
+  /**
    * Начать регистрацию behaviors
    * Вызывается перед применением схемы
+   *
+   * Помещает this в context stack для изоляции форм
    */
   beginRegistration(): void {
     this.isRegistering = true;
     this.registrations = [];
+    // Помещаем this в stack для tracking текущего активного реестра
+    BehaviorRegistryClass.contextStack.push(this);
   }
 
   /**
@@ -62,6 +98,8 @@ export class BehaviorRegistryClass {
    * Завершить регистрацию и применить behaviors к форме
    * Создает effect подписки для всех зарегистрированных behaviors
    *
+   * Извлекает this из context stack
+   *
    * @param form - GroupNode формы
    * @returns Массив зарегистрированных behaviors и функция cleanup
    */
@@ -69,6 +107,15 @@ export class BehaviorRegistryClass {
     form: GroupNode<T>
   ): { behaviors: BehaviorRegistration[]; cleanup: () => void } {
     this.isRegistering = false;
+
+    // Извлекаем из stack
+    const popped = BehaviorRegistryClass.contextStack.pop();
+    if (popped !== this && import.meta.env.DEV) {
+      console.warn(
+        'BehaviorRegistry: Context stack mismatch. Expected this, got:',
+        popped
+      );
+    }
 
     const context = new BehaviorContextImpl(form);
     const disposeCallbacks: Array<() => void> = [];

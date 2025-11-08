@@ -5,7 +5,7 @@
  */
 
 import type { FieldPathNode } from '../types';
-import { BehaviorRegistry } from './behavior-registry';
+import { BehaviorRegistryClass } from './behavior-registry';
 import type {
   BehaviorContext,
   CopyFromOptions,
@@ -15,6 +15,26 @@ import type {
   RevalidateWhenOptions,
   SyncFieldsOptions,
 } from './types';
+
+/**
+ * Helper: получить текущий активный реестр или выбросить ошибку
+ * @private
+ */
+function getCurrentRegistry(): BehaviorRegistryClass {
+  const registry = BehaviorRegistryClass.getCurrent();
+  if (!registry) {
+    if (import.meta.env.DEV) {
+      throw new Error(
+        'No active BehaviorRegistry context. Make sure to call beginRegistration() before using behavior functions.'
+      );
+    }
+    // В production возвращаем заглушку
+    return {
+      register: () => {},
+    } as any;
+  }
+  return registry;
+}
 
 // ============================================================================
 // copyFrom - Копирование значений между полями
@@ -50,7 +70,7 @@ export function copyFrom<TForm, TSource, TTarget>(
     debounce = 0,
   } = options || {};
 
-  BehaviorRegistry.register({
+  getCurrentRegistry().register({
     type: 'copy',
     sourceField: source,
     targetField: target,
@@ -89,7 +109,7 @@ export function enableWhen<TForm>(
 ): void {
   const { resetOnDisable = false, debounce = 0 } = options || {};
 
-  BehaviorRegistry.register({
+  getCurrentRegistry().register({
     type: 'enable',
     targetField: field,
     condition,
@@ -148,7 +168,7 @@ export function showWhen<TForm>(
   field: FieldPathNode<TForm, any>,
   condition: (form: TForm) => boolean
 ): void {
-  BehaviorRegistry.register({
+  getCurrentRegistry().register({
     type: 'show',
     targetField: field,
     condition,
@@ -217,7 +237,7 @@ export function computeFrom<TForm, TTarget>(
     return computeFn(valuesObj);
   };
 
-  BehaviorRegistry.register({
+  getCurrentRegistry().register({
     type: 'compute',
     targetField: target,
     sourceFields: sources,
@@ -261,7 +281,7 @@ export function watchField<TForm, TField>(
 ): void {
   const { debounce = 0, immediate = false } = options || {};
 
-  BehaviorRegistry.register({
+  getCurrentRegistry().register({
     type: 'watch',
     sourceField: field,
     callback: callback as any,
@@ -298,7 +318,7 @@ export function revalidateWhen<TForm>(
 ): void {
   const { debounce = 0 } = options || {};
 
-  BehaviorRegistry.register({
+  getCurrentRegistry().register({
     type: 'revalidate',
     targetField: target,
     sourceFields: triggers,
@@ -332,7 +352,7 @@ export function syncFields<TForm, T>(
 ): void {
   const { transform, debounce = 0 } = options || {};
 
-  BehaviorRegistry.register({
+  getCurrentRegistry().register({
     type: 'sync',
     sourceField: field1,
     targetField: field2,

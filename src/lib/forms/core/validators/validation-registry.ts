@@ -67,34 +67,72 @@ class RegistrationContext {
  * Каждый экземпляр GroupNode создает собственный реестр (композиция).
  * Устраняет race conditions и изолирует формы друг от друга.
  *
+ * Context stack используется для tracking текущего активного реестра:
+ * - beginRegistration() помещает this в global stack
+ * - endRegistration() извлекает из global stack
+ * - getCurrent() возвращает текущий активный реестр
+ *
  * @example
  * ```typescript
  * class GroupNode {
  *   private readonly validationRegistry = new ValidationRegistryClass();
  *
  *   applyValidationSchema(schemaFn) {
- *     this.validationRegistry.beginRegistration();
- *     schemaFn(createFieldPath(this, this.validationRegistry));
- *     this.validationRegistry.endRegistration(this);
+ *     this.validationRegistry.beginRegistration(); // Pushes this to global stack
+ *     schemaFn(createFieldPath(this));             // Uses getCurrent()
+ *     this.validationRegistry.endRegistration(this); // Pops from global stack
  *   }
  * }
  * ```
  */
 export class ValidationRegistryClass {
+  /**
+   * Global stack активных реестров
+   * Используется для изоляции форм друг от друга
+   */
+  private static registryStack: ValidationRegistryClass[] = [];
+
   private contextStack: RegistrationContext[] = [];
   private validators: ValidatorRegistration[] = [];
 
   /**
+   * Получить текущий активный реестр из global stack
+   *
+   * @returns Текущий активный реестр или null
+   *
+   * @example
+   * ```typescript
+   * // В schema-validators.ts
+   * export function required(...) {
+   *   const registry = ValidationRegistryClass.getCurrent();
+   *   if (registry) {
+   *     registry.registerSync(...);
+   *   }
+   * }
+   * ```
+   */
+  static getCurrent(): ValidationRegistryClass | null {
+    const stack = ValidationRegistryClass.registryStack;
+    return stack.length > 0 ? stack[stack.length - 1] : null;
+  }
+
+  /**
    * Начать регистрацию валидаторов для формы
+   *
+   * Помещает this в global stack для изоляции форм
    */
   beginRegistration(): RegistrationContext {
     const context = new RegistrationContext();
     this.contextStack.push(context);
+    // Помещаем this в global stack для tracking текущего активного реестра
+    ValidationRegistryClass.registryStack.push(this);
     return context;
   }
 
   /**
    * Завершить регистрацию и применить валидаторы к GroupNode
+   *
+   * Извлекает this из global stack
    *
    * Сохраняет валидаторы в локальном состоянии (this.validators) вместо глобального WeakMap.
    */
@@ -102,6 +140,15 @@ export class ValidationRegistryClass {
     const context = this.contextStack.pop();
     if (!context) {
       throw new Error('No active registration context');
+    }
+
+    // Извлекаем из global stack
+    const popped = ValidationRegistryClass.registryStack.pop();
+    if (popped !== this && import.meta.env.DEV) {
+      console.warn(
+        'ValidationRegistry: Global stack mismatch. Expected this, got:',
+        popped
+      );
     }
 
     // Сохраняем валидаторы в локальном состоянии
@@ -117,12 +164,24 @@ export class ValidationRegistryClass {
   /**
    * Отменить регистрацию без применения валидаторов
    * Используется для временной валидации (например, в validateForm)
+   *
+   * Извлекает this из global stack
    */
   cancelRegistration(): void {
     const context = this.contextStack.pop();
     if (!context) {
       throw new Error('No active registration context to cancel');
     }
+
+    // Извлекаем из global stack
+    const popped = ValidationRegistryClass.registryStack.pop();
+    if (popped !== this && import.meta.env.DEV) {
+      console.warn(
+        'ValidationRegistry: Global stack mismatch on cancel. Expected this, got:',
+        popped
+      );
+    }
+
     // Просто выбрасываем контекст без сохранения
   }
 
