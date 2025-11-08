@@ -11,9 +11,25 @@ import type { BehaviorRegistration } from './types';
 import { BehaviorContextImpl } from './behavior-context';
 
 /**
- * Singleton класс для управления behavior регистрациями
+ * Реестр behaviors для формы
+ *
+ * Каждый экземпляр GroupNode создает собственный реестр (композиция).
+ * Устраняет race conditions и изолирует формы друг от друга.
+ *
+ * @example
+ * ```typescript
+ * class GroupNode {
+ *   private readonly behaviorRegistry = new BehaviorRegistryClass();
+ *
+ *   applyBehaviorSchema(schemaFn) {
+ *     this.behaviorRegistry.beginRegistration();
+ *     schemaFn(createBehaviorFieldPath(this));
+ *     return this.behaviorRegistry.endRegistration(this);
+ *   }
+ * }
+ * ```
  */
-class BehaviorRegistryClass {
+export class BehaviorRegistryClass {
   private registrations: BehaviorRegistration[] = [];
   private isRegistering = false;
 
@@ -491,6 +507,20 @@ class BehaviorRegistryClass {
 }
 
 /**
- * Singleton экземпляр BehaviorRegistry
+ * Глобальный экземпляр для обратной совместимости (deprecated)
+ *
+ * @deprecated Используйте локальный экземпляр в GroupNode вместо глобального.
+ * Этот экземпляр будет удален в следующей версии.
+ *
+ * @example
+ * ```typescript
+ * // ❌ Старый способ (deprecated)
+ * BehaviorRegistry.beginRegistration();
+ *
+ * // ✅ Новый способ (рекомендуется)
+ * class GroupNode {
+ *   private readonly behaviorRegistry = new BehaviorRegistryClass();
+ * }
+ * ```
  */
 export const BehaviorRegistry = new BehaviorRegistryClass();

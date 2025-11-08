@@ -62,11 +62,27 @@ class RegistrationContext {
 }
 
 /**
- * Глобальный реестр валидаторов
+ * Реестр валидаторов для формы
+ *
+ * Каждый экземпляр GroupNode создает собственный реестр (композиция).
+ * Устраняет race conditions и изолирует формы друг от друга.
+ *
+ * @example
+ * ```typescript
+ * class GroupNode {
+ *   private readonly validationRegistry = new ValidationRegistryClass();
+ *
+ *   applyValidationSchema(schemaFn) {
+ *     this.validationRegistry.beginRegistration();
+ *     schemaFn(createFieldPath(this, this.validationRegistry));
+ *     this.validationRegistry.endRegistration(this);
+ *   }
+ * }
+ * ```
  */
-class ValidationRegistryClass {
+export class ValidationRegistryClass {
   private contextStack: RegistrationContext[] = [];
-  private formStoreMap = new WeakMap<GroupNode<any>, ValidatorRegistration[]>();
+  private validators: ValidatorRegistration[] = [];
 
   /**
    * Начать регистрацию валидаторов для формы
@@ -79,6 +95,8 @@ class ValidationRegistryClass {
 
   /**
    * Завершить регистрацию и применить валидаторы к GroupNode
+   *
+   * Сохраняет валидаторы в локальном состоянии (this.validators) вместо глобального WeakMap.
    */
   endRegistration<T>(form: GroupNode<T>): void {
     const context = this.contextStack.pop();
@@ -86,14 +104,14 @@ class ValidationRegistryClass {
       throw new Error('No active registration context');
     }
 
-    const validators = context.getValidators();
-    this.formStoreMap.set(form, validators);
+    // Сохраняем валидаторы в локальном состоянии
+    this.validators = context.getValidators();
 
     // Применяем валидаторы к полям
-    this.applyValidators(form, validators);
+    this.applyValidators(form, this.validators);
 
     // Применяем array-items validators к ArrayNode элементам
-    this.applyArrayItemValidators(form, validators);
+    this.applyArrayItemValidators(form, this.validators);
   }
 
   /**
@@ -238,10 +256,12 @@ class ValidationRegistryClass {
   }
 
   /**
-   * Получить зарегистрированные валидаторы для GroupNode
+   * Получить зарегистрированные валидаторы для этого реестра
+   *
+   * Возвращает локальный массив валидаторов (без аргумента form).
    */
-  getValidators<T>(form: GroupNode<T>): ValidatorRegistration[] | undefined {
-    return this.formStoreMap.get(form);
+  getValidators(): ValidatorRegistration[] {
+    return this.validators;
   }
 
   /**
@@ -263,7 +283,7 @@ class ValidationRegistryClass {
       validatorsByField.set(registration.fieldPath, existing);
     }
 
-    // Валидаторы сохранены в formStoreMap
+    // Валидаторы сохранены в локальном массиве this.validators
     // Они будут применяться при вызове GroupNode.validate()
     if (import.meta.env.DEV) {
       console.log(`Registered ${validators.length} validators for GroupNode`);
@@ -301,6 +321,20 @@ class ValidationRegistryClass {
 }
 
 /**
- * Синглтон реестра валидаторов
+ * Глобальный экземпляр для обратной совместимости (deprecated)
+ *
+ * @deprecated Используйте локальный экземпляр в GroupNode вместо глобального.
+ * Этот экземпляр будет удален в следующей версии.
+ *
+ * @example
+ * ```typescript
+ * // ❌ Старый способ (deprecated)
+ * ValidationRegistry.beginRegistration();
+ *
+ * // ✅ Новый способ (рекомендуется)
+ * class GroupNode {
+ *   private readonly validationRegistry = new ValidationRegistryClass();
+ * }
+ * ```
  */
 export const ValidationRegistry = new ValidationRegistryClass();
