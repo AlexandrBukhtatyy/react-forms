@@ -8,8 +8,8 @@
 export type {
   BehaviorSchemaFn,
   BehaviorContext,
-  BehaviorType,
-  BehaviorRegistration,
+  BehaviorHandlerFn,
+  BehaviorOptions,
   CopyFromOptions,
   EnableWhenOptions,
   ComputeFromOptions,

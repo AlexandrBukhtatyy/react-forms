@@ -5,9 +5,18 @@
  */
 
 import type { GroupNode } from '../nodes/group-node';
-import type { BehaviorRegistration } from './types';
+import type { BehaviorHandlerFn, BehaviorOptions } from './types';
 import { BehaviorContextImpl } from './behavior-context';
-import { behaviorHandlers } from './behavior-handlers';
+
+/**
+ * Зарегистрированный behavior с опциями
+ */
+interface RegisteredBehavior<T> {
+  /** Handler функция behavior */
+  handler: BehaviorHandlerFn<T>;
+  /** Debounce в миллисекундах */
+  debounce?: number;
+}
 
 /**
  * Реестр behaviors для формы
@@ -40,7 +49,7 @@ export class BehaviorRegistry {
    */
   private static contextStack: BehaviorRegistry[] = [];
 
-  private registrations: BehaviorRegistration[] = [];
+  private registrations: RegisteredBehavior<any>[] = [];
   private isRegistering = false;
 
   /**
@@ -78,10 +87,19 @@ export class BehaviorRegistry {
   }
 
   /**
-   * Зарегистрировать behavior
+   * Зарегистрировать behavior handler
    * Вызывается функциями из schema-behaviors.ts
+   *
+   * @param handler - BehaviorHandlerFn функция
+   * @param options - Опции behavior (debounce)
+   *
+   * @example
+   * ```typescript
+   * const handler = createCopyBehavior(target, source, { when: ... });
+   * registry.register(handler, { debounce: 300 });
+   * ```
    */
-  register(registration: BehaviorRegistration): void {
+  register(handler: BehaviorHandlerFn, options?: BehaviorOptions): void {
     if (!this.isRegistering) {
       if (import.meta.env.DEV) {
         throw new Error(
@@ -91,7 +109,10 @@ export class BehaviorRegistry {
       return;
     }
 
-    this.registrations.push(registration);
+    this.registrations.push({
+      handler,
+      debounce: options?.debounce,
+    });
   }
 
   /**
@@ -101,11 +122,11 @@ export class BehaviorRegistry {
    * Извлекает this из context stack
    *
    * @param form - GroupNode формы
-   * @returns Массив зарегистрированных behaviors и функция cleanup
+   * @returns Количество зарегистрированных behaviors и функция cleanup
    */
   endRegistration<T>(
     form: GroupNode<T>
-  ): { behaviors: BehaviorRegistration[]; cleanup: () => void } {
+  ): { count: number; cleanup: () => void } {
     this.isRegistering = false;
 
     // Извлекаем из stack
@@ -121,8 +142,8 @@ export class BehaviorRegistry {
     const disposeCallbacks: Array<() => void> = [];
 
     // Создаем effect подписки для каждого behavior
-    for (const registration of this.registrations) {
-      const dispose = this.createEffect(registration, form, context);
+    for (const registered of this.registrations) {
+      const dispose = this.createEffect(registered, form, context);
       if (dispose) {
         disposeCallbacks.push(dispose);
       }
@@ -134,7 +155,7 @@ export class BehaviorRegistry {
     };
 
     return {
-      behaviors: [...this.registrations],
+      count: this.registrations.length,
       cleanup,
     };
   }
@@ -144,11 +165,11 @@ export class BehaviorRegistry {
    * @private
    */
   private createEffect<T>(
-    registration: BehaviorRegistration<T>,
+    registered: RegisteredBehavior<T>,
     form: GroupNode<T>,
     context: BehaviorContextImpl<T>
   ): (() => void) | null {
-    const { type, debounce: debounceMs = 0 } = registration;
+    const { handler, debounce: debounceMs = 0 } = registered;
 
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -162,7 +183,7 @@ export class BehaviorRegistry {
       }
     };
 
-    // ✅ ИСПРАВЛЕНИЕ: Cleanup функция для debounce таймера
+    // Cleanup функция для debounce таймера
     const cleanupDebounce = () => {
       if (debounceTimer) {
         clearTimeout(debounceTimer);
@@ -170,21 +191,14 @@ export class BehaviorRegistry {
       }
     };
 
-    // Создаем effect в зависимости от типа используя lookup table
-    let effectDispose: (() => void) | null = null;
-
-    const handler = behaviorHandlers[type];
-    if (handler) {
-      effectDispose = handler(registration, form, context, withDebounce);
-    } else if (import.meta.env.DEV) {
-      console.warn(`Unknown behavior type: ${type}`);
-    }
+    // Вызываем handler напрямую
+    const effectDispose = handler(form, context, withDebounce);
 
     if (!effectDispose) {
       return null;
     }
 
-    // ✅ ИСПРАВЛЕНИЕ: Возвращаем комбинированный cleanup
+    // Возвращаем комбинированный cleanup
     // который очищает и effect, и debounce таймер
     return () => {
       cleanupDebounce();

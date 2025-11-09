@@ -67,7 +67,8 @@ export function getCurrentValidationRegistry(): ValidationRegistry {
  * ```typescript
  * function copyFrom(target, source, options) {
  *   const registry = getCurrentBehaviorRegistry();
- *   registry.register({ type: BehaviorTypes.copy, ... });
+ *   const handler = createCopyBehavior(target, source, options);
+ *   registry.register(handler, { debounce: options?.debounce });
  * }
  * ```
  */

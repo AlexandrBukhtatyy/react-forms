@@ -6,16 +6,24 @@
 
 import type { FieldPathNode } from '../types';
 import { getCurrentBehaviorRegistry } from '../utils/registry-helpers';
-import {
-  type BehaviorContext,
-  type CopyFromOptions,
-  type EnableWhenOptions,
-  type ComputeFromOptions,
-  type WatchFieldOptions,
-  type RevalidateWhenOptions,
-  type SyncFieldsOptions,
-  BehaviorTypes,
+import type {
+  BehaviorContext,
+  CopyFromOptions,
+  EnableWhenOptions,
+  ComputeFromOptions,
+  WatchFieldOptions,
+  RevalidateWhenOptions,
+  SyncFieldsOptions,
 } from './types';
+import {
+  createCopyBehavior,
+  createEnableBehavior,
+  createShowBehavior,
+  createComputeBehavior,
+  createWatchBehavior,
+  createRevalidateBehavior,
+  createSyncBehavior,
+} from './behavior-factories';
 
 // ============================================================================
 // copyFrom - Копирование значений между полями
@@ -44,22 +52,10 @@ export function copyFrom<TForm, TSource, TTarget>(
   source: FieldPathNode<TForm, TSource>,
   options?: CopyFromOptions<TForm, TSource>
 ): void {
-  const {
-    when,
-    fields = 'all',
-    transform,
-    debounce = 0,
-  } = options || {};
+  const { debounce } = options || {};
 
-  getCurrentBehaviorRegistry().register({
-    type: BehaviorTypes.copy,
-    sourceField: source,
-    targetField: target,
-    condition: when,
-    fields: fields === 'all' ? 'all' : (fields as string[]),
-    transform,
-    debounce,
-  });
+  const handler = createCopyBehavior(target, source, options);
+  getCurrentBehaviorRegistry().register(handler, { debounce });
 }
 
 // ============================================================================
@@ -88,15 +84,10 @@ export function enableWhen<TForm>(
   condition: (form: TForm) => boolean,
   options?: EnableWhenOptions
 ): void {
-  const { resetOnDisable = false, debounce = 0 } = options || {};
+  const { debounce } = options || {};
 
-  getCurrentBehaviorRegistry().register({
-    type: BehaviorTypes.enable,
-    targetField: field,
-    condition,
-    resetOnDisable,
-    debounce,
-  });
+  const handler = createEnableBehavior(field, condition, options);
+  getCurrentBehaviorRegistry().register(handler, { debounce });
 }
 
 /**
@@ -149,11 +140,8 @@ export function showWhen<TForm>(
   field: FieldPathNode<TForm, any>,
   condition: (form: TForm) => boolean
 ): void {
-  getCurrentBehaviorRegistry().register({
-    type: BehaviorTypes.show,
-    targetField: field,
-    condition,
-  });
+  const handler = createShowBehavior(field, condition);
+  getCurrentBehaviorRegistry().register(handler);
 }
 
 /**
@@ -201,11 +189,7 @@ export function computeFrom<TForm, TTarget>(
   computeFn: (values: Record<string, any>) => TTarget,
   options?: ComputeFromOptions<TForm>
 ): void {
-  const {
-    trigger = 'change',
-    debounce = 0,
-    condition,
-  } = options || {};
+  const { debounce } = options || {};
 
   // Обертка для computeFn, которая преобразует массив значений в объект
   const wrappedComputeFn = (...values: any[]) => {
@@ -218,15 +202,8 @@ export function computeFrom<TForm, TTarget>(
     return computeFn(valuesObj);
   };
 
-  getCurrentBehaviorRegistry().register({
-    type: BehaviorTypes.compute,
-    targetField: target,
-    sourceFields: sources,
-    computeFn: wrappedComputeFn,
-    trigger,
-    debounce,
-    condition,
-  });
+  const handler = createComputeBehavior(target, sources, wrappedComputeFn, options);
+  getCurrentBehaviorRegistry().register(handler, { debounce });
 }
 
 // ============================================================================
@@ -260,15 +237,10 @@ export function watchField<TForm, TField>(
   callback: (value: TField, ctx: BehaviorContext<TForm>) => void | Promise<void>,
   options?: WatchFieldOptions
 ): void {
-  const { debounce = 0, immediate = false } = options || {};
+  const { debounce } = options || {};
 
-  getCurrentBehaviorRegistry().register({
-    type: BehaviorTypes.watch,
-    sourceField: field,
-    callback: callback as any,
-    debounce,
-    immediate,
-  });
+  const handler = createWatchBehavior(field, callback, options);
+  getCurrentBehaviorRegistry().register(handler, { debounce });
 }
 
 // ============================================================================
@@ -297,14 +269,10 @@ export function revalidateWhen<TForm>(
   triggers: FieldPathNode<TForm, any>[],
   options?: RevalidateWhenOptions
 ): void {
-  const { debounce = 0 } = options || {};
+  const { debounce } = options || {};
 
-  getCurrentBehaviorRegistry().register({
-    type: BehaviorTypes.revalidate,
-    targetField: target,
-    sourceFields: triggers,
-    debounce,
-  });
+  const handler = createRevalidateBehavior(target, triggers, options);
+  getCurrentBehaviorRegistry().register(handler, { debounce });
 }
 
 // ============================================================================
@@ -331,13 +299,8 @@ export function syncFields<TForm, T>(
   field2: FieldPathNode<TForm, T>,
   options?: SyncFieldsOptions<T>
 ): void {
-  const { transform, debounce = 0 } = options || {};
+  const { debounce } = options || {};
 
-  getCurrentBehaviorRegistry().register({
-    type: BehaviorTypes.sync,
-    sourceField: field1,
-    targetField: field2,
-    transform,
-    debounce,
-  });
+  const handler = createSyncBehavior(field1, field2, options);
+  getCurrentBehaviorRegistry().register(handler, { debounce });
 }
