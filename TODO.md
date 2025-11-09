@@ -1,8 +1,10 @@
 
 - Довести рефакторинг
     - Мы поменяли core нужно теперь поправить дургой код = `Проанализируй код в каталоге src\lib\forms и предложи как его можно упростить и сократить`
-    - Можно ли избавиться от BehaviorRegistration и BehaviorType а так же функций Отсавить только BehaviorHandler ?
+    - Можно ли избавиться от BehaviorRegistration и BehaviorType а так же функций Отсавить только BehaviorHandler? 
+        Пример `getCurrentRegistry().register(() => {...}, {...options})`
 - Провести анализ того что осталось и возможно удалить лишнее
+- Исправь ошибки сборки
 - Пофиксить баг -- `fieldPath: "__path.monthlyIncome"`
 - i18n npm install react-i18next i18next --save
 - #14: Добавить метод getErrors() с фильтрацией

@@ -22,9 +22,9 @@ import { BehaviorContextImpl } from './behavior-context';
  * @returns Функция cleanup для отписки от effect или null
  */
 export type BehaviorHandler<T = any> = (
-  registration: BehaviorRegistration<T>,
+  _registration: BehaviorRegistration<T>,
   form: GroupNode<T>,
-  context: BehaviorContextImpl<T>,
+  _context: BehaviorContextImpl<T>,
   withDebounce: (callback: () => void) => void
 ) => (() => void) | null;
 

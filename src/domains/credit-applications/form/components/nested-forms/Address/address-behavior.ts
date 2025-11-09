@@ -16,7 +16,8 @@ import type { FieldPath } from '@/lib/forms/core/types';
 
 // API функции (заглушки, т.к. в примере они импортируются из domain API)
 // В реальном приложении эти функции будут в domains/credit-applications/api
-const fetchRegions = async (country: string): Promise<string[]> => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _fetchRegions = async (country: string): Promise<string[]> => {
   console.log('Fetching regions for country:', country);
   return ['Москва', 'Московская область', 'Санкт-Петербург'];
 };
@@ -71,7 +72,7 @@ export const addressBehavior: BehaviorSchemaFn<Address> = (
   // ===================================================================
 
   // Очистить город при изменении региона
-  watchField(path.region, (region, ctx) => {
+  watchField(path.region, (_region, ctx) => {
     // Очищаем город только если регион изменился
     ctx.setField('city', '');
 

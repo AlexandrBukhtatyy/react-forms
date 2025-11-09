@@ -10,6 +10,14 @@ export type {
   FieldConfig,
 } from './core/types';
 
+// Validation Schema types
+export type {
+  ValidationContext,
+  TreeValidationContext,
+  ContextualValidatorFn,
+  ContextualAsyncValidatorFn,
+} from './core/types/validation-schema';
+
 // Variant 5 types
 export type {
   FormSchema,

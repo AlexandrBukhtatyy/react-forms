@@ -2,8 +2,9 @@
  * Функции валидации для validation schema
  */
 
-import { ValidationRegistry } from './validation-registry';
 import { extractPath, createFieldPath } from './field-path';
+import type { FieldPath } from '../types/field-path';
+import { getCurrentValidationRegistry } from '../utils/registry-helpers';
 import type {
   ContextualValidatorFn,
   ContextualAsyncValidatorFn,
@@ -14,30 +15,6 @@ import type {
   ValidateTreeOptions,
 } from '../types/validation-schema';
 import type { FieldPathNode } from '../types';
-
-/**
- * Helper: получить текущий активный реестр или выбросить ошибку
- * @private
- */
-function getCurrentRegistry(): ValidationRegistry {
-  const registry = ValidationRegistry.getCurrent();
-  if (!registry) {
-    if (import.meta.env.DEV) {
-      throw new Error(
-        'No active ValidationRegistry context. Make sure to call beginRegistration() before using validation functions.'
-      );
-    }
-    // В production возвращаем заглушку
-    return {
-      registerSync: () => {},
-      registerAsync: () => {},
-      registerTree: () => {},
-      enterCondition: () => {},
-      exitCondition: () => {},
-    } as any;
-  }
-  return registry;
-}
 
 // ============================================================================
 // validate - Кастомная валидация поля
@@ -71,7 +48,7 @@ export function validate<TForm = any, TField = any>(
 ): void {
   if (!fieldPath) return; // Защита от undefined fieldPath
   const path = extractPath(fieldPath as any);
-  getCurrentRegistry().registerSync(path, validatorFn, options);
+  getCurrentValidationRegistry().registerSync(path, validatorFn, options);
 }
 
 // ============================================================================
@@ -114,7 +91,7 @@ export function validateAsync<TForm = any, TField = any>(
   options?: ValidateAsyncOptions
 ): void {
   const path = extractPath(fieldPath);
-  getCurrentRegistry().registerAsync(path, validatorFn, options);
+  getCurrentValidationRegistry().registerAsync(path, validatorFn, options);
 }
 
 // ============================================================================
@@ -149,7 +126,7 @@ export function validateTree<TForm = any>(
   validatorFn: TreeValidatorFn<TForm>,
   options?: ValidateTreeOptions
 ): void {
-  getCurrentRegistry().registerTree(validatorFn, options);
+  getCurrentValidationRegistry().registerTree(validatorFn, options);
 }
 
 // ============================================================================
@@ -179,7 +156,7 @@ export function applyWhen<TForm = any, TField = any>(
   const path = extractPath(fieldPath);
 
   // Входим в условный блок
-  getCurrentRegistry().enterCondition(path, condition);
+  getCurrentValidationRegistry().enterCondition(path, condition);
 
   try {
     // Выполняем вложенную валидацию
@@ -188,7 +165,7 @@ export function applyWhen<TForm = any, TField = any>(
     validationFn(nestedPath);
   } finally {
     // Выходим из условного блока
-    getCurrentRegistry().exitCondition();
+    getCurrentValidationRegistry().exitCondition();
   }
 }
 

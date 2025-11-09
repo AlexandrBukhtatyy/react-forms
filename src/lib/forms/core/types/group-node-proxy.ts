@@ -27,9 +27,13 @@
  * ```
  */
 
-import type { FieldNode } from '../core/nodes/field-node';
-import type { GroupNode } from '../core/nodes/group-node';
-import type { ArrayNode } from '../core/nodes/array-node';
+// Forward declarations для избежания циклических зависимостей
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FieldNode<T = any> = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GroupNode<T = any> = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ArrayNode<T = any> = any;
 
 /**
  * Мапит тип модели данных T на правильные типы узлов формы

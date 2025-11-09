@@ -281,7 +281,7 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
     return results.every(Boolean);
   }
 
-  setErrors(errors: ValidationError[]): void {
+  setErrors(_errors: ValidationError[]): void {
     // ArrayNode level errors - можно реализовать позже
     // Пока просто игнорируем
   }
@@ -560,7 +560,7 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
    */
   dispose(): void {
     // Очищаем все subscriptions через SubscriptionManager
-    this.disposers.unsubscribeAll();
+    this.disposers.dispose();
 
     // Очищаем элементы массива
     this.items.value.forEach((item) => {

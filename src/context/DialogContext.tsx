@@ -1,6 +1,6 @@
 // DialogContext.tsx
 import React, { createContext, useState, useCallback, useContext, type ReactNode, type ComponentType } from "react";
-import { Dialog, DialogContent, DialogHeader } from "@/lib/ui/dialog";
+import { Dialog, DialogContent } from "@/lib/ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
 
 type DialogState = {

@@ -8,10 +8,14 @@
  * - Асинхронная валидация с контекстом
  */
 
-import type { GroupNode } from '../core/nodes/group-node';
-import type { FieldNode } from '../core/nodes/field-node';
 import type { ValidationError } from './index';
 import type { FieldPath } from './field-path';
+
+// Forward declarations для избежания циклических зависимостей
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GroupNode<T = any> = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FieldNode<T = any> = any;
 
 // ============================================================================
 // Контекст валидации

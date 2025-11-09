@@ -582,90 +582,39 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       return undefined;
     }
 
-    const parts = this.parsePathWithArrays(path);
-    if (parts.length === 0) {
+    // ✅ Используем FieldPathNavigator вместо ручного парсинга
+    const segments = this.pathNavigator.parsePath(path);
+    if (segments.length === 0) {
       return undefined;
     }
 
     let current: FormNode<any> = this;
 
-    for (const part of parts) {
-      // Проверяем, является ли это array access (например, "items[0]")
-      const arrayMatch = part.match(/^(.+)\[(\d+)\]$/);
+    for (const segment of segments) {
+      // Доступ к полю
+      if (!(current instanceof GroupNode)) {
+        return undefined;
+      }
 
-      if (arrayMatch) {
-        // Array access: "items[0]"
-        const [, fieldName, indexStr] = arrayMatch;
-        const index = parseInt(indexStr, 10);
+      current = current.fields.get(segment.key as any);
+      if (!current) return undefined;
 
-        // Сначала получаем поле (ArrayNode) через fields.get
-        if (!(current instanceof GroupNode)) {
-          return undefined;
-        }
-
-        const arrayField = current.fields.get(fieldName as any);
-        if (!arrayField) return undefined;
-
-        // Затем получаем элемент по индексу
+      // Если есть индекс, получаем элемент массива
+      if (segment.index !== undefined) {
         // Используем duck typing вместо instanceof из-за circular dependency
-        if ('at' in arrayField && 'length' in arrayField && typeof (arrayField as any).at === 'function') {
-          const item = (arrayField as any).at(index);
+        if ('at' in current && 'length' in current && typeof (current as any).at === 'function') {
+          const item = (current as any).at(segment.index);
           if (!item) return undefined;
           current = item;
         } else {
           return undefined;
         }
-      } else {
-        // Regular field access
-        if (!(current instanceof GroupNode)) {
-          return undefined;
-        }
-
-        current = current.fields.get(part as any);
-        if (!current) return undefined;
       }
     }
 
     return current;
   }
 
-  /**
-   * Парсит путь с учетом array notation
-   * @private
-   * @example
-   * parsePathWithArrays("items[0].name") => ["items[0]", "name"]
-   * parsePathWithArrays("address.city") => ["address", "city"]
-   */
-  private parsePathWithArrays(path: string): string[] {
-    const parts: string[] = [];
-    let currentPart = '';
-    let inBrackets = false;
-
-    for (let i = 0; i < path.length; i++) {
-      const char = path[i];
-
-      if (char === '[') {
-        inBrackets = true;
-        currentPart += char;
-      } else if (char === ']') {
-        inBrackets = false;
-        currentPart += char;
-      } else if (char === '.' && !inBrackets) {
-        if (currentPart) {
-          parts.push(currentPart);
-          currentPart = '';
-        }
-      } else {
-        currentPart += char;
-      }
-    }
-
-    if (currentPart) {
-      parts.push(currentPart);
-    }
-
-    return parts;
-  }
 
   /**
    * Применить contextual валидаторы к полям
@@ -1001,7 +950,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    */
   dispose(): void {
     // Очищаем все subscriptions через SubscriptionManager
-    this.disposers.unsubscribeAll();
+    this.disposers.dispose();
 
     // Рекурсивно очищаем дочерние узлы
     this.fields.forEach((field) => {

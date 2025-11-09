@@ -22,14 +22,14 @@ export interface BehaviorContext<TForm> {
    * Получить значение поля по строковому пути
    * @param path - Путь к полю (например, "address.city")
    */
-  getField<K extends keyof TForm>(path: string): any;
+  getField<_K extends keyof TForm>(path: string): any;
 
   /**
    * Установить значение поля по строковому пути
    * @param path - Путь к полю
    * @param value - Новое значение
    */
-  setField<K extends keyof TForm>(path: string, value: any): void;
+  setField<_K extends keyof TForm>(path: string, value: any): void;
 
   /**
    * Обновить componentProps поля
@@ -89,66 +89,42 @@ export interface BehaviorContext<TForm> {
 }
 
 /**
- * Тип behavior регистрации
+ * Функция-handler для behavior
+ *
+ * Создает effect подписку для реактивного поведения формы.
+ *
+ * @template TForm - Тип формы
+ * @param form - Корневой узел формы (GroupNode)
+ * @param context - Контекст для работы с формой
+ * @param withDebounce - Функция-обертка для debounce
+ * @returns Функция cleanup для отписки от effect или null
+ *
+ * @example
+ * ```typescript
+ * const handler: BehaviorHandlerFn<MyForm> = (form, context, withDebounce) => {
+ *   const sourceNode = form.getFieldByPath('email');
+ *
+ *   return effect(() => {
+ *     const value = sourceNode.value.value;
+ *     withDebounce(() => {
+ *       // Логика behavior
+ *     });
+ *   });
+ * };
+ * ```
  */
-export type BehaviorType =
-  | 'copy' // Копирование значений между полями
-  | 'enable' // Условное enable/disable
-  | 'show' // Условное show/hide
-  | 'compute' // Вычисляемые поля
-  | 'watch' // Подписка на изменения
-  | 'revalidate' // Перевалидация при изменении
-  | 'sync'; // Двусторонняя синхронизация
+export type BehaviorHandlerFn<TForm = any> = (
+  form: import('../nodes/group-node').GroupNode<TForm>,
+  context: BehaviorContext<TForm>,
+  withDebounce: (callback: () => void) => void
+) => (() => void) | null;
 
 /**
- * Регистрация behavior в реестре
+ * Общие опции для behavior
  */
-export interface BehaviorRegistration<TForm = any> {
-  /** Тип поведения */
-  type: BehaviorType;
-
-  /** Поле-источник (для copy, compute, watch) */
-  sourceField?: FieldPathNode<TForm, any>;
-
-  /** Поля-источники (для compute) */
-  sourceFields?: FieldPathNode<TForm, any>[];
-
-  /** Поле-цель (для copy, enable, show, compute) */
-  targetField?: FieldPathNode<TForm, any>;
-
-  /** Условие применения */
-  condition?: (form: TForm) => boolean;
-
-  /** Callback функция */
-  callback?: (
-    value: any,
-    node: FormNode<any> | undefined,
-    context: BehaviorContext<TForm>
-  ) => void | Promise<void>;
-
-  /** Функция вычисления (для compute) */
-  computeFn?: (...values: any[]) => any;
-
-  /** Функция трансформации (для copy) */
-  transform?: (value: any) => any;
-
-  /** Поля для копирования (для copy групп) */
-  fields?: string[] | 'all';
-
+export interface BehaviorOptions {
   /** Debounce в миллисекундах */
   debounce?: number;
-
-  /** Вызвать сразу при инициализации (для watch) */
-  immediate?: boolean;
-
-  /** Сбросить значение при disable (для enable) */
-  resetOnDisable?: boolean;
-
-  /** Триггер для вычислений (для compute) */
-  trigger?: 'change' | 'blur';
-
-  /** Дополнительные опции */
-  options?: Record<string, any>;
 }
 
 /**

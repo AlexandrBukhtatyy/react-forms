@@ -131,8 +131,8 @@ src/lib/forms/
 - Не меняй публичное API без обсуждения
 
 ### ✅ ВСЕГДА делай:
-- Используй `ValidationRegistryClass.getCurrent()` для доступа к реестру
-- Используй `BehaviorRegistryClass.getCurrent()` для доступа к реестру
+- Используй `ValidationRegistry.getCurrent()` для доступа к реестру
+- Используй `BehaviorRegistry.getCurrent()` для доступа к реестру
 - Добавляй JSDoc на русском языке
 - Проверяй `npm run build` перед завершением
 - Обновляй документацию при изменении API

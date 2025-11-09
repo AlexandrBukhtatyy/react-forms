@@ -65,7 +65,7 @@ function createFieldPathProxy<T>(basePath: string): any {
 
       // Создаем прокси, который содержит и метаинформацию, и позволяет дальнейшую навигацию
       return new Proxy(node, {
-        get(nodeTarget, nodeProp: string | symbol) {
+        get(_nodeTarget, nodeProp: string | symbol) {
           if (typeof nodeProp === 'symbol') {
             return undefined;
           }

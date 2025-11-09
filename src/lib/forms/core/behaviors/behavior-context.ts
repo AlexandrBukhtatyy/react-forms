@@ -31,7 +31,7 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
    * Получить значение поля по строковому пути
    * Поддерживает вложенные пути: "address.city"
    */
-  getField<K extends keyof TForm>(path: string): any {
+  getField<_K extends keyof TForm>(path: string): any {
     const node = this.resolveFieldNode(path);
     return node?.value.value;
   }
@@ -40,7 +40,7 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
    * Установить значение поля по строковому пути
    * Использует emitEvent: false для избежания циклов
    */
-  setField<K extends keyof TForm>(path: string, value: any): void {
+  setField<_K extends keyof TForm>(path: string, value: any): void {
     const node = this.resolveFieldNode(path);
     if (node) {
       node.setValue(value, { emitEvent: false });
@@ -110,6 +110,9 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
   /**
    * Разрешить FieldPathNode или строковый путь в FormNode
    * @private
+   *
+   * ✅ Использует GroupNode.getFieldByPath для правильного парсинга путей
+   * Поддерживает вложенные пути и массивы: "address.city", "items[0].name"
    */
   private resolveFieldNode(
     pathOrNode: string | FieldPathNode<TForm, any>
@@ -119,18 +122,8 @@ export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
 
     if (!fieldPath) return undefined;
 
-    const parts = fieldPath.split('.');
-    let current: any = this.form;
-
-    for (const part of parts) {
-      if (current && 'fields' in current && current.fields) {
-        current = current.fields.get(part);
-        if (!current) return undefined;
-      } else {
-        return undefined;
-      }
-    }
-
-    return current as FormNode<any>;
+    // ✅ Используем getFieldByPath вместо ручного парсинга
+    // getFieldByPath использует FieldPathNavigator внутри
+    return this.form.getFieldByPath(fieldPath);
   }
 }

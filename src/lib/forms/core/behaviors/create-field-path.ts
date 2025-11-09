@@ -34,7 +34,7 @@ function createFieldPathProxy<T>(
   return new Proxy(
     {},
     {
-      get(_target, prop: string) {
+      get(__target, prop: string) {
         // Поддержка обоих вариантов для обратной совместимости
         if (prop === '__path' || prop === '__fieldPath') {
           return currentPath || prop;
@@ -57,7 +57,7 @@ function createFieldPathProxy<T>(
 
         // Возвращаем Proxy, который поддерживает дальнейшую вложенность
         return new Proxy(node, {
-          get(target, nestedProp: string) {
+          get(_target, nestedProp: string) {
             // Поддержка обоих вариантов для обратной совместимости
             if (nestedProp === '__path' || nestedProp === '__fieldPath') {
               return newPath;

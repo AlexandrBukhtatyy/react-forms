@@ -580,7 +580,7 @@ export class FieldNode<T = any> extends FormNode<T> {
    */
   dispose(): void {
     // Очищаем все subscriptions через SubscriptionManager
-    this.disposers.unsubscribeAll();
+    this.disposers.dispose();
 
     // Очищаем debounce таймер если он есть
     if (this.validateDebounceTimer) {

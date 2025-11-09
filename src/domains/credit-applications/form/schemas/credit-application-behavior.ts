@@ -217,7 +217,7 @@ export const creditApplicationBehavior: BehaviorSchemaFn<CreditApplicationForm> 
   // ПРИМЕЧАНИЕ: Загрузка регионов/городов для адресов теперь в addressBehavior (композиция)
 
   // Загрузка моделей автомобилей при изменении марки
-  watchField(path.carBrand, async (value, ctx) => {
+  watchField(path.carBrand, async (value, _ctx) => {
     if (value) {
       const models = await fetchCarModels(value);
       console.log('Loaded car models:', models);
