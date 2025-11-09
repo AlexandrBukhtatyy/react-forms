@@ -21,7 +21,8 @@
       "Bash(npx tsx:*)",
       "Bash(npx vite:*)",
       "Bash(tee:*)",
-      "Bash(phase1-results.log)"
+      "Bash(phase1-results.log)",
+      "Bash(npx vitest:*)"
     ],
     "deny": [],
     "ask": []

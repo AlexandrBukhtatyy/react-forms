@@ -165,7 +165,77 @@
 - ~Исправь ошибки сборки~ ✅ ЗАВЕРШЕНО - все 92 ошибки TypeScript устранены!
 - Пофиксить баг -- `fieldPath: "__path.monthlyIncome"`
 - i18n npm install react-i18next i18next --save
-- #14: Добавить метод getErrors() с фильтрацией
+- ~#14: Добавить метод getErrors() с фильтрацией~ ✅ ЗАВЕРШЕНО
+
+### Task #14: Метод getErrors() с фильтрацией ✅ ЗАВЕРШЕНО (2025-11-10)
+
+**Реализация**:
+- ✅ Добавлен интерфейс `ErrorFilterOptions` в [types/index.ts](src/lib/forms/core/types/index.ts)
+- ✅ Добавлен метод `getErrors(options?: ErrorFilterOptions)` в [FormNode](src/lib/forms/core/nodes/form-node.ts)
+- ✅ Создан файл с comprehensive unit-тестами (40+ тестов)
+- ✅ Создан файл с примерами использования (8 сценариев)
+
+**Возможности метода**:
+1. **Фильтрация по коду ошибки** - одному или нескольким (`code: 'required'` или `code: ['required', 'email']`)
+2. **Фильтрация по сообщению** - частичное совпадение (`message: 'Password'`)
+3. **Фильтрация по параметрам** - точное совпадение ключ-значение (`params: { minLength: 8 }`)
+4. **Кастомный предикат** - гибкая фильтрация (`predicate: (err) => err.code.startsWith('custom_')`)
+5. **Комбинированные фильтры** - AND логика для всех фильтров
+6. **Без фильтров** - возвращает все ошибки (эквивалент `errors.value`)
+
+**Файлы**:
+- Интерфейс: [src/lib/forms/core/types/index.ts](src/lib/forms/core/types/index.ts)
+- Реализация: [src/lib/forms/core/nodes/form-node.ts:191-278](src/lib/forms/core/nodes/form-node.ts)
+- Тесты: [src/tests/unit/forms/core/form-node-get-errors.test.ts](src/tests/unit/forms/core/form-node-get-errors.test.ts)
+- Примеры: [src/examples/get-errors-example.ts](src/examples/get-errors-example.ts)
+
+**Примеры использования**:
+```typescript
+// Все ошибки
+const allErrors = form.getErrors();
+
+// Ошибки с конкретным кодом
+const requiredErrors = form.getErrors({ code: 'required' });
+
+// Ошибки с несколькими кодами
+const errors = form.getErrors({ code: ['required', 'email'] });
+
+// Ошибки по сообщению (частичное совпадение)
+const passwordErrors = form.getErrors({ message: 'Password' });
+
+// Ошибки по параметрам
+const minLength8 = form.getErrors({ params: { minLength: 8 } });
+
+// Кастомная фильтрация
+const customErrors = form.getErrors({
+  predicate: (err) => err.code.startsWith('custom_')
+});
+
+// Комбинированные фильтры (AND логика)
+const complexFilter = form.getErrors({
+  code: 'minLength',
+  message: 'Password',
+  params: { severity: 'high' },
+  predicate: (err) => (err.params?.minLength ?? 0) >= 8
+});
+```
+
+**Реальные сценарии применения**:
+1. Отображение ошибок в UI
+2. Проверка критичных ошибок перед отправкой формы
+3. Логирование ошибок валидации для аналитики
+4. Группировка ошибок по типу для удобного отображения
+5. Показ только первой ошибки каждого типа
+6. Разделение клиентских и серверных ошибок
+7. Фильтрация по severity level
+
+**Тестовое покрытие**:
+- 40+ unit-тестов
+- Тесты для FieldNode, GroupNode, и вложенных форм
+- Покрытие edge cases (пустые массивы, undefined params, case-sensitive filtering)
+- Тесты реальных сценариев использования
+
+**Статус**: ✅ Реализация завершена, все тесты пройдены, проект собирается без ошибок
 
 
 - Довести рефакторинг до конца

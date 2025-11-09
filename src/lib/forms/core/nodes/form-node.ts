@@ -10,7 +10,7 @@
  */
 
 import { signal, computed, type ReadonlySignal, type Signal } from '@preact/signals-react';
-import type { FieldStatus, ValidationError } from '../types';
+import type { FieldStatus, ValidationError, ErrorFilterOptions } from '../types';
 
 /**
  * Опции для setValue
@@ -187,6 +187,95 @@ export abstract class FormNode<T = any> {
    * Очистить ошибки валидации
    */
   abstract clearErrors(): void;
+
+  /**
+   * Получить ошибки валидации с фильтрацией
+   *
+   * Позволяет фильтровать ошибки по различным критериям:
+   * - По коду ошибки
+   * - По сообщению (частичное совпадение)
+   * - По параметрам
+   * - Через кастомный предикат
+   *
+   * Без параметров возвращает все ошибки (эквивалент errors.value)
+   *
+   * @param options - Опции фильтрации ошибок
+   * @returns Отфильтрованный массив ошибок валидации
+   *
+   * @example
+   * ```typescript
+   * // Все ошибки
+   * const allErrors = form.getErrors();
+   *
+   * // Ошибки с конкретным кодом
+   * const requiredErrors = form.getErrors({ code: 'required' });
+   *
+   * // Ошибки с несколькими кодами
+   * const errors = form.getErrors({ code: ['required', 'email'] });
+   *
+   * // Ошибки по сообщению
+   * const passwordErrors = form.getErrors({ message: 'Password' });
+   *
+   * // Ошибки по параметрам
+   * const minLengthErrors = form.getErrors({
+   *   params: { minLength: 8 }
+   * });
+   *
+   * // Кастомная фильтрация
+   * const customErrors = form.getErrors({
+   *   predicate: (err) => err.code.startsWith('custom_')
+   * });
+   * ```
+   */
+  getErrors(options?: ErrorFilterOptions): ValidationError[] {
+    const allErrors = this.errors.value;
+
+    // Без фильтрации - вернуть все ошибки
+    if (!options) {
+      return allErrors;
+    }
+
+    return allErrors.filter((error) => {
+      // Фильтр по коду
+      if (options.code !== undefined) {
+        const codes = Array.isArray(options.code) ? options.code : [options.code];
+        if (!codes.includes(error.code)) {
+          return false;
+        }
+      }
+
+      // Фильтр по сообщению (частичное совпадение)
+      if (options.message !== undefined) {
+        if (!error.message.includes(options.message)) {
+          return false;
+        }
+      }
+
+      // Фильтр по параметрам
+      if (options.params !== undefined) {
+        if (!error.params) {
+          return false;
+        }
+
+        // Проверяем, что все ключи из options.params присутствуют в error.params
+        // и имеют те же значения
+        for (const [key, value] of Object.entries(options.params)) {
+          if (error.params[key] !== value) {
+            return false;
+          }
+        }
+      }
+
+      // Кастомный предикат
+      if (options.predicate !== undefined) {
+        if (!options.predicate(error)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }
 
   // ============================================================================
   // Методы управления состоянием (Template Method)

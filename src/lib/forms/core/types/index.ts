@@ -11,6 +11,23 @@ export interface ValidationError {
   params?: Record<string, any>;
 }
 
+/**
+ * Опции для фильтрации ошибок в методе getErrors()
+ */
+export interface ErrorFilterOptions {
+  /** Фильтр по коду ошибки */
+  code?: string | string[];
+
+  /** Фильтр по сообщению (поддерживает частичное совпадение) */
+  message?: string;
+
+  /** Фильтр по параметрам ошибки */
+  params?: Record<string, any>;
+
+  /** Кастомный предикат для фильтрации */
+  predicate?: (error: ValidationError) => boolean;
+}
+
 // ============================================================================
 // Field Status
 // ============================================================================
