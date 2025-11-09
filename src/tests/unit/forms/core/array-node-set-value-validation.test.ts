@@ -4,9 +4,9 @@
  * Tests that setValue triggers validation automatically
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { ArrayNode } from '@/lib/forms/core/nodes/array-node';
-import type { ValidationSchemaFn } from '@/lib/forms/core/types';
+import type { FieldPath, ValidationSchemaFn } from '@/lib/forms/core/types';
 import { required, minLength } from '@/lib/forms/core/validators';
 
 describe('ArrayNode - setValue() Validation', () => {
@@ -23,7 +23,7 @@ describe('ArrayNode - setValue() Validation', () => {
       });
 
       // Установка validation schema
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title, { message: 'Title is required' });
       };
 
@@ -55,7 +55,7 @@ describe('ArrayNode - setValue() Validation', () => {
         price: { value: 0, component: null as any },
       });
 
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title);
       };
 
@@ -80,7 +80,7 @@ describe('ArrayNode - setValue() Validation', () => {
         price: { value: 0, component: null as any },
       });
 
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         minLength(path.title, 3, { message: 'Min 3 characters' });
       };
 
@@ -175,7 +175,7 @@ describe('ArrayNode - setValue() Validation', () => {
         price: { value: 0, component: null as any },
       });
 
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title);
         minLength(path.title, 3, { message: 'Min 3 chars' });
       };
@@ -207,7 +207,7 @@ describe('ArrayNode - setValue() Validation', () => {
         price: { value: 0, component: null as any },
       });
 
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title, { message: 'Title required' });
       };
 
@@ -249,7 +249,7 @@ describe('ArrayNode - setValue() Validation', () => {
         price: { value: 0, component: null as any },
       });
 
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title);
       };
 
@@ -302,7 +302,7 @@ describe('ArrayNode - setValue() Validation', () => {
         price: { value: 0, component: null as any },
       });
 
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title);
       };
 

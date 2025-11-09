@@ -3,9 +3,11 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { copyFrom, watchField } from '@/lib/forms/core/behaviors/schema-behaviors';
 import type { BehaviorSchemaFn } from '@/lib/forms/core/behaviors/types';
+import type { GroupNodeWithControls } from '@/lib/forms';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
+import type { FieldPath } from '@/lib/forms/core/types';
 
 describe('BehaviorRegistry', () => {
   interface TestForm {
@@ -15,10 +17,10 @@ describe('BehaviorRegistry', () => {
     region: string;
   }
 
-  let form: GroupNode<TestForm>;
+  let form: GroupNodeWithControls<TestForm>;
 
   beforeEach(() => {
-    form = new GroupNode({
+    form = makeForm({
       email: { value: '', component: null as any },
       copyEmail: { value: '', component: null as any },
       country: { value: '', component: null as any },
@@ -32,7 +34,7 @@ describe('BehaviorRegistry', () => {
 
   describe('Registration lifecycle', () => {
     it('should register and apply behaviors', () => {
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         copyFrom(path.copyEmail, path.email);
       };
 
@@ -42,7 +44,7 @@ describe('BehaviorRegistry', () => {
     });
 
     it('should cleanup behaviors when dispose is called', () => {
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         copyFrom(path.copyEmail, path.email);
       };
 
@@ -55,7 +57,7 @@ describe('BehaviorRegistry', () => {
 
   describe('copyFrom behavior', () => {
     it('should copy value from source to target', async () => {
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         copyFrom(path.copyEmail, path.email);
       };
 
@@ -73,7 +75,7 @@ describe('BehaviorRegistry', () => {
     it('should copy value only when condition is met', async () => {
       let shouldCopy = false;
 
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         copyFrom(path.copyEmail, path.email, {
           when: () => shouldCopy,
         });
@@ -98,7 +100,7 @@ describe('BehaviorRegistry', () => {
     it('should trigger callback on field change', async () => {
       const callback = vi.fn();
 
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         watchField(path.country, callback);
       };
 
@@ -113,7 +115,7 @@ describe('BehaviorRegistry', () => {
     it('should trigger callback immediately if immediate: true', async () => {
       const callback = vi.fn();
 
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         watchField(path.country, callback, { immediate: true });
       };
 
@@ -129,7 +131,7 @@ describe('BehaviorRegistry', () => {
     it('should debounce callback if debounce option is set', async () => {
       const callback = vi.fn();
 
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         watchField(path.country, callback, { debounce: 100 });
       };
 
@@ -155,7 +157,7 @@ describe('BehaviorRegistry', () => {
     it('should cleanup debounce timers on dispose', async () => {
       const callback = vi.fn();
 
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         watchField(path.country, callback, { debounce: 100 });
       };
 
@@ -174,7 +176,7 @@ describe('BehaviorRegistry', () => {
     it('should stop effects after cleanup', async () => {
       const callback = vi.fn();
 
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         watchField(path.country, callback);
       };
 
@@ -201,7 +203,7 @@ describe('BehaviorRegistry', () => {
       const callback1 = vi.fn();
       const callback2 = vi.fn();
 
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         watchField(path.country, callback1);
         watchField(path.region, callback2);
       };
@@ -221,7 +223,7 @@ describe('BehaviorRegistry', () => {
       const callback1 = vi.fn();
       const callback2 = vi.fn();
 
-      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         watchField(path.country, callback1);
         watchField(path.region, callback2);
       };

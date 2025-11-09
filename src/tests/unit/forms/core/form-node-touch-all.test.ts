@@ -5,9 +5,10 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { ArrayNode } from '@/lib/forms/core/nodes/array-node';
 import { FieldNode } from '@/lib/forms/core/nodes/field-node';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
+import type { GroupNodeWithControls } from '@/lib/forms';
 
 describe('FormNode - touchAll()', () => {
   describe('FieldNode', () => {
@@ -50,10 +51,10 @@ describe('FormNode - touchAll()', () => {
       age: number;
     }
 
-    let form: GroupNode<SimpleForm>;
+    let form: GroupNodeWithControls<SimpleForm>;
 
     beforeEach(() => {
-      form = new GroupNode({
+      form = makeForm({
         email: { value: '', component: null as any },
         password: { value: '', component: null as any },
         age: { value: 0, component: null as any },
@@ -73,12 +74,12 @@ describe('FormNode - touchAll()', () => {
     });
 
     it('should be equivalent to markAsTouched', () => {
-      const form1 = new GroupNode({
+      const form1 = makeForm({
         email: { value: '', component: null as any },
         password: { value: '', component: null as any },
       });
 
-      const form2 = new GroupNode({
+      const form2 = makeForm({
         email: { value: '', component: null as any },
         password: { value: '', component: null as any },
       });
@@ -103,10 +104,10 @@ describe('FormNode - touchAll()', () => {
       };
     }
 
-    let form: GroupNode<NestedForm>;
+    let form: GroupNodeWithControls<NestedForm>;
 
     beforeEach(() => {
-      form = new GroupNode({
+      form = makeForm({
         user: {
           name: { value: '', component: null as any },
           email: { value: '', component: null as any },
@@ -222,10 +223,10 @@ describe('FormNode - touchAll()', () => {
       };
     }
 
-    let form: GroupNode<ComplexForm>;
+    let form: GroupNodeWithControls<ComplexForm>;
 
     beforeEach(() => {
-      form = new GroupNode({
+      form = makeForm({
         user: {
           profile: {
             firstName: { value: '', component: null as any },
@@ -294,10 +295,10 @@ describe('FormNode - touchAll()', () => {
       password: string;
     }
 
-    let form: GroupNode<LoginForm>;
+    let form: GroupNodeWithControls<LoginForm>;
 
     beforeEach(() => {
-      form = new GroupNode({
+      form = makeForm({
         email: {
           value: '',
           component: null as any,
@@ -364,7 +365,7 @@ describe('FormNode - touchAll()', () => {
 
   describe('Edge cases', () => {
     it('should work on empty GroupNode', () => {
-      const form = new GroupNode({});
+      const form = makeForm({});
 
       expect(() => form.touchAll()).not.toThrow();
     });
@@ -388,7 +389,7 @@ describe('FormNode - touchAll()', () => {
         };
       }
 
-      const form = new GroupNode<Form>({
+      const form = makeForm<Form>({
         section1: {
           field1: { value: '', component: null as any },
           field2: { value: '', component: null as any },

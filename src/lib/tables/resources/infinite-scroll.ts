@@ -1,4 +1,4 @@
-import type { TableResource, ResourceParams, ResourceResult } from '../types';
+import type { TableResource, ResourceParams } from '../types';
 
 export interface InfiniteScrollResource<T> extends TableResource<T> {
   type: 'infinite';

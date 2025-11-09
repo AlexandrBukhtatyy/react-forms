@@ -6,8 +6,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { FieldNode } from '@/lib/forms/core/nodes/field-node';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import type { ValidatorFn, AsyncValidatorFn } from '@/lib/forms/core/types';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
 
 const requiredValidator: ValidatorFn<string> = (value: string) => {
   return value.trim() === '' ? { code: 'required', message: 'Field is required' } : null;
@@ -238,7 +238,7 @@ describe('FieldNode - updateOn', () => {
         password: string;
       }
 
-      const form = new GroupNode<TestForm>({
+      const form = makeForm<TestForm>({
         email: {
           value: '',
           component: null as any,
@@ -262,7 +262,7 @@ describe('FieldNode - updateOn', () => {
       expect(form.password.valid.value).toBe(true);
 
       // Submit triggers validation
-      const result = await form.submit(async (values) => values);
+      const result = await form.submit(async (values: any) => values);
 
       expect(result).toBeNull(); // Form invalid
       expect(form.email.valid.value).toBe(false);

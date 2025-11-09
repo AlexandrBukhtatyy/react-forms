@@ -7,7 +7,7 @@
  * 3. После завершения схемы валидаторы применяются к GroupNode
  */
 
-import type { GroupNode } from '../core/nodes/group-node';
+import type { GroupNode } from '../nodes/group-node';
 import type {
   ValidatorRegistration,
   ContextualValidatorFn,
@@ -327,7 +327,11 @@ export class ValidationRegistry {
    * Применить зарегистрированные валидаторы к GroupNode
    * @private
    */
-  private applyValidators<T>(form: GroupNode<T>, validators: ValidatorRegistration[]): void {
+  private applyValidators<T>(
+    // @ts-ignore
+    form: GroupNode<T>, 
+    validators: ValidatorRegistration[]
+  ): void {
     // Группируем валидаторы по полям
     const validatorsByField = new Map<string, ValidatorRegistration[]>();
 

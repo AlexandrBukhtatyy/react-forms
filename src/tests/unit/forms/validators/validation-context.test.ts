@@ -6,9 +6,10 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { required, validate, validateTree, email, minLength } from '@/lib/forms/core/validators';
 import type { GroupNodeWithControls } from '@/lib/forms/core/types/group-node-proxy';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
+import type { FieldPath } from '@/lib/forms/core/types';
 
 describe('ValidationContext через публичный API', () => {
   interface TestForm {
@@ -24,7 +25,7 @@ describe('ValidationContext через публичный API', () => {
   let form: GroupNodeWithControls<TestForm>;
 
   beforeEach(() => {
-    form = new GroupNode<TestForm>({
+    form = makeForm<TestForm>({
       email: { value: 'test@mail.com', component: null as any },
       password: { value: 'password123', component: null as any },
       confirmPassword: { value: 'password123', component: null as any },
@@ -37,7 +38,7 @@ describe('ValidationContext через публичный API', () => {
 
   describe('Доступ к значениям полей через context', () => {
     it('should access current field value via context.value()', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: 'test@mail.com', component: null as any },
           password: { value: '', component: null as any },
@@ -47,7 +48,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.email,
             (ctx) => {
@@ -64,7 +65,7 @@ describe('ValidationContext через публичный API', () => {
     });
 
     it('should access other field via context.getField()', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: 'test@mail.com', component: null as any },
           password: { value: 'secret123', component: null as any },
@@ -74,7 +75,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.email,
             (ctx) => {
@@ -91,7 +92,7 @@ describe('ValidationContext через публичный API', () => {
     });
 
     it('should access nested field via context.getField()', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -101,7 +102,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: 'Lenina', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.email,
             (ctx) => {
@@ -121,7 +122,7 @@ describe('ValidationContext через публичный API', () => {
     });
 
     it('should return undefined for non-existent path', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -131,7 +132,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.email,
             (ctx) => {
@@ -149,7 +150,7 @@ describe('ValidationContext через публичный API', () => {
 
   describe('Изменение значений полей через context', () => {
     it('should set field value via context.setField()', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: 'oldpassword', component: null as any },
@@ -159,7 +160,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.email,
             (ctx) => {
@@ -178,7 +179,7 @@ describe('ValidationContext через публичный API', () => {
     });
 
     it('should set nested field value via context.setField()', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -188,7 +189,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: 'Lenina', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.email,
             (ctx) => {
@@ -211,7 +212,7 @@ describe('ValidationContext через публичный API', () => {
 
   describe('Доступ к форме через context', () => {
     it('should access full form value via context.formValue()', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: 'test@mail.com', component: null as any },
           password: { value: 'password123', component: null as any },
@@ -221,7 +222,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: 'Lenina', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.email,
             (ctx) => {
@@ -247,7 +248,7 @@ describe('ValidationContext через публичный API', () => {
     it('should access form reference via context.getForm()', async () => {
       let formRef: any = null;
 
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -257,7 +258,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.email,
             (ctx) => {
@@ -279,7 +280,7 @@ describe('ValidationContext через публичный API', () => {
     it('should access field control via context.getControl()', async () => {
       let fieldControl: any = null;
 
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: 'test@mail.com', component: null as any },
           password: { value: '', component: null as any },
@@ -289,7 +290,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.email,
             (ctx) => {
@@ -312,7 +313,7 @@ describe('ValidationContext через публичный API', () => {
     it('should validate password confirmation', async () => {
       let isValid = true;
 
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: 'secret123', component: null as any },
@@ -322,7 +323,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.confirmPassword,
             (ctx) => {
@@ -350,7 +351,7 @@ describe('ValidationContext через публичный API', () => {
     });
 
     it('should validate password confirmation (matching passwords)', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: 'secret123', component: null as any },
@@ -360,7 +361,7 @@ describe('ValidationContext через публичный API', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(
             path.confirmPassword,
             (ctx) => {
@@ -391,12 +392,12 @@ describe('ValidationContext через публичный API', () => {
         propertyValue: number | null;
       }
 
-      const conditionalForm = new GroupNode<ConditionalForm>({
+      const conditionalForm = makeForm<ConditionalForm>({
         form: {
           loanType: { value: 'mortgage', component: null as any },
           propertyValue: { value: null, component: null as any },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<ConditionalForm>) => {
           validate(
             path.propertyValue,
             (ctx) => {
@@ -427,7 +428,7 @@ describe('ValidationContext через публичный API', () => {
     it('should access all fields in tree validation', async () => {
       let contextFormValue: any = null;
 
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: 'test@mail.com', component: null as any },
           password: { value: 'password123', component: null as any },
@@ -463,7 +464,7 @@ describe('ValidationContext через публичный API', () => {
       let password: any = null;
       let city: any = null;
 
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: 'test@mail.com', component: null as any },
           password: { value: 'secret', component: null as any },
@@ -493,7 +494,7 @@ describe('ValidationContext через публичный API', () => {
     it('should return undefined for non-existent path in tree validation', async () => {
       let nonExistent: any = 'not-undefined';
 
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -517,7 +518,7 @@ describe('ValidationContext через публичный API', () => {
     });
 
     it('should target error to specific field via targetField option', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: 'secret123', component: null as any },
@@ -565,14 +566,14 @@ describe('ValidationContext через публичный API', () => {
         terms: boolean;
       }
 
-      const registrationForm = new GroupNode<RegistrationForm>({
+      const registrationForm = makeForm<RegistrationForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: 'short', component: null as any },
           confirmPassword: { value: 'different', component: null as any },
           terms: { value: false, component: null as any },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<RegistrationForm>) => {
           // Email валидация
           required(path.email, { message: 'Email обязателен' });
           email(path.email);

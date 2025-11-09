@@ -1,4 +1,4 @@
-import type { TableResource, ResourceParams, ResourceResult } from '../types';
+import type { TableResource, ResourceParams } from '../types';
 
 export interface HybridResource<T> extends TableResource<T> {
   type: 'server-paginated' | 'client-paginated';

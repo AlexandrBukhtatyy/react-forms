@@ -30,11 +30,20 @@ function isFormNode(value: any): value is FormNode<any> {
 export class ValidationContextImpl<TForm = any, TField = any>
   implements ValidationContext<TForm, TField>
 {
+  private form: GroupNode<TForm>
+  // @ts-ignore
+  private fieldKey: keyof TForm
+  private control: FieldNode<TField>
+
   constructor(
-    private form: GroupNode<TForm>,
-    private fieldKey: keyof TForm,
-    private control: FieldNode<TField>
-  ) {}
+    form: GroupNode<TForm>,
+    fieldKey: keyof TForm,
+    control: FieldNode<TField>
+  ) {
+    this.form = form
+    this.fieldKey = fieldKey
+    this.control = control
+  }
 
   value(): TField {
     return this.control.value.value;
@@ -172,10 +181,12 @@ export class ValidationContextImpl<TForm = any, TField = any>
 /**
  * Реализация TreeValidationContext для cross-field валидации
  */
-export class TreeValidationContextImpl<TForm = any>
-  implements TreeValidationContext<TForm>
-{
-  constructor(private form: GroupNode<TForm>) {}
+export class TreeValidationContextImpl<TForm = any> implements TreeValidationContext<TForm> {
+  private form: GroupNode<TForm>
+
+  constructor(form: GroupNode<TForm>) {
+    this.form = form
+  }
 
   /**
    * Получить значение поля по ключу или пути

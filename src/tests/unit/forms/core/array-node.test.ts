@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { ArrayNode } from '@/lib/forms/core/nodes/array-node';
 import type { BehaviorSchemaFn } from '@/lib/forms/core/behaviors/types';
 import { required, minLength } from '@/lib/forms/core/validators';
-import type { ValidationSchemaFn } from '@/lib/forms/core/types';
+import type { FieldPath, ValidationSchemaFn } from '@/lib/forms/core/types';
 
 describe('ArrayNode', () => {
   interface ItemForm {
@@ -179,7 +179,7 @@ describe('ArrayNode', () => {
     });
 
     it('should update valid signal based on item validity', async () => {
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title, { message: 'Title is required' });
       };
 
@@ -209,7 +209,7 @@ describe('ArrayNode', () => {
     });
 
     it('should collect errors from all items', async () => {
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title, { message: 'Title is required' });
         minLength(path.title, 3, { message: 'Min 3 chars' });
       };
@@ -230,7 +230,7 @@ describe('ArrayNode', () => {
       arrayNode.push({ title: '', price: 100 });
       arrayNode.push({ title: 'Item 2', price: 200 });
 
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title, { message: 'Title is required' });
       };
 
@@ -243,7 +243,7 @@ describe('ArrayNode', () => {
     });
 
     it('should auto-apply validation schema to new items', async () => {
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title, { message: 'Title is required' });
       };
 
@@ -259,7 +259,7 @@ describe('ArrayNode', () => {
     });
 
     it('should auto-apply validation schema to inserted items', async () => {
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title, { message: 'Title is required' });
       };
 
@@ -276,7 +276,7 @@ describe('ArrayNode', () => {
     });
 
     it('should validate all items in parallel', async () => {
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title, { message: 'Title is required' });
       };
 
@@ -298,7 +298,7 @@ describe('ArrayNode', () => {
       arrayNode.push({ title: 'item1', price: 100 });
       arrayNode.push({ title: 'item2', price: 200 });
 
-      const behaviorSchema: BehaviorSchemaFn<ItemForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         // Auto-capitalize title
         path.title; // Reference field to register behavior
       };
@@ -312,7 +312,7 @@ describe('ArrayNode', () => {
     it('should auto-apply behavior schema to new items pushed', async () => {
       let appliedCount = 0;
 
-      const behaviorSchema: BehaviorSchemaFn<ItemForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         appliedCount++;
         path.title; // Reference field
       };
@@ -331,7 +331,7 @@ describe('ArrayNode', () => {
     it('should auto-apply behavior schema to inserted items', async () => {
       let appliedCount = 0;
 
-      const behaviorSchema: BehaviorSchemaFn<ItemForm> = (path) => {
+      const behaviorSchema: BehaviorSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         appliedCount++;
         path.title; // Reference field
       };
@@ -512,7 +512,7 @@ describe('ArrayNode', () => {
     });
 
     it('should clear errors from all items', async () => {
-      const validationSchema: ValidationSchemaFn<ItemForm> = (path) => {
+      const validationSchema: ValidationSchemaFn<ItemForm> = (path: FieldPath<ItemForm>) => {
         required(path.title, { message: 'Title is required' });
       };
 

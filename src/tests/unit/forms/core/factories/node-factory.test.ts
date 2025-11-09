@@ -242,7 +242,7 @@ describe('NodeFactory', () => {
       const node = factory.createNode(config);
 
       expect(node).toBeInstanceOf(ArrayNode);
-      expect(node.length.value).toBe(0);
+      expect((node as ArrayNode).length.value).toBe(0);
     });
 
     it('создает ArrayNode с начальными элементами', () => {
@@ -254,7 +254,7 @@ describe('NodeFactory', () => {
       const node = factory.createNode(config);
 
       expect(node).toBeInstanceOf(ArrayNode);
-      expect(node.length.value).toBe(2);
+      expect((node as ArrayNode).length.value).toBe(2);
     });
 
     it('создает вложенный GroupNode', () => {

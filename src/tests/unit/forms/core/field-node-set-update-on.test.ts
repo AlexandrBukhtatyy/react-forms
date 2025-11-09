@@ -6,8 +6,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { FieldNode } from '@/lib/forms/core/nodes/field-node';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import type { ValidatorFn } from '@/lib/forms/core/types';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
 
 const requiredValidator: ValidatorFn<string> = (value: string) => {
   return value.trim() === '' ? { code: 'required', message: 'Field is required' } : null;
@@ -118,7 +118,7 @@ describe('FieldNode - setUpdateOn()', () => {
         password: string;
       }
 
-      const form = new GroupNode<LoginForm>({
+      const form = makeForm<LoginForm>({
         email: {
           value: '',
           component: null as any,
@@ -239,7 +239,7 @@ describe('FieldNode - setUpdateOn()', () => {
         field3: string;
       }
 
-      const form = new GroupNode<Form>({
+      const form = makeForm<Form>({
         field1: {
           value: '',
           component: null as any,
@@ -359,7 +359,7 @@ describe('FieldNode - setUpdateOn()', () => {
         password: string;
       }
 
-      const form = new GroupNode<RegistrationForm>({
+      const form = makeForm<RegistrationForm>({
         username: {
           value: '',
           component: null as any,

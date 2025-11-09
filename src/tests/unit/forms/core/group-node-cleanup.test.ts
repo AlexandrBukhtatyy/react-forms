@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import { FieldNode } from '@/lib/forms/core/nodes/field-node';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
+import type { GroupNodeWithControls } from '@/lib/forms';
 
 describe('GroupNode - Cleanup (dispose)', () => {
   interface TestForm {
@@ -13,10 +13,10 @@ describe('GroupNode - Cleanup (dispose)', () => {
     age: number;
   }
 
-  let form: GroupNode<TestForm>;
+  let form: GroupNodeWithControls<TestForm>;
 
   beforeEach(() => {
-    form = new GroupNode<TestForm>({
+    form = makeForm<TestForm>({
       email: { value: '', component: null as any },
       password: { value: '', component: null as any },
       age: { value: 0, component: null as any },
@@ -26,7 +26,7 @@ describe('GroupNode - Cleanup (dispose)', () => {
   describe('linkFields() cleanup', () => {
     it('should cleanup linkFields subscription when dispose() is called', () => {
       // Link age to password (silly example, but works for testing)
-      form.linkFields('age', 'password', (age) => `password-${age}`);
+      form.linkFields('age', 'password', (age: number) => `password-${age}`);
 
       // Initial link
       expect(form.password.value.value).toBe('password-0');
@@ -44,14 +44,14 @@ describe('GroupNode - Cleanup (dispose)', () => {
     });
 
     it('should cleanup multiple linkFields subscriptions', () => {
-      const form2 = new GroupNode<TestForm>({
+      const form2 = makeForm<TestForm>({
         email: { value: '', component: null as any },
         password: { value: '', component: null as any },
         age: { value: 0, component: null as any },
       });
 
-      form.linkFields('email', 'password', (email) => `pwd-${email}`);
-      form2.linkFields('age', 'password', (age) => `pwd-${age}`);
+      form.linkFields('email', 'password', (email: string) => `pwd-${email}`);
+      form2.linkFields('age', 'password', (age: string) => `pwd-${age}`);
 
       form.email.setValue('test');
       form2.age.setValue(25);
@@ -75,7 +75,7 @@ describe('GroupNode - Cleanup (dispose)', () => {
     });
 
     it('should allow manual unsubscribe for linkFields', () => {
-      const unsubscribe = form.linkFields('email', 'password', (email) =>
+      const unsubscribe = form.linkFields('email', 'password', (email: string) =>
         email.toUpperCase()
       );
 
@@ -162,7 +162,7 @@ describe('GroupNode - Cleanup (dispose)', () => {
         };
       }
 
-      const nestedForm = new GroupNode<NestedForm>({
+      const nestedForm = makeForm<NestedForm>({
         user: {
           profile: {
             name: { value: '', component: null as any },
@@ -224,7 +224,7 @@ describe('GroupNode - Cleanup (dispose)', () => {
         };
       }
 
-      const nestedForm = new GroupNode<NestedForm>({
+      const nestedForm = makeForm<NestedForm>({
         user: {
           email: { value: '', component: null as any },
           profile: {
@@ -272,7 +272,7 @@ describe('GroupNode - Cleanup (dispose)', () => {
         };
       }
 
-      const deepForm = new GroupNode<DeepForm>({
+      const deepForm = makeForm<DeepForm>({
         level1: {
           level2: {
             level3: {
@@ -305,7 +305,7 @@ describe('GroupNode - Cleanup (dispose)', () => {
     it('should cleanup both linkFields and watchField', () => {
       const watchCallback = vi.fn();
 
-      form.linkFields('email', 'password', (email) => `pwd-${email}`);
+      form.linkFields('email', 'password', (email: string) => `pwd-${email}`);
       form.watchField('age', watchCallback);
 
       // Initial state
@@ -347,7 +347,7 @@ describe('GroupNode - Cleanup (dispose)', () => {
     });
 
     it('should handle dispose() on empty form', () => {
-      const emptyForm = new GroupNode<Record<string, never>>({});
+      const emptyForm = makeForm<Record<string, never>>({});
 
       expect(() => emptyForm.dispose()).not.toThrow();
     });
@@ -390,7 +390,7 @@ describe('GroupNode - Cleanup (dispose)', () => {
       for (let i = 0; i < 50; i++) {
         const callback = vi.fn();
         form.watchField('email', callback);
-        form.linkFields('age', 'password', (age) => `pwd-${age}`);
+        form.linkFields('age', 'password', (age: number) => `pwd-${age}`);
       }
 
       // Dispose all

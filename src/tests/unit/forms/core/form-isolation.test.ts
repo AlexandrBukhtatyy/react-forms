@@ -9,12 +9,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
-import { FieldNode } from '@/lib/forms/core/nodes/field-node';
 import { required, email } from '@/lib/forms/core/validators';
 import { computeFrom, enableWhen } from '@/lib/forms/core/behaviors';
 import type { ValidationSchemaFn } from '@/lib/forms/core/types/validation-schema';
 import type { BehaviorSchemaFn } from '@/lib/forms/core/behaviors/types';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
+import type { GroupNodeWithControls } from '@/lib/forms';
+import type { FieldPath } from '@/lib/forms/core/types';
 
 // Mock компонент для тестов
 const Input = () => null;
@@ -29,25 +30,25 @@ describe('Form Isolation', () => {
   describe('ValidationRegistry Isolation', () => {
     it('должен изолировать валидаторы между двумя формами', async () => {
       // Форма 1: требует email и name
-      const validationSchema1: ValidationSchemaFn<TestForm> = (path) => {
+      const validationSchema1: ValidationSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         required(path.email, { message: 'Email обязателен' });
         email(path.email);
         required(path.name, { message: 'Имя обязательно' });
       };
 
       // Форма 2: требует только age
-      const validationSchema2: ValidationSchemaFn<TestForm> = (path) => {
+      const validationSchema2: ValidationSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
         required(path.age, { message: 'Возраст обязателен' });
       };
 
       // Создаем две формы с одинаковой структурой
-      const form1 = new GroupNode<TestForm>({
+      const form1 = makeForm<TestForm>({
         email: { value: '', component: Input },
         name: { value: '', component: Input },
         age: { value: '', component: Input },
       });
 
-      const form2 = new GroupNode<TestForm>({
+      const form2 = makeForm<TestForm>({
         email: { value: '', component: Input },
         name: { value: '', component: Input },
         age: { value: '', component: Input },
@@ -77,17 +78,17 @@ describe('Form Isolation', () => {
     it('должен поддерживать одновременное создание форм', async () => {
       // Создаем 3 формы ПОСЛЕДОВАТЕЛЬНО (не одновременно)
       // чтобы избежать race conditions в context stack
-      const forms: GroupNode<TestForm>[] = [];
+      const forms: GroupNodeWithControls<TestForm>[] = [];
 
       for (let i = 0; i < 3; i++) {
-        const form = new GroupNode<TestForm>({
+        const form = makeForm<TestForm>({
           email: { value: '', component: Input },
           name: { value: '', component: Input },
           age: { value: '', component: Input },
         });
 
         // Каждая форма имеет свою уникальную схему валидации
-        const schema: ValidationSchemaFn<TestForm> = (path) => {
+        const schema: ValidationSchemaFn<TestForm> = (path: FieldPath<TestForm>) => {
           if (i === 0) {
             required(path.email, { message: `Form ${i}: Email обязателен` });
           } else if (i === 1) {
@@ -131,7 +132,7 @@ describe('Form Isolation', () => {
       }
 
       // Форма 1: computeFrom копирует из sourceField в targetField1
-      const behaviorSchema1: BehaviorSchemaFn<BehaviorTestForm> = (path) => {
+      const behaviorSchema1: BehaviorSchemaFn<BehaviorTestForm> = (path: FieldPath<BehaviorTestForm>) => {
         computeFrom(
           path.targetField1,
           [path.sourceField],
@@ -140,7 +141,7 @@ describe('Form Isolation', () => {
       };
 
       // Форма 2: computeFrom копирует из sourceField в targetField2
-      const behaviorSchema2: BehaviorSchemaFn<BehaviorTestForm> = (path) => {
+      const behaviorSchema2: BehaviorSchemaFn<BehaviorTestForm> = (path: FieldPath<BehaviorTestForm>) => {
         computeFrom(
           path.targetField2,
           [path.sourceField],
@@ -149,13 +150,13 @@ describe('Form Isolation', () => {
       };
 
       // Создаем две формы
-      const form1 = new GroupNode<BehaviorTestForm>({
+      const form1 = makeForm<BehaviorTestForm>({
         sourceField: { value: 'test', component: Input },
         targetField1: { value: '', component: Input },
         targetField2: { value: '', component: Input },
       });
 
-      const form2 = new GroupNode<BehaviorTestForm>({
+      const form2 = makeForm<BehaviorTestForm>({
         sourceField: { value: 'test', component: Input },
         targetField1: { value: '', component: Input },
         targetField2: { value: '', component: Input },
@@ -186,23 +187,23 @@ describe('Form Isolation', () => {
       }
 
       // Форма 1: enableWhen для field1
-      const behaviorSchema1: BehaviorSchemaFn<EnableTestForm> = (path) => {
+      const behaviorSchema1: BehaviorSchemaFn<EnableTestForm> = (path: FieldPath<EnableTestForm>) => {
         enableWhen(path.field1, (form) => form.condition);
       };
 
       // Форма 2: enableWhen для field2
-      const behaviorSchema2: BehaviorSchemaFn<EnableTestForm> = (path) => {
+      const behaviorSchema2: BehaviorSchemaFn<EnableTestForm> = (path: FieldPath<EnableTestForm>) => {
         enableWhen(path.field2, (form) => form.condition);
       };
 
       // Создаем две формы
-      const form1 = new GroupNode<EnableTestForm>({
+      const form1 = makeForm<EnableTestForm>({
         condition: { value: false, component: Input },
         field1: { value: '', component: Input },
         field2: { value: '', component: Input },
       });
 
-      const form2 = new GroupNode<EnableTestForm>({
+      const form2 = makeForm<EnableTestForm>({
         condition: { value: false, component: Input },
         field1: { value: '', component: Input },
         field2: { value: '', component: Input },
@@ -248,17 +249,17 @@ describe('Form Isolation', () => {
       }
 
       // Форма 1: валидация email + behavior копирования
-      const form1 = new GroupNode<FullTestForm>({
+      const form1 = makeForm<FullTestForm>({
         form: {
           email: { value: '', component: Input },
           confirmEmail: { value: '', component: Input },
           autoFill: { value: false, component: Input },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<FullTestForm>) => {
           required(path.email);
           email(path.email);
         },
-        behavior: (path) => {
+        behavior: (path: FieldPath<FullTestForm>) => {
           computeFrom(
             path.confirmEmail,
             [path.email, path.autoFill],
@@ -268,17 +269,17 @@ describe('Form Isolation', () => {
       });
 
       // Форма 2: валидация confirmEmail (другое поле!)
-      const form2 = new GroupNode<FullTestForm>({
+      const form2 = makeForm<FullTestForm>({
         form: {
           email: { value: '', component: Input },
           confirmEmail: { value: '', component: Input },
           autoFill: { value: false, component: Input },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<FullTestForm>) => {
           required(path.confirmEmail);
           email(path.confirmEmail);
         },
-        behavior: (path) => {
+        behavior: (path: FieldPath<FullTestForm>) => {
           // Нет behaviors для этой формы
         },
       });

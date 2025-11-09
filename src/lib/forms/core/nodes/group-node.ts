@@ -246,7 +246,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
         // Fallback
         return undefined;
       },
-    }) as GroupNodeWithControls<T>;
+    });
 
     // ✅ Сохраняем Proxy-инстанс перед применением схем
     // Это позволяет BehaviorContext получить доступ к прокси через formNode
@@ -263,7 +263,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     // ✅ ВАЖНО: Возвращаем Proxy для прямого доступа к полям
     // Это позволяет писать form.email вместо form.controls.email
     // Используем GroupNodeWithControls для правильной типизации вложенных форм и массивов
-    return proxy;
+    return proxy as GroupNodeWithControls<T>;
   }
 
   // ============================================================================

@@ -6,8 +6,9 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { FieldNode } from '@/lib/forms/core/nodes/field-node';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { ArrayNode } from '@/lib/forms/core/nodes/array-node';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
+import type { GroupNodeWithControls } from '@/lib/forms';
 
 describe('FormNode - resetToInitial()', () => {
   describe('FieldNode', () => {
@@ -70,10 +71,10 @@ describe('FormNode - resetToInitial()', () => {
       age: number;
     }
 
-    let form: GroupNode<TestForm>;
+    let form: GroupNodeWithControls<TestForm>;
 
     beforeEach(() => {
-      form = new GroupNode({
+      form = makeForm({
         email: { value: 'initial@mail.com', component: null as any },
         name: { value: 'John', component: null as any },
         age: { value: 25, component: null as any },
@@ -150,10 +151,10 @@ describe('FormNode - resetToInitial()', () => {
       };
     }
 
-    let form: GroupNode<NestedForm>;
+    let form: GroupNodeWithControls<NestedForm>;
 
     beforeEach(() => {
-      form = new GroupNode({
+      form = makeForm({
         user: {
           name: { value: 'Initial Name', component: null as any },
           email: { value: 'initial@mail.com', component: null as any },
@@ -270,7 +271,7 @@ describe('FormNode - resetToInitial()', () => {
         bio: string;
       }
 
-      const form = new GroupNode<UserForm>({
+      const form = makeForm<UserForm>({
         email: { value: 'user@example.com', component: null as any },
         name: { value: 'John Doe', component: null as any },
         bio: { value: 'Initial bio', component: null as any },
@@ -298,7 +299,7 @@ describe('FormNode - resetToInitial()', () => {
         items: Array<{ task: string; done: boolean }>;
       }
 
-      const form = new GroupNode<TodoForm>({
+      const form = makeForm<TodoForm>({
         title: { value: 'My TODO List', component: null as any },
         items: [
           {

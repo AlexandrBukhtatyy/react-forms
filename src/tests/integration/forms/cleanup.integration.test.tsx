@@ -6,8 +6,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
 import { useEffect } from 'react';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { signal } from '@preact/signals-react';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
 
 describe('Cleanup Integration Tests', () => {
   afterEach(() => {
@@ -23,7 +23,7 @@ describe('Cleanup Integration Tests', () => {
         password: string;
       }
 
-      const form = new GroupNode<TestForm>({
+      const form = makeForm<TestForm>({
         email: { value: '', component: null as any },
         password: { value: '', component: null as any },
       });
@@ -67,11 +67,11 @@ describe('Cleanup Integration Tests', () => {
         field: string;
       }
 
-      const form1 = new GroupNode<TestForm>({
+      const form1 = makeForm<TestForm>({
         field: { value: '', component: null as any },
       });
 
-      const form2 = new GroupNode<TestForm>({
+      const form2 = makeForm<TestForm>({
         field: { value: '', component: null as any },
       });
 
@@ -122,7 +122,7 @@ describe('Cleanup Integration Tests', () => {
         };
       }
 
-      const form = new GroupNode<DeepForm>({
+      const form = makeForm<DeepForm>({
         level1: {
           level2: {
             level3: {
@@ -166,7 +166,7 @@ describe('Cleanup Integration Tests', () => {
         items: Item[];
       }
 
-      const form = new GroupNode<ComplexForm>({
+      const form = makeForm<ComplexForm>({
         user: {
           name: { value: '', component: null as any },
         },
@@ -221,7 +221,7 @@ describe('Cleanup Integration Tests', () => {
         };
       }
 
-      const form = new GroupNode<PartialForm>({
+      const form = makeForm<PartialForm>({
         section1: {
           field1: { value: '', component: null as any },
         },
@@ -263,19 +263,19 @@ describe('Cleanup Integration Tests', () => {
         fullName: string;
       }
 
-      const form = new GroupNode<DependentForm>({
+      const form = makeForm<DependentForm>({
         firstName: { value: '', component: null as any },
         lastName: { value: '', component: null as any },
         fullName: { value: '', component: null as any },
       });
 
       // Link fullName to firstName and lastName
-      form.linkFields('firstName', 'fullName', (firstName) => {
+      form.linkFields('firstName', 'fullName', (firstName: string) => {
         const lastName = form.lastName.value.value;
         return `${firstName} ${lastName}`.trim();
       });
 
-      form.linkFields('lastName', 'fullName', (lastName) => {
+      form.linkFields('lastName', 'fullName', (lastName: string) => {
         const firstName = form.firstName.value.value;
         return `${firstName} ${lastName}`.trim();
       });
@@ -307,7 +307,7 @@ describe('Cleanup Integration Tests', () => {
         product: number;
       }
 
-      const form = new GroupNode<ComputedForm>({
+      const form = makeForm<ComputedForm>({
         sum: { value: 0, component: null as any },
         product: { value: 0, component: null as any },
       });
@@ -349,7 +349,7 @@ describe('Cleanup Integration Tests', () => {
         city: string;
       }
 
-      const form = new GroupNode<SideEffectForm>({
+      const form = makeForm<SideEffectForm>({
         country: { value: '', component: null as any },
         city: { value: '', component: null as any },
       });
@@ -392,7 +392,7 @@ describe('Cleanup Integration Tests', () => {
 
       // Simulate 100 mount/unmount cycles
       for (let i = 0; i < 100; i++) {
-        const form = new GroupNode<TestForm>({
+        const form = makeForm<TestForm>({
           field: { value: '', component: null as any },
         });
 
@@ -420,7 +420,7 @@ describe('Cleanup Integration Tests', () => {
         field: string;
       }
 
-      const form = new GroupNode<TestForm>({
+      const form = makeForm<TestForm>({
         field: { value: '', component: null as any },
       });
 
@@ -458,7 +458,7 @@ describe('Cleanup Integration Tests', () => {
         fields[`field${i}`] = { value: '', component: null as any };
       }
 
-      const form = new GroupNode(fields);
+      const form = makeForm(fields);
 
       // Add watchers to all fields
       for (let i = 0; i < 50; i++) {
@@ -501,7 +501,7 @@ describe('Cleanup Integration Tests', () => {
         email: string;
       }
 
-      const form = new GroupNode<AsyncForm>({
+      const form = makeForm<AsyncForm>({
         email: {
           value: '',
           component: null as any,
@@ -543,7 +543,7 @@ describe('Cleanup Integration Tests', () => {
         field: string;
       }
 
-      const form = new GroupNode<DebounceForm>({
+      const form = makeForm<DebounceForm>({
         field: {
           value: '',
           component: null as any,
@@ -581,11 +581,11 @@ describe('Cleanup Integration Tests', () => {
         dependentField: string;
       }
 
-      const form1 = new GroupNode<Form1>({
+      const form1 = makeForm<Form1>({
         sharedField: { value: '', component: null as any },
       });
 
-      const form2 = new GroupNode<Form2>({
+      const form2 = makeForm<Form2>({
         dependentField: { value: '', component: null as any },
       });
 

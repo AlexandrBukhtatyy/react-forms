@@ -5,7 +5,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
+import type { GroupNodeWithControls } from '@/lib/forms';
 
 describe('GroupNode - Reference Equality', () => {
   interface TestForm {
@@ -14,10 +15,10 @@ describe('GroupNode - Reference Equality', () => {
     age: number;
   }
 
-  let form: GroupNode<TestForm>;
+  let form: GroupNodeWithControls<TestForm>;
 
   beforeEach(() => {
-    form = new GroupNode<TestForm>({
+    form = makeForm<TestForm>({
       email: { value: 'test@mail.com', component: null as any },
       password: { value: 'secret', component: null as any },
       age: { value: 25, component: null as any },
@@ -177,7 +178,7 @@ describe('GroupNode - Reference Equality', () => {
     }
 
     it('should cache nested group values independently', () => {
-      const nestedForm = new GroupNode<NestedForm>({
+      const nestedForm = makeForm<NestedForm>({
         user: {
           name: { value: 'John', component: null as any },
           email: { value: 'john@mail.com', component: null as any },
@@ -205,7 +206,7 @@ describe('GroupNode - Reference Equality', () => {
     });
 
     it('should not invalidate cache when unrelated nested field changes', () => {
-      const nestedForm = new GroupNode<NestedForm>({
+      const nestedForm = makeForm<NestedForm>({
         user: {
           name: { value: 'John', component: null as any },
           email: { value: 'john@mail.com', component: null as any },
@@ -231,7 +232,7 @@ describe('GroupNode - Reference Equality', () => {
     it('should handle empty form', () => {
       interface EmptyForm {}
 
-      const emptyForm = new GroupNode<EmptyForm>({});
+      const emptyForm = makeForm<EmptyForm>({});
 
       const value1 = emptyForm.value.value;
       const value2 = emptyForm.value.value;
@@ -245,7 +246,7 @@ describe('GroupNode - Reference Equality', () => {
         name: string;
       }
 
-      const singleForm = new GroupNode<SingleFieldForm>({
+      const singleForm = makeForm<SingleFieldForm>({
         name: { value: 'test', component: null as any },
       });
 
@@ -256,6 +257,7 @@ describe('GroupNode - Reference Equality', () => {
     });
 
     it('should handle reset', () => {
+      // @ts-ignore
       const value1 = form.value.value;
 
       // Reset к исходным значениям

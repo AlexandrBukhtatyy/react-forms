@@ -4,7 +4,7 @@
  * Tests that validators that throw exceptions are handled gracefully
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { FieldNode } from '@/lib/forms/core/nodes/field-node';
 import type { AsyncValidatorFn } from '@/lib/forms/core/types';
 

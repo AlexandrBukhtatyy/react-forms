@@ -5,8 +5,10 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { validate, validateTree } from '@/lib/forms/core/validators';
+import type { GroupNodeWithControls } from '@/lib/forms';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
+import type { FieldPath } from '@/lib/forms/core/types';
 
 describe('ValidationContext - Type Safety', () => {
   interface TestForm {
@@ -18,11 +20,11 @@ describe('ValidationContext - Type Safety', () => {
     };
   }
 
-  let form: GroupNode<TestForm>;
+  let form: GroupNodeWithControls<TestForm>;
   let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    form = new GroupNode<TestForm>({
+    form = makeForm<TestForm>({
       email: { value: 'test@mail.com', component: null as any },
       password: { value: 'password123', component: null as any },
       address: {
@@ -41,7 +43,7 @@ describe('ValidationContext - Type Safety', () => {
 
   describe('getField() type safety', () => {
     it('should return value for existing field (type-safe key)', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: 'test@mail.com', component: null as any },
           password: { value: '', component: null as any },
@@ -50,7 +52,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             const email = ctx.getField('email');
             expect(email).toBe('test@mail.com');
@@ -64,7 +66,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should return value for nested field (string path)', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -73,7 +75,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: 'Lenina', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             const city = ctx.getField('address.city');
             expect(city).toBe('Moscow');
@@ -87,7 +89,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should return undefined and warn for non-existent field (dev mode)', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -96,7 +98,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             const nonExistent = ctx.getField('nonexistent' as any);
             expect(nonExistent).toBeUndefined();
@@ -116,7 +118,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should return undefined and warn for non-existent nested path', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -125,7 +127,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             const nonExistent = ctx.getField('address.nonexistent');
             expect(nonExistent).toBeUndefined();
@@ -145,7 +147,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should return undefined and warn for completely invalid path', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -154,7 +156,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             const nonExistent = ctx.getField('invalid.nested.path');
             expect(nonExistent).toBeUndefined();
@@ -176,7 +178,7 @@ describe('ValidationContext - Type Safety', () => {
 
   describe('setField() type safety', () => {
     it('should set value for existing field (type-safe key)', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: 'old@mail.com', component: null as any },
           password: { value: '', component: null as any },
@@ -185,7 +187,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             ctx.setField('email', 'new@mail.com');
             return null;
@@ -199,7 +201,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should set value for nested field (string path)', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -208,7 +210,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: 'Lenina', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             ctx.setField('address.city', 'SPB');
             ctx.setField('address.street', 'Nevsky');
@@ -224,7 +226,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should warn when setting non-existent field', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -233,7 +235,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             ctx.setField('nonexistent' as any, 'value');
             return null;
@@ -252,7 +254,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should warn when setting non-existent nested path', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -261,7 +263,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             ctx.setField('address.nonexistent', 'value');
             return null;
@@ -285,7 +287,7 @@ describe('ValidationContext - Type Safety', () => {
       let email: any = null;
       let city: any = null;
 
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: 'test@mail.com', component: null as any },
           password: { value: '', component: null as any },
@@ -310,7 +312,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should warn when accessing non-existent field', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -339,7 +341,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should warn when accessing non-existent nested path', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -370,7 +372,7 @@ describe('ValidationContext - Type Safety', () => {
 
   describe('Type guard for FormNode', () => {
     it('should correctly identify FormNode via type guard', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: 'test@mail.com', component: null as any },
           password: { value: 'secret', component: null as any },
@@ -379,7 +381,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: 'Lenina', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             // getField должен вернуть значение (не FormNode)
             const email = ctx.getField('email');
@@ -399,7 +401,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should use type guard in setField to ensure setValue exists', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -408,14 +410,14 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             // setField должен использовать type guard и вызвать setValue
             ctx.setField('address.city', 'New');
             return null;
           });
         },
-      });
+      }) as GroupNodeWithControls<TestForm>;
 
       await form.validate();
 
@@ -436,7 +438,7 @@ describe('ValidationContext - Type Safety', () => {
         };
       }
 
-      const deepForm = new GroupNode<DeepForm>({
+      const deepForm = makeForm<DeepForm>({
         form: {
           level1: {
             level2: {
@@ -446,7 +448,7 @@ describe('ValidationContext - Type Safety', () => {
             },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<DeepForm>) => {
           // Для поля с именем 'value' используем getFieldByPath
           const fieldPath = 'level1.level2.level3.value';
           validate(path.level1.level2.level3.value, (ctx) => {
@@ -468,7 +470,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should handle partial paths correctly', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -477,7 +479,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: 'Lenina', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             // Accessing 'address' (GroupNode, not FieldNode)
             const address = ctx.getField('address');
@@ -495,7 +497,7 @@ describe('ValidationContext - Type Safety', () => {
     });
 
     it('should not break on empty path', async () => {
-      form = new GroupNode<TestForm>({
+      form = makeForm<TestForm>({
         form: {
           email: { value: '', component: null as any },
           password: { value: '', component: null as any },
@@ -504,7 +506,7 @@ describe('ValidationContext - Type Safety', () => {
             street: { value: '', component: null as any },
           },
         },
-        validation: (path) => {
+        validation: (path: FieldPath<TestForm>) => {
           validate(path.email, (ctx) => {
             const result = ctx.getField('');
             expect(result).toBeUndefined();

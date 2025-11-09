@@ -8,7 +8,8 @@ import { describe, it, expect } from 'vitest';
 import { FieldNode } from '@/lib/forms/core/nodes/field-node';
 import { GroupNode } from '@/lib/forms/core/nodes/group-node';
 import { ArrayNode } from '@/lib/forms/core/nodes/array-node';
-import { isFieldNode, isGroupNode, isArrayNode } from '@/lib/forms/core/nodes/form-node';
+import { isFieldNode, isGroupNode, isArrayNode, FormNode } from '@/lib/forms/core/nodes/form-node';
+import { makeForm } from '@/lib/forms/core/utils/make-form';
 
 describe('FormNode Type Guards', () => {
   describe('isFieldNode()', () => {
@@ -142,7 +143,7 @@ describe('FormNode Type Guards', () => {
         tags: Array<{ label: string }>;
       }
 
-      const form = new GroupNode<Form>({
+      const form = makeForm<Form>({
         user: {
           name: { value: '', component: null as any },
           email: { value: '', component: null as any },
