@@ -191,6 +191,7 @@ export const mockSyncValidator = (value: any): boolean => {
 /**
  * Mock callback для behavior схем
  */
+// @ts-ignore
 export const mockBehaviorCallback = (value: any, ctx: any): void => {
   // Mock implementation
 };

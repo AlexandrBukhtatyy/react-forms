@@ -17,7 +17,7 @@ import type { FormSchema } from '@/lib/forms/core/types';
  * });
  * ```
  */
-export function createTestForm<T>(schema: FormSchema<T>): GroupNode<T> {
+export function createTestForm<T extends Record<string, any>>(schema: FormSchema<T>): GroupNode<T> {
   return new GroupNode(schema);
 }
 
@@ -94,7 +94,7 @@ export const mockComponent = null as any;
  * expect(isFormValid(form)).toBe(true);
  * ```
  */
-export function isFormValid<T>(form: GroupNode<T>): boolean {
+export function isFormValid<T extends Record<string, any>>(form: GroupNode<T>): boolean {
   return form.valid.value;
 }
 
@@ -108,7 +108,7 @@ export function isFormValid<T>(form: GroupNode<T>): boolean {
  * expect(hasFormErrors(form)).toBe(true);
  * ```
  */
-export function hasFormErrors<T>(form: GroupNode<T>): boolean {
+export function hasFormErrors<T extends Record<string, any>>(form: GroupNode<T>): boolean {
   return form.errors.value.length > 0;
 }
 
