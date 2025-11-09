@@ -11,7 +11,7 @@
 
 import { signal, computed, effect } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
-import { FormNode, type SetValueOptions } from './form-node';
+import { FormNode, type SetValueOptions, isFieldNode } from './form-node';
 import { ArrayNode } from './array-node';
 import type {
   ValidationError,
@@ -162,9 +162,9 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
     // Определяем, что передано: schema или config
     const isNewAPI = 'form' in schemaOrConfig;
-    const formSchema = isNewAPI ? schemaOrConfig.form : schemaOrConfig;
-    const behaviorSchema = isNewAPI ? schemaOrConfig.behavior : undefined;
-    const validationSchema = isNewAPI ? schemaOrConfig.validation : undefined;
+    const formSchema = isNewAPI ? (schemaOrConfig as GroupNodeConfig<T>).form : schemaOrConfig as FormSchema<T>;
+    const behaviorSchema = isNewAPI ? (schemaOrConfig as GroupNodeConfig<T>).behavior : undefined;
+    const validationSchema = isNewAPI ? (schemaOrConfig as GroupNodeConfig<T>).validation : undefined;
 
     // Создать поля из схемы с поддержкой вложенности
     for (const [key, config] of Object.entries(formSchema)) {
@@ -359,7 +359,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
   async validate(): Promise<boolean> {
     // Шаг 1: Валидация всех полей
-    const results = await Promise.all(
+    await Promise.all(
       Array.from(this.fields.values()).map((field) => field.validate())
     );
 
@@ -588,7 +588,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       return undefined;
     }
 
-    let current: FormNode<any> = this;
+    let current: FormNode<any> | undefined = this;
 
     for (const segment of segments) {
       // Доступ к полю
@@ -603,7 +603,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
       if (segment.index !== undefined) {
         // Используем duck typing вместо instanceof из-за circular dependency
         if ('at' in current && 'length' in current && typeof (current as any).at === 'function') {
-          const item = (current as any).at(segment.index);
+          const item: FormNode<any> | undefined = (current as any).at(segment.index);
           if (!item) return undefined;
           current = item;
         } else {
@@ -650,6 +650,14 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
           );
         }
         console.warn(`Field ${fieldPath} not found in GroupNode`);
+        continue;
+      }
+
+      // Валидация работает только с FieldNode
+      if (!isFieldNode(control)) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Validation can only run on FieldNode, skipping ${fieldPath}`);
+        }
         continue;
       }
 
@@ -745,7 +753,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
   private createNode(config: any): FormNode<any> {
     // Проверка 1: Массив? (специфическое поведение GroupNode)
     if (Array.isArray(config) && config.length >= 1) {
-      const [itemSchema, ...restItems] = config;
+      const [itemSchema] = config;
 
       // Извлекаем значения из всех элементов массива (включая первый)
       const initialItems = config.map((item: any) => {
@@ -855,7 +863,8 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     });
 
     // Регистрируем через SubscriptionManager и возвращаем unsubscribe
-    return this.disposers.add(dispose);
+    const key = `linkFields-${Date.now()}-${Math.random()}`;
+    return this.disposers.add(key, dispose);
   }
 
   /**
@@ -904,7 +913,8 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     });
 
     // Регистрируем через SubscriptionManager и возвращаем unsubscribe
-    return this.disposers.add(dispose);
+    const key = `watchField-${Date.now()}-${Math.random()}`;
+    return this.disposers.add(key, dispose);
   }
 
   /**

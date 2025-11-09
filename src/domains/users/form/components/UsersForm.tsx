@@ -102,7 +102,7 @@ function UsersForm({ openInDialog = false }: UsersFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = await form.submit(async (values) => {
+      const result = await form.submit(async (values: UsersFormModel) => {
         const newUser = await createUser({
           login: values.input || '',
           email: values.search || '',

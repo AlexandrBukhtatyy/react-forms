@@ -19,7 +19,9 @@
       "Bash(tree:*)",
       "Bash(node -e:*)",
       "Bash(npx tsx:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(tee:*)",
+      "Bash(phase1-results.log)"
     ],
     "deny": [],
     "ask": []

@@ -24,7 +24,7 @@ export function createFieldPath<T>(): FieldPath<T> {
  */
 function createFieldPathProxy<T>(basePath: string): any {
   return new Proxy({} as any, {
-    get(target, prop: string | symbol) {
+    get(_target, prop: string | symbol) {
       if (typeof prop === 'symbol') {
         return undefined;
       }

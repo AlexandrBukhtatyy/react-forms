@@ -11,7 +11,7 @@ import { BehaviorContextImpl } from './behavior-context';
 /**
  * Зарегистрированный behavior с опциями
  */
-interface RegisteredBehavior<T> {
+interface RegisteredBehavior<T extends Record<string, any>> {
   /** Handler функция behavior */
   handler: BehaviorHandlerFn<T>;
   /** Debounce в миллисекундах */
@@ -124,7 +124,7 @@ export class BehaviorRegistry {
    * @param form - GroupNode формы
    * @returns Количество зарегистрированных behaviors и функция cleanup
    */
-  endRegistration<T>(
+  endRegistration<T extends Record<string, any>>(
     form: GroupNode<T>
   ): { count: number; cleanup: () => void } {
     this.isRegistering = false;
@@ -164,7 +164,7 @@ export class BehaviorRegistry {
    * Создать effect подписку для behavior
    * @private
    */
-  private createEffect<T>(
+  private createEffect<T extends Record<string, any>>(
     registered: RegisteredBehavior<T>,
     form: GroupNode<T>,
     context: BehaviorContextImpl<T>

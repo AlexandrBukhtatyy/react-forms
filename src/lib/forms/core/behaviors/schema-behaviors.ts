@@ -47,7 +47,7 @@ import {
  * };
  * ```
  */
-export function copyFrom<TForm, TSource, TTarget>(
+export function copyFrom<TForm extends Record<string, any>, TSource, TTarget>(
   target: FieldPathNode<TForm, TTarget>,
   source: FieldPathNode<TForm, TSource>,
   options?: CopyFromOptions<TForm, TSource>
@@ -79,7 +79,7 @@ export function copyFrom<TForm, TSource, TTarget>(
  * };
  * ```
  */
-export function enableWhen<TForm>(
+export function enableWhen<TForm extends Record<string, any>>(
   field: FieldPathNode<TForm, any>,
   condition: (form: TForm) => boolean,
   options?: EnableWhenOptions
@@ -105,7 +105,7 @@ export function enableWhen<TForm>(
  * };
  * ```
  */
-export function disableWhen<TForm>(
+export function disableWhen<TForm extends Record<string, any>>(
   field: FieldPathNode<TForm, any>,
   condition: (form: TForm) => boolean,
   options?: EnableWhenOptions
@@ -136,7 +136,7 @@ export function disableWhen<TForm>(
  * )}
  * ```
  */
-export function showWhen<TForm>(
+export function showWhen<TForm extends Record<string, any>>(
   field: FieldPathNode<TForm, any>,
   condition: (form: TForm) => boolean
 ): void {
@@ -150,7 +150,7 @@ export function showWhen<TForm>(
  * @param field - Поле для скрытия
  * @param condition - Функция условия (true = hide, false = show)
  */
-export function hideWhen<TForm>(
+export function hideWhen<TForm extends Record<string, any>>(
   field: FieldPathNode<TForm, any>,
   condition: (form: TForm) => boolean
 ): void {
@@ -183,7 +183,7 @@ export function hideWhen<TForm>(
  * };
  * ```
  */
-export function computeFrom<TForm, TTarget>(
+export function computeFrom<TForm extends Record<string, any>, TTarget>(
   target: FieldPathNode<TForm, TTarget>,
   sources: FieldPathNode<TForm, any>[],
   computeFn: (values: Record<string, any>) => TTarget,
@@ -232,7 +232,7 @@ export function computeFrom<TForm, TTarget>(
  * };
  * ```
  */
-export function watchField<TForm, TField>(
+export function watchField<TForm extends Record<string, any>, TField>(
   field: FieldPathNode<TForm, TField>,
   callback: (value: TField, ctx: BehaviorContext<TForm>) => void | Promise<void>,
   options?: WatchFieldOptions
@@ -264,7 +264,7 @@ export function watchField<TForm, TField>(
  * };
  * ```
  */
-export function revalidateWhen<TForm>(
+export function revalidateWhen<TForm extends Record<string, any>>(
   target: FieldPathNode<TForm, any>,
   triggers: FieldPathNode<TForm, any>[],
   options?: RevalidateWhenOptions
@@ -294,7 +294,7 @@ export function revalidateWhen<TForm>(
  * };
  * ```
  */
-export function syncFields<TForm, T>(
+export function syncFields<TForm extends Record<string, any>, T>(
   field1: FieldPathNode<TForm, T>,
   field2: FieldPathNode<TForm, T>,
   options?: SyncFieldsOptions<T>

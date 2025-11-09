@@ -314,12 +314,12 @@ describe('Cleanup Integration Tests', () => {
 
       form.sum.computeFrom(
         [externalSignal1, externalSignal2],
-        (v1, v2) => v1 + v2
+        (v1: number, v2: number) => v1 + v2
       );
 
       form.product.computeFrom(
         [externalSignal1, externalSignal2],
-        (v1, v2) => v1 * v2
+        (v1: number, v2: number) => v1 * v2
       );
 
       // Initial computation
@@ -357,7 +357,7 @@ describe('Cleanup Integration Tests', () => {
       const sideEffectCallback = vi.fn();
 
       // Watch country and reset city when it changes
-      form.watchField('country', (country) => {
+      form.watchField('country', (country: string) => {
         if (country) {
           form.city.setValue(''); // Reset city
           sideEffectCallback(country);
@@ -560,7 +560,7 @@ describe('Cleanup Integration Tests', () => {
 
       // Trigger debounced validation
       form.field.setValue('ab');
-      const validationPromise = form.validate();
+      void form.validate();
 
       // Dispose before debounce completes
       form.dispose();
@@ -592,7 +592,7 @@ describe('Cleanup Integration Tests', () => {
       // form2 depends on form1
       form2.dependentField.computeFrom(
         [form1.sharedField.value],
-        (sharedValue) => `Dependent: ${sharedValue}`
+        (sharedValue: string) => `Dependent: ${sharedValue}`
       );
 
       // Initial state

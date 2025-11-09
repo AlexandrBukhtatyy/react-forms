@@ -200,4 +200,24 @@ export class SubscriptionManager {
   getKeys(): string[] {
     return Array.from(this.subscriptions.keys());
   }
+
+  /**
+   * Отписывается от всех подписок (алиас для clear())
+   *
+   * Используется при dispose() узла формы для совместимости с ожидаемым API.
+   *
+   * @example
+   * ```typescript
+   * class FieldNode {
+   *   private subscriptions = new SubscriptionManager();
+   *
+   *   dispose() {
+   *     this.subscriptions.dispose();
+   *   }
+   * }
+   * ```
+   */
+  dispose(): void {
+    this.clear();
+  }
 }

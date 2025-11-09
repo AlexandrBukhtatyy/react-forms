@@ -1,7 +1,7 @@
 import type { TableResource, ResourceParams, ResourceResult } from '../types';
 
 export interface CachedResource<T> extends TableResource<T> {
-  cache: Map<string, { data: ResourceResult<T>; timestamp: number }>;
+  cacheStore: Map<string, { data: ResourceResult<T>; timestamp: number }>;
   ttl: number;
 }
 
@@ -13,7 +13,7 @@ export function createCachedResource<T>(
 
   return {
     ...baseResource,
-    cache,
+    cacheStore: cache,
     ttl,
 
     load: async (params: ResourceParams) => {

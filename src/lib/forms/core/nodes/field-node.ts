@@ -91,7 +91,9 @@ export class FieldNode<T = any> extends FormNode<T> {
     super();
 
     // Сохраняем конфигурацию
-    this.initialValue = config.value;
+    // FieldConfig.value имеет тип T | null, но FieldNode всегда работает с T
+    // null трактуется как начальное значение типа T
+    this.initialValue = config.value as T;
     this.validators = config.validators || [];
     this.asyncValidators = config.asyncValidators || [];
     this.updateOn = config.updateOn || 'change';
@@ -99,7 +101,7 @@ export class FieldNode<T = any> extends FormNode<T> {
     this.component = config.component;
 
     // Инициализация приватных сигналов
-    this._value = signal(config.value);
+    this._value = signal(config.value as T);
     this._errors = signal<ValidationError[]>([]);
     // _touched, _dirty, _status инициализируются в FormNode
     this._pending = signal(false);
@@ -521,7 +523,8 @@ export class FieldNode<T = any> extends FormNode<T> {
     });
 
     // Регистрируем через SubscriptionManager и возвращаем unsubscribe
-    return this.disposers.add(dispose);
+    const key = `watch-${Date.now()}-${Math.random()}`;
+    return this.disposers.add(key, dispose);
   }
 
   /**
@@ -562,7 +565,8 @@ export class FieldNode<T = any> extends FormNode<T> {
     });
 
     // Регистрируем через SubscriptionManager и возвращаем unsubscribe
-    return this.disposers.add(dispose);
+    const key = `computeFrom-${Date.now()}-${Math.random()}`;
+    return this.disposers.add(key, dispose);
   }
 
   /**

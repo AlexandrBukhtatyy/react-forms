@@ -13,9 +13,9 @@ import type { FieldPath } from './field-path';
 
 // Forward declarations для избежания циклических зависимостей
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type GroupNode<T = any> = any;
+type GroupNode<_T = any> = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type FieldNode<T = any> = any;
+type FieldNode<_T = any> = any;
 
 // ============================================================================
 // Контекст валидации

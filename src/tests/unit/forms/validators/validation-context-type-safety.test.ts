@@ -21,7 +21,7 @@ describe('ValidationContext - Type Safety', () => {
   }
 
   let form: GroupNodeWithControls<TestForm>;
-  let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
+  let consoleWarnSpy: any;
 
   beforeEach(() => {
     form = makeForm<TestForm>({

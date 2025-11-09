@@ -27,7 +27,7 @@ import type { FieldPathNode } from '../types';
  * @param fieldPath - Путь к полю
  * @returns Узел формы или undefined
  */
-function resolveNode<T>(
+function resolveNode<T extends Record<string, any>>(
   form: GroupNode<T>,
   fieldPath: string
 ): FormNode<any> | undefined {
@@ -46,7 +46,7 @@ function resolveNode<T>(
  * @param options - Опции копирования
  * @returns BehaviorHandlerFn
  */
-export function createCopyBehavior<TForm, TSource>(
+export function createCopyBehavior<TForm extends Record<string, any>, TSource>(
   target: FieldPathNode<TForm, any>,
   source: FieldPathNode<TForm, TSource>,
   options?: CopyFromOptions<TForm, TSource>
@@ -104,7 +104,7 @@ export function createCopyBehavior<TForm, TSource>(
  * @param options - Опции
  * @returns BehaviorHandlerFn
  */
-export function createEnableBehavior<TForm>(
+export function createEnableBehavior<TForm extends Record<string, any>>(
   field: FieldPathNode<TForm, any>,
   condition: (form: TForm) => boolean,
   options?: EnableWhenOptions
@@ -145,9 +145,9 @@ export function createEnableBehavior<TForm>(
  * @param condition - Функция условия (true = show, false = hide)
  * @returns BehaviorHandlerFn
  */
-export function createShowBehavior<TForm>(
-  field: FieldPathNode<TForm, any>,
-  condition: (form: TForm) => boolean
+export function createShowBehavior<TForm extends Record<string, any>>(
+  _field: FieldPathNode<TForm, any>,
+  _condition: (form: TForm) => boolean
 ): BehaviorHandlerFn<TForm> {
   return (_form, _context, _withDebounce) => {
     if (import.meta.env.DEV) {
@@ -172,7 +172,7 @@ export function createShowBehavior<TForm>(
  * @param options - Опции
  * @returns BehaviorHandlerFn
  */
-export function createComputeBehavior<TForm>(
+export function createComputeBehavior<TForm extends Record<string, any>>(
   target: FieldPathNode<TForm, any>,
   sources: FieldPathNode<TForm, any>[],
   computeFn: (...values: any[]) => any,
@@ -224,7 +224,7 @@ export function createComputeBehavior<TForm>(
  * @param options - Опции
  * @returns BehaviorHandlerFn
  */
-export function createWatchBehavior<TForm, TField>(
+export function createWatchBehavior<TForm extends Record<string, any>, TField>(
   field: FieldPathNode<TForm, TField>,
   callback: (value: TField, ctx: BehaviorContext<TForm>) => void | Promise<void>,
   options?: WatchFieldOptions
@@ -263,10 +263,10 @@ export function createWatchBehavior<TForm, TField>(
  * @param options - Опции
  * @returns BehaviorHandlerFn
  */
-export function createRevalidateBehavior<TForm>(
+export function createRevalidateBehavior<TForm extends Record<string, any>>(
   target: FieldPathNode<TForm, any>,
   triggers: FieldPathNode<TForm, any>[],
-  options?: RevalidateWhenOptions
+  _options?: RevalidateWhenOptions
 ): BehaviorHandlerFn<TForm> {
   return (form, _context, withDebounce) => {
     const targetNode = resolveNode(form, target.__path);
@@ -302,7 +302,7 @@ export function createRevalidateBehavior<TForm>(
  * @param options - Опции
  * @returns BehaviorHandlerFn
  */
-export function createSyncBehavior<TForm, T>(
+export function createSyncBehavior<TForm extends Record<string, any>, T>(
   field1: FieldPathNode<TForm, T>,
   field2: FieldPathNode<TForm, T>,
   options?: SyncFieldsOptions<T>

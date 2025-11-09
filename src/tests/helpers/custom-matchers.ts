@@ -122,6 +122,9 @@ expect.extend({
  * expect(form).toHaveFieldError('email');
  * ```
  */
+// Note: This matcher is disabled because ValidationError no longer has 'field' or 'path' properties.
+// ValidationError only has: code, message, params
+/*
 expect.extend({
   toHaveFieldError(received: GroupNode<any>, fieldPath: string) {
     const errors = received.errors.value;
@@ -139,6 +142,7 @@ expect.extend({
     };
   },
 });
+*/
 
 // ============================================================================
 // Matchers для FieldNode/GroupNode состояния

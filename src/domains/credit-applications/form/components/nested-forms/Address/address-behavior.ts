@@ -16,12 +16,6 @@ import type { FieldPath } from '@/lib/forms/core/types';
 
 // API функции (заглушки, т.к. в примере они импортируются из domain API)
 // В реальном приложении эти функции будут в domains/credit-applications/api
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _fetchRegions = async (country: string): Promise<string[]> => {
-  console.log('Fetching regions for country:', country);
-  return ['Москва', 'Московская область', 'Санкт-Петербург'];
-};
-
 const fetchCities = async (region: string): Promise<string[]> => {
   console.log('Fetching cities for region:', region);
   return ['Москва', 'Одинцово', 'Химки'];

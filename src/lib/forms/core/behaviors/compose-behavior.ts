@@ -170,7 +170,7 @@ export function apply<TForm, TField>(
  * );
  * ```
  */
-export function applyWhen<TForm, TValue>(
+export function applyWhen<TForm extends Record<string, any>, TValue>(
   conditionField: FieldPathNode<TForm, TValue> | undefined,
   condition: (value: TValue) => boolean,
   callback: (path: FieldPath<TForm>) => void

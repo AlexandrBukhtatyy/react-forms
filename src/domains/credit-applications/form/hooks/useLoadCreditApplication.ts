@@ -57,17 +57,19 @@ const patchFormValue = (
         });
 
         // Обновляем опции типов имущества для всех элементов массива properties
-        // properties - это ArrayNodeWithControls<PropertyItem>
-        form.properties?.forEach((property) => {
-          property.type.updateComponentProps({
+        // properties - это ArrayNode<Property>
+        // forEach возвращает GroupNode элементы, а не значения
+        form.properties?.forEach((propertyNode: any) => {
+          propertyNode.type.updateComponentProps({
             options: dictionaries.propertyTypes
           });
         });
 
         // Обновляем опции банков для всех элементов массива existingLoans
-        // existingLoans - это ArrayNodeWithControls<ExistingLoan>
-        form.existingLoans?.forEach((loan) => {
-          loan.bank.updateComponentProps({
+        // existingLoans - это ArrayNode<ExistingLoan>
+        // forEach возвращает GroupNode элементы, а не значения
+        form.existingLoans?.forEach((loanNode: any) => {
+          loanNode.bank.updateComponentProps({
             options: dictionaries.banks
           });
         });

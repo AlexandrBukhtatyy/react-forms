@@ -32,7 +32,7 @@ export function createTestForm<T extends Record<string, any>>(schema: FormSchema
  * });
  * ```
  */
-export function createTestArray<T>(
+export function createTestArray<T extends object>(
   schema: FormSchema<T>,
   initialItems: Partial<T>[] = []
 ): ArrayNode<T> {
@@ -122,6 +122,6 @@ export function hasFormErrors<T extends Record<string, any>>(form: GroupNode<T>)
  * expect(getErrorCount(form)).toBe(1);
  * ```
  */
-export function getErrorCount<T>(form: GroupNode<T>): number {
+export function getErrorCount<T extends Record<string, any>>(form: GroupNode<T>): number {
   return form.errors.value.length;
 }

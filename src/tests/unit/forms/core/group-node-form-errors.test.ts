@@ -262,13 +262,13 @@ describe('GroupNode - Form-level Errors', () => {
       ]);
 
       // Root form должен включать свои errors
-      expect(nestedForm.errors.value.some(e => e.code === 'root_error')).toBe(true);
+      expect(nestedForm.errors.value.some((e: ValidationError) => e.code === 'root_error')).toBe(true);
 
       // Nested group должен включать свои errors
-      expect(nestedForm.user.errors.value.some(e => e.code === 'user_error')).toBe(true);
+      expect(nestedForm.user.errors.value.some((e: ValidationError) => e.code === 'user_error')).toBe(true);
 
       // Root form должен включать errors вложенных групп
-      expect(nestedForm.errors.value.some(e => e.code === 'user_error')).toBe(true);
+      expect(nestedForm.errors.value.some((e: ValidationError) => e.code === 'user_error')).toBe(true);
     });
 
     it('should clear form-level errors recursively', () => {
@@ -285,7 +285,7 @@ describe('GroupNode - Form-level Errors', () => {
       nestedForm.clearErrors();
 
       // Root errors очищены
-      expect(nestedForm.errors.value.every(e => e.code !== 'root_error')).toBe(true);
+      expect(nestedForm.errors.value.every((e: ValidationError) => e.code !== 'root_error')).toBe(true);
 
       // Nested errors очищены
       expect(nestedForm.user.errors.value).toHaveLength(0);
@@ -350,7 +350,7 @@ describe('GroupNode - Form-level Errors', () => {
       ]);
 
       expect(form.valid.value).toBe(false);
-      expect(form.errors.value.some(e => e.code === 'passwords_mismatch')).toBe(true);
+      expect(form.errors.value.some((e: ValidationError) => e.code === 'passwords_mismatch')).toBe(true);
     });
   });
 

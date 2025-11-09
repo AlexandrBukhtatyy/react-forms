@@ -52,7 +52,6 @@ export function notEmpty<TForm = any, TItem = any>(
     {
       message: options?.message || 'Массив не должен быть пустым',
       params: { minLength: 1, ...options?.params },
-      trigger: options?.trigger,
     }
   );
 }

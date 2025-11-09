@@ -279,7 +279,7 @@ describe('Form Isolation', () => {
           required(path.confirmEmail);
           email(path.confirmEmail);
         },
-        behavior: (path: FieldPath<FullTestForm>) => {
+        behavior: (_path: FieldPath<FullTestForm>) => {
           // Нет behaviors для этой формы
         },
       });

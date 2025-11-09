@@ -449,7 +449,7 @@ export function isFieldNode<T = any>(node: FormNode<any>): node is import('./fie
  * }
  * ```
  */
-export function isGroupNode<T = any>(node: FormNode<any>): node is import('./group-node').GroupNode<T> {
+export function isGroupNode<T extends Record<string, any> = any>(node: FormNode<any>): node is import('./group-node').GroupNode<T> {
   return Boolean(
     node &&
     typeof node === 'object' &&
@@ -476,7 +476,7 @@ export function isGroupNode<T = any>(node: FormNode<any>): node is import('./gro
  * }
  * ```
  */
-export function isArrayNode<T = any>(node: FormNode<any>): node is import('./array-node').ArrayNode<T> {
+export function isArrayNode<T extends object = any>(node: FormNode<any>): node is import('./array-node').ArrayNode<T> {
   return Boolean(
     node &&
     typeof node === 'object' &&

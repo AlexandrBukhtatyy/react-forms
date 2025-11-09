@@ -12,7 +12,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ className }) => {
   const { openDialog } = useDialog();
 
   const clickHandler = () => {
-    openDialog('Таблица пользователей', UsersForm).then((result) => {
+    openDialog('Таблица пользователей', UsersForm).then(() => {
       usersTable.loadData();
     });
   }

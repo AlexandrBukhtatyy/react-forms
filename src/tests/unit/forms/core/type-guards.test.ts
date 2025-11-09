@@ -19,7 +19,7 @@ describe('FormNode Type Guards', () => {
         component: null as any,
       });
 
-      expect(isFieldNode(field)).toBe(true);
+      expect(isFieldNode(field as any)).toBe(true);
     });
 
     it('should return false for GroupNode', () => {
@@ -27,7 +27,7 @@ describe('FormNode Type Guards', () => {
         name: { value: '', component: null as any },
       });
 
-      expect(isFieldNode(group)).toBe(false);
+      expect(isFieldNode(group as any)).toBe(false);
     });
 
     it('should return false for ArrayNode', () => {
@@ -35,7 +35,7 @@ describe('FormNode Type Guards', () => {
         name: { value: '', component: null as any },
       });
 
-      expect(isFieldNode(array)).toBe(false);
+      expect(isFieldNode(array as any)).toBe(false);
     });
 
     it('should allow TypeScript type narrowing', () => {
@@ -44,7 +44,7 @@ describe('FormNode Type Guards', () => {
         component: null as any,
       });
 
-      if (isFieldNode(field)) {
+      if (isFieldNode(field as any)) {
         // TypeScript должен знать, что это FieldNode
         field.markAsTouched();
         field.markAsDirty();
@@ -69,7 +69,7 @@ describe('FormNode Type Guards', () => {
         component: null as any,
       });
 
-      expect(isGroupNode(field)).toBe(false);
+      expect(isGroupNode(field as any)).toBe(false);
     });
 
     it('should return false for ArrayNode', () => {
@@ -77,7 +77,7 @@ describe('FormNode Type Guards', () => {
         name: { value: '', component: null as any },
       });
 
-      expect(isGroupNode(array)).toBe(false);
+      expect(isGroupNode(array as any)).toBe(false);
     });
 
     it('should allow TypeScript type narrowing', () => {
@@ -109,7 +109,7 @@ describe('FormNode Type Guards', () => {
         component: null as any,
       });
 
-      expect(isArrayNode(field)).toBe(false);
+      expect(isArrayNode(field as any)).toBe(false);
     });
 
     it('should return false for GroupNode', () => {
@@ -117,7 +117,7 @@ describe('FormNode Type Guards', () => {
         name: { value: '', component: null as any },
       });
 
-      expect(isArrayNode(group)).toBe(false);
+      expect(isArrayNode(group as any)).toBe(false);
     });
 
     it('should allow TypeScript type narrowing', () => {
@@ -242,7 +242,7 @@ describe('FormNode Type Guards', () => {
         component: null as any,
       });
 
-      if (isFieldNode(node)) {
+      if (isFieldNode(node as any)) {
         // TypeScript знает, что node - FieldNode<string>
         const value: string = node.value.value;
         expect(value).toBe('test');

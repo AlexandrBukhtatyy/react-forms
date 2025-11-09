@@ -2,9 +2,9 @@
  * Реализация контекста валидации
  */
 
-import type { GroupNode } from '../core/nodes/group-node';
-import type { FieldNode } from '../core/nodes/field-node';
-import type { FormNode } from '../core/nodes/form-node';
+import type { GroupNode } from '../nodes/group-node';
+import type { FieldNode } from '../nodes/field-node';
+import type { FormNode } from '../nodes/form-node';
 import type {
   ValidationContext,
   TreeValidationContext,
@@ -27,7 +27,7 @@ function isFormNode(value: any): value is FormNode<any> {
 /**
  * Реализация ValidationContext для валидации отдельного поля
  */
-export class ValidationContextImpl<TForm = any, TField = any>
+export class ValidationContextImpl<TForm extends Record<string, any> = any, TField = any>
   implements ValidationContext<TForm, TField>
 {
   private form: GroupNode<TForm>
@@ -116,7 +116,7 @@ export class ValidationContextImpl<TForm = any, TField = any>
   setField(path: any, value: any): void {
     if (typeof path !== 'string') {
       // Type-safe доступ через ключ
-      const field = this.form[path];
+      const field = (this.form as any)[path];
 
       if (!field) {
         if (process.env.NODE_ENV !== 'production') {
@@ -181,7 +181,7 @@ export class ValidationContextImpl<TForm = any, TField = any>
 /**
  * Реализация TreeValidationContext для cross-field валидации
  */
-export class TreeValidationContextImpl<TForm = any> implements TreeValidationContext<TForm> {
+export class TreeValidationContextImpl<TForm extends Record<string, any> = any> implements TreeValidationContext<TForm> {
   private form: GroupNode<TForm>
 
   constructor(form: GroupNode<TForm>) {

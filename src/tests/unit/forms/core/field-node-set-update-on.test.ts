@@ -142,7 +142,7 @@ describe('FieldNode - setUpdateOn()', () => {
       expect(form.password.valid.value).toBe(true);
 
       // First submit - validation fails
-      const result = await form.submit(async (values) => values);
+      const result = await form.submit(async (values: any) => values);
 
       expect(result).toBeNull();
       expect(form.email.valid.value).toBe(false);
@@ -261,7 +261,7 @@ describe('FieldNode - setUpdateOn()', () => {
       });
 
       // Submit fails
-      const result = await form.submit(async (values) => values);
+      const result = await form.submit(async (values: any) => values);
       expect(result).toBeNull();
 
       // Update all fields to instant feedback
@@ -389,7 +389,7 @@ describe('FieldNode - setUpdateOn()', () => {
       expect(form.valid.value).toBe(true);
 
       // User clicks submit
-      const result = await form.submit(async (values) => {
+      const result = await form.submit(async (values: any) => {
         // Switch to instant feedback after submit attempt
         form.username.setUpdateOn('change');
         form.email.setUpdateOn('change');

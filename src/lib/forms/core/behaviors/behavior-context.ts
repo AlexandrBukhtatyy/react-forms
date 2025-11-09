@@ -14,14 +14,17 @@ import type { BehaviorContext } from './types';
  * Реализация BehaviorContext
  * Используется в callback функциях behavior схем
  */
-export class BehaviorContextImpl<TForm> implements BehaviorContext<TForm> {
+export class BehaviorContextImpl<TForm extends Record<string, any>> implements BehaviorContext<TForm> {
   /**
    * Корневой узел формы с проксированными полями
    * Позволяет обращаться к полям напрямую: ctx.formNode.properties.clear()
    */
   public readonly formNode: GroupNodeWithControls<TForm>;
 
-  constructor(private form: GroupNode<TForm>) {
+  private form: GroupNode<TForm>;
+
+  constructor(form: GroupNode<TForm>) {
+    this.form = form;
     // ✅ Используем _proxyInstance если доступен, иначе fallback на form
     // _proxyInstance устанавливается в GroupNode конструкторе перед применением behavior схем
     this.formNode = ((form as any)._proxyInstance || form) as GroupNodeWithControls<TForm>;

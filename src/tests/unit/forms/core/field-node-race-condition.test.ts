@@ -50,11 +50,8 @@ describe('FieldNode - Race Condition Protection', () => {
     });
 
     it('should ignore results from slow validators if value changed', async () => {
-      let resolveSlowValidator: ((value: any) => void) | null = null;
-
       const slowValidator: AsyncValidatorFn<string> = async (value) => {
         return new Promise((resolve) => {
-          resolveSlowValidator = resolve;
           // Намеренно медленная валидация (500ms)
           setTimeout(() => {
             resolve(

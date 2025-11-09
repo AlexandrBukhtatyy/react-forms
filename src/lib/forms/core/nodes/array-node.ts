@@ -31,7 +31,7 @@ import { SubscriptionManager } from '../utils/subscription-manager';
  * console.log(array.length.value); // 1
  * ```
  */
-export class ArrayNode<T = any> extends FormNode<T[]> {
+export class ArrayNode<T extends object = any> extends FormNode<T[]> {
   // ============================================================================
   // Приватные поля
   // ============================================================================
@@ -209,9 +209,9 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
     }
   }
 
-  patchValue(values: Partial<T>[]): void {
+  patchValue(values: (T | undefined)[]): void {
     values.forEach((value, index) => {
-      if (this.items.value[index]) {
+      if (this.items.value[index] && value !== undefined) {
         this.items.value[index].patchValue(value);
       }
     });
@@ -500,7 +500,7 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
       // Отслеживаем изменения всех элементов массива
       const values = this.items.value.map((item) => {
         if (item instanceof GroupNode) {
-          const field = item.fields.get(fieldKey as string);
+          const field = item.getFieldByPath(fieldKey as string);
           return field?.value.value as T[K];
         }
         return undefined;
@@ -510,7 +510,8 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
     });
 
     // Регистрируем через SubscriptionManager и возвращаем unsubscribe
-    return this.disposers.add(dispose);
+    const key = `watchItems-${Date.now()}-${Math.random()}`;
+    return this.disposers.add(key, dispose);
   }
 
   /**
@@ -542,7 +543,8 @@ export class ArrayNode<T = any> extends FormNode<T[]> {
     });
 
     // Регистрируем через SubscriptionManager и возвращаем unsubscribe
-    return this.disposers.add(dispose);
+    const key = `watchLength-${Date.now()}-${Math.random()}`;
+    return this.disposers.add(key, dispose);
   }
 
   /**

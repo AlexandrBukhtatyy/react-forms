@@ -17,7 +17,7 @@ export interface SelectProps extends Omit<React.ComponentProps<typeof SelectPrim
 }
 
 const Select = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Root>,
+  HTMLButtonElement,
   SelectProps
 >(({ className, value, onChange, onBlur, resource, options: directOptions, placeholder, disabled, clearable = false, ...props }, ref) => {
   const [resourceOptions, setResourceOptions] = React.useState<Array<{id: string | number; label: string; value: string; group?: string}>>([]);
@@ -73,7 +73,6 @@ const Select = React.forwardRef<
   return (
     <div className="relative w-full">
       <SelectPrimitive.Root
-        ref={ref}
         data-slot="select"
         value={value || ''}
         onValueChange={handleValueChange}
@@ -81,7 +80,7 @@ const Select = React.forwardRef<
         disabled={disabled || loading}
         {...props}
       >
-        <SelectTrigger className={cn(className, showClearButton && "pr-8")} disabled={loading}>
+        <SelectTrigger ref={ref} className={cn(className, showClearButton && "pr-8")} disabled={loading}>
           <SelectValue placeholder={loading ? "Loading..." : placeholder || "Select an option..."} />
         </SelectTrigger>
         <SelectContent>

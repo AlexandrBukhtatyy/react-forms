@@ -10,7 +10,7 @@
  * - Временной валидации без изменения состояния
  */
 
-import type { GroupNode } from '../core/nodes/group-node';
+import type { GroupNode } from '../nodes/group-node';
 import type { ValidationSchemaFn } from '../types';
 import { ValidationRegistry } from './validation-registry';
 import { createFieldPath } from './field-path';

@@ -230,7 +230,7 @@ describe('FieldNode - Cleanup (dispose)', () => {
 
       // Trigger validation with debounce
       fieldWithDebounce.setValue('ab');
-      const validationPromise = fieldWithDebounce.validate();
+      void fieldWithDebounce.validate();
 
       // Dispose before debounce completes
       fieldWithDebounce.dispose();

@@ -10,7 +10,7 @@ interface UsersTableProps {
   className?: string;
 }
 
-const UsersTable: React.FC<UsersTableProps> = ({ className }) => {
+const UsersTable: React.FC<UsersTableProps> = ({ className: _className }) => {
   useSignals();
   const form = useMemo(createUsersFilterForm, []);
   const isInitializedRef = useRef(false);

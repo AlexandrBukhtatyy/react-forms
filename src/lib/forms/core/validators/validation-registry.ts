@@ -136,7 +136,7 @@ export class ValidationRegistry {
    *
    * Сохраняет валидаторы в локальном состоянии (this.validators) вместо глобального WeakMap.
    */
-  endRegistration<T>(form: GroupNode<T>): void {
+  endRegistration<T extends Record<string, any>>(form: GroupNode<T>): void {
     const context = this.contextStack.pop();
     if (!context) {
       throw new Error('No active registration context');
@@ -357,7 +357,7 @@ export class ValidationRegistry {
    * Применить array-items validators к ArrayNode элементам
    * @private
    */
-  private applyArrayItemValidators<T>(form: GroupNode<T>, validators: ValidatorRegistration[]): void {
+  private applyArrayItemValidators<T extends Record<string, any>>(form: GroupNode<T>, validators: ValidatorRegistration[]): void {
     // Фильтруем array-items validators
     const arrayItemValidators = validators.filter((v: any) => v.type === 'array-items');
 

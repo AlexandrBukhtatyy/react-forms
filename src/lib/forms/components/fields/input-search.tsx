@@ -3,7 +3,7 @@ import { SearchIcon, XIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ResourceConfig } from '../../core/resources';
 
-export interface InputSearchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
+export interface InputSearchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'resource'> {
   className?: string;
   value?: string | null;
   onChange?: (value: string | null) => void;
@@ -30,7 +30,7 @@ const InputSearch = React.forwardRef<HTMLInputElement, InputSearchProps>(
     const [loading, setLoading] = React.useState(false);
     const [showSuggestions, setShowSuggestions] = React.useState(false);
     const [inputValue, setInputValue] = React.useState(value || '');
-    const timeoutRef = React.useRef<NodeJS.Timeout>();
+    const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
     // Синхронизируем внутреннее значение с внешним
     React.useEffect(() => {

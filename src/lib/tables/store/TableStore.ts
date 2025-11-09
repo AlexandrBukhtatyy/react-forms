@@ -324,7 +324,7 @@ export class TableStore<T extends Record<string, any>> {
   };
 
   public reset = () => {
-    this._signal.value = this.createInitialState(this.options);
+    this.signal.value = this.createInitialState(this.options);
   };
 }
 
