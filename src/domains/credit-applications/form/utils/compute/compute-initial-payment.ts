@@ -4,12 +4,13 @@
 
 /**
  * Вычисление первоначального взноса (20% от стоимости недвижимости)
- * @param values - значения полей формы
+ *
+ * ✅ ОБНОВЛЕНО: Теперь принимает параметры напрямую (type-safe)
+ *
+ * @param propertyValue - Стоимость недвижимости (₽)
  * @returns первоначальный взнос (₽)
  */
-export function computeInitialPayment(values: Record<string, any>): number {
-  const propertyValue = values.propertyValue;
-
+export function computeInitialPayment(propertyValue: number): number {
   if (!propertyValue) {
     return 0;
   }

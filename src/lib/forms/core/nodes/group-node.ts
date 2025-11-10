@@ -11,8 +11,7 @@
 
 import { signal, computed, effect } from '@preact/signals-react';
 import type { Signal, ReadonlySignal } from '@preact/signals-react';
-import { FormNode, type SetValueOptions, isFieldNode } from './form-node';
-import { ArrayNode } from './array-node';
+import { FormNode, type SetValueOptions } from './form-node';
 import type {
   ValidationError,
   FieldStatus,
@@ -22,10 +21,10 @@ import type {
 } from '../types';
 import type { GroupNodeWithControls } from '../types/group-node-proxy';
 import { createFieldPath } from '../validators';
-import { ValidationContextImpl, TreeValidationContextImpl } from '../validators/validation-context';
+import { ValidationApplicator } from '../validators/validation-applicator';
 import type { BehaviorSchemaFn } from '../behaviors/types';
 import { BehaviorRegistry } from '../behaviors/behavior-registry';
-import { createFieldPath as createBehaviorFieldPath } from '../behaviors/create-field-path';
+import { BehaviorApplicator } from '../behaviors/behavior-applicator';
 import { FieldPathNavigator } from '../utils/field-path-navigator';
 import { NodeFactory } from '../factories/node-factory';
 import { SubscriptionManager } from '../utils/subscription-manager';
@@ -121,6 +120,20 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    * Обеспечивает полную изоляцию форм друг от друга
    */
   private readonly behaviorRegistry = new BehaviorRegistry();
+
+  /**
+   * Аппликатор для применения валидаторов к форме
+   * Извлечен из GroupNode для соблюдения SRP
+   * Использует композицию для управления процессом валидации
+   */
+  private readonly validationApplicator = new ValidationApplicator(this);
+
+  /**
+   * Аппликатор для применения behavior схемы к форме
+   * Извлечен из GroupNode для соблюдения SRP
+   * Использует композицию для управления процессом применения behaviors
+   */
+  private readonly behaviorApplicator = new BehaviorApplicator(this, this.behaviorRegistry);
 
   // ============================================================================
   // Публичные computed signals
@@ -499,9 +512,16 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
   /**
    * Применить behavior schema к форме
-   * Декларативное описание реактивного поведения через схему
    *
-   * @param schemaFn - Функция описания поведения формы
+   * ✅ РЕФАКТОРИНГ: Делегирование BehaviorApplicator (SRP)
+   *
+   * Логика применения behavior схемы извлечена в BehaviorApplicator для:
+   * - Соблюдения Single Responsibility Principle
+   * - Уменьшения размера GroupNode (~50 строк)
+   * - Улучшения тестируемости
+   * - Консистентности с ValidationApplicator
+   *
+   * @param schemaFn Функция описания поведения формы
    * @returns Функция cleanup для отписки от всех behaviors
    *
    * @example
@@ -509,19 +529,16 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    * import { copyFrom, enableWhen, computeFrom } from '@/lib/forms/core/behaviors';
    *
    * const behaviorSchema: BehaviorSchemaFn<MyForm> = (path) => {
-   *   // Копирование адреса
    *   copyFrom(path.residenceAddress, path.registrationAddress, {
    *     when: (form) => form.sameAsRegistration === true
    *   });
    *
-   *   // Условное отображение
    *   enableWhen(path.propertyValue, (form) => form.loanType === 'mortgage');
    *
-   *   // Вычисляемое поле
    *   computeFrom(
    *     path.initialPayment,
    *     [path.propertyValue],
-   *     ({ propertyValue }) => propertyValue ? propertyValue * 0.2 : null
+   *     (propertyValue) => propertyValue ? propertyValue * 0.2 : null
    *   );
    * };
    *
@@ -532,19 +549,7 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
    * ```
    */
   applyBehaviorSchema(schemaFn: BehaviorSchemaFn<T>): () => void {
-    this.behaviorRegistry.beginRegistration();
-
-    try {
-      const path = createBehaviorFieldPath<T>();
-      schemaFn(path);
-      // ✅ Передаём proxy-инстанс в endRegistration, если доступен
-      const formToUse = (this._proxyInstance || this) as GroupNodeWithControls<T>;
-      const result = this.behaviorRegistry.endRegistration(formToUse);
-      return result.cleanup;
-    } catch (error) {
-      console.error('Error applying behavior schema:', error);
-      throw error;
-    }
+    return this.behaviorApplicator.apply(schemaFn);
   }
 
   /**
@@ -618,125 +623,18 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
   /**
    * Применить contextual валидаторы к полям
-   * Используется для временной валидации (например, в validateForm)
+   *
+   * ✅ РЕФАКТОРИНГ: Делегирование ValidationApplicator (SRP)
+   *
+   * Логика применения валидаторов извлечена в ValidationApplicator для:
+   * - Соблюдения Single Responsibility Principle
+   * - Уменьшения размера GroupNode (~120 строк)
+   * - Улучшения тестируемости
+   *
+   * @param validators Зарегистрированные валидаторы
    */
   async applyContextualValidators(validators: any[]): Promise<void> {
-    // ✅ ИСПРАВЛЕНО: Используем статический import вместо динамического
-
-    const validatorsByField = new Map<string, any[]>();
-    const treeValidators: any[] = [];
-
-    for (const registration of validators) {
-      if (registration.type === 'tree') {
-        treeValidators.push(registration);
-      } else {
-        const existing = validatorsByField.get(registration.fieldPath) || [];
-        existing.push(registration);
-        validatorsByField.set(registration.fieldPath, existing);
-      }
-    }
-
-    // Применяем валидаторы к полям
-    for (const [fieldPath, fieldValidators] of validatorsByField) {
-      // Поддержка вложенных путей (например, "personalData.lastName")
-      const control = this.getFieldByPath(fieldPath);
-
-      if (!control) {
-        if (import.meta.env.DEV) {
-          const availableFields = Array.from(this.fields.keys()).join(', ');
-          throw new Error(
-            `Field "${fieldPath}" not found in GroupNode.\n` +
-              `Available fields: ${availableFields}`
-          );
-        }
-        console.warn(`Field ${fieldPath} not found in GroupNode`);
-        continue;
-      }
-
-      // Валидация работает только с FieldNode
-      if (!isFieldNode(control)) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Validation can only run on FieldNode, skipping ${fieldPath}`);
-        }
-        continue;
-      }
-
-      const errors: any[] = [];
-      const context = new ValidationContextImpl(this as any, fieldPath, control);
-
-      for (const registration of fieldValidators) {
-        if (registration.condition) {
-          // Поддержка вложенных путей для условной валидации
-          const conditionField = this.getFieldByPath(registration.condition.fieldPath);
-          if (conditionField) {
-            const conditionValue = conditionField.value.value;
-            const shouldApply = registration.condition.conditionFn(conditionValue);
-            if (!shouldApply) {
-              continue;
-            }
-          }
-        }
-
-        try {
-          let error;
-          if (registration.type === 'sync') {
-            error = registration.validator(context);
-          } else if (registration.type === 'async') {
-            error = await registration.validator(context);
-          }
-
-          if (error) {
-            errors.push(error);
-          }
-        } catch (e) {
-          console.error(`Error in validator for ${fieldPath}:`, e);
-        }
-      }
-
-      if (errors.length > 0) {
-        control.setErrors(errors);
-      } else {
-        if (
-          control.errors.value.length > 0 &&
-          !control.errors.value.some((e) => e.code !== 'contextual')
-        ) {
-          control.clearErrors();
-        }
-      }
-    }
-
-    // Применяем tree валидаторы
-    for (const registration of treeValidators) {
-      const context = new TreeValidationContextImpl(this as any);
-
-      if (registration.condition) {
-        const conditionField = this.fields.get(
-          registration.condition.fieldPath as keyof T
-        );
-        if (conditionField) {
-          const conditionValue = conditionField.value.value;
-          const shouldApply = registration.condition.conditionFn(conditionValue);
-          if (!shouldApply) {
-            continue;
-          }
-        }
-      }
-
-      try {
-        const error = registration.validator(context);
-        if (error && registration.options?.targetField) {
-          const targetControl = this.fields.get(
-            registration.options.targetField as keyof T
-          );
-          if (targetControl) {
-            const existingErrors = targetControl.errors.value;
-            targetControl.setErrors([...existingErrors, error]);
-          }
-        }
-      } catch (e) {
-        console.error('Error in tree validator:', e);
-      }
-    }
+    await this.validationApplicator.apply(validators);
   }
 
   // ============================================================================
@@ -745,64 +643,23 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
 
   /**
    * Создать узел на основе конфигурации
-   * Автоматически определяет тип: FieldNode, GroupNode или ArrayNode
    *
-   * Использует NodeFactory для централизованного создания узлов.
-   * Специальная обработка массива-как-конфига остается в GroupNode.
+   * ✅ РЕФАКТОРИНГ: Полное делегирование NodeFactory
+   *
+   * NodeFactory теперь обрабатывает:
+   * - Массивы [schema, ...items]
+   * - FieldConfig
+   * - GroupConfig
+   * - ArrayConfig
+   *
+   * @param config Конфигурация узла
+   * @returns Созданный узел формы
+   * @private
    */
   private createNode(config: any): FormNode<any> {
-    // Проверка 1: Массив? (специфическое поведение GroupNode)
-    if (Array.isArray(config) && config.length >= 1) {
-      const [itemSchema] = config;
-
-      // Извлекаем значения из всех элементов массива (включая первый)
-      const initialItems = config.map((item: any) => {
-        if (this.nodeFactory.isGroupConfig(item)) {
-          // Это schema config - извлекаем значения
-          return this.extractValuesFromSchema(item);
-        }
-        // Это уже values
-        return item;
-      });
-
-      return new ArrayNode(itemSchema, initialItems);
-    }
-
-    // Проверка 2-3: Делегируем NodeFactory (FieldNode, GroupNode)
+    // ✅ Полное делегирование NodeFactory
+    // NodeFactory теперь поддерживает массивы напрямую
     return this.nodeFactory.createNode(config);
-  }
-
-  /**
-   * Извлечь значения из schema config объекта
-   * Преобразует {name: {value: 'John', component: Input}} в {name: 'John'}
-   *
-   * Использует NodeFactory для определения типа конфига.
-   */
-  private extractValuesFromSchema(schema: any): any {
-    const result: any = {};
-
-    for (const [key, config] of Object.entries(schema)) {
-      if (this.nodeFactory.isFieldConfig(config)) {
-        // Это FieldConfig - берем value
-        result[key] = (config as any).value;
-      } else if (this.nodeFactory.isGroupConfig(config)) {
-        // Это вложенная группа - рекурсивно извлекаем
-        result[key] = this.extractValuesFromSchema(config);
-      } else if (Array.isArray(config) && config.length > 0) {
-        // Массив - рекурсивно извлекаем значения из всех элементов
-        result[key] = config.map((item: any) => {
-          if (this.nodeFactory.isGroupConfig(item)) {
-            return this.extractValuesFromSchema(item);
-          }
-          return item;
-        });
-      } else {
-        // Обычное значение или пустой массив
-        result[key] = config;
-      }
-    }
-
-    return result;
   }
 
 

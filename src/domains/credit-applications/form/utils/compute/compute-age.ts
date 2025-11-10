@@ -4,11 +4,14 @@
 
 /**
  * Вычисление возраста из даты рождения
- * @param values - значения полей формы
+ *
+ * ✅ ОБНОВЛЕНО: Теперь принимает параметры напрямую (type-safe)
+ *
+ * @param personalData - Объект с данными о человеке
  * @returns возраст (лет)
  */
-export function computeAge(values: Record<string, any>): number | null {
-  const birthDate = values.personalData?.birthDate;
+export function computeAge(personalData: any): number | null {
+  const birthDate = personalData?.birthDate;
 
   if (!birthDate) {
     return null;

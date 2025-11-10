@@ -4,13 +4,16 @@
 
 /**
  * Вычисление полного имени (конкатенация Фамилия Имя Отчество)
- * @param values - значения полей формы
+ *
+ * ✅ ОБНОВЛЕНО: Теперь принимает параметры напрямую (type-safe)
+ *
+ * @param personalData - Объект с данными о человеке
  * @returns полное имя
  */
-export function computeFullName(values: Record<string, any>): string {
-  const lastName = values.personalData?.lastName || '';
-  const firstName = values.personalData?.firstName || '';
-  const middleName = values.personalData?.middleName || '';
+export function computeFullName(personalData: any): string {
+  const lastName = personalData?.lastName || '';
+  const firstName = personalData?.firstName || '';
+  const middleName = personalData?.middleName || '';
 
   return [lastName, firstName, middleName].filter(Boolean).join(' ');
 }

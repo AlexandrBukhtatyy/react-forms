@@ -4,12 +4,13 @@
 
 /**
  * Вычисление общего дохода (основной + дополнительный)
- * @param values - значения полей формы
+ *
+ * ✅ ОБНОВЛЕНО: Теперь принимает параметры напрямую (type-safe)
+ *
+ * @param monthlyIncome - Основной доход (₽)
+ * @param additionalIncome - Дополнительный доход (₽)
  * @returns общий доход (₽)
  */
-export function computeTotalIncome(values: Record<string, any>): number {
-  const monthlyIncome = values.monthlyIncome || 0;
-  const additionalIncome = values.additionalIncome || 0;
-
-  return monthlyIncome + additionalIncome;
+export function computeTotalIncome(monthlyIncome: number, additionalIncome: number): number {
+  return (monthlyIncome || 0) + (additionalIncome || 0);
 }

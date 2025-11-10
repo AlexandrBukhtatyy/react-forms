@@ -4,13 +4,14 @@
 
 /**
  * Вычисление процента платежа от дохода
- * @param values - значения полей формы
+ *
+ * ✅ ОБНОВЛЕНО: Теперь принимает параметры напрямую (type-safe)
+ *
+ * @param monthlyPayment - Ежемесячный платеж (₽)
+ * @param totalIncome - Общий доход (₽)
  * @returns процент платежа от дохода (%)
  */
-export function computePaymentRatio(values: Record<string, any>): number {
-  const monthlyPayment = values.monthlyPayment;
-  const totalIncome = values.totalIncome;
-
+export function computePaymentRatio(monthlyPayment: number, totalIncome: number): number {
   if (!monthlyPayment || !totalIncome || totalIncome === 0) {
     return 0;
   }

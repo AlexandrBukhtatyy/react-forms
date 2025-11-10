@@ -4,12 +4,13 @@
 
 /**
  * Вычисление общего дохода созаемщиков
- * @param values - значения полей формы
+ *
+ * ✅ ОБНОВЛЕНО: Теперь принимает параметры напрямую (type-safe)
+ *
+ * @param coBorrowers - Массив созаемщиков
  * @returns общий доход созаемщиков (₽)
  */
-export function computeCoBorrowersIncome(values: Record<string, any>): number {
-  const coBorrowers = values.coBorrowers;
-
+export function computeCoBorrowersIncome(coBorrowers: any[]): number {
   if (!coBorrowers || !Array.isArray(coBorrowers)) {
     return 0;
   }

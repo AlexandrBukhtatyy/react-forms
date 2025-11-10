@@ -9,6 +9,7 @@ import type {
   ValidationContext,
   TreeValidationContext,
 } from '../types/validation-schema';
+import { FieldPathNavigator } from '../utils/field-path-navigator';
 
 /**
  * Type guard для проверки, является ли объект FormNode
@@ -34,6 +35,7 @@ export class ValidationContextImpl<TForm extends Record<string, any> = any, TFie
   // @ts-ignore
   private fieldKey: keyof TForm
   private control: FieldNode<TField>
+  private readonly pathNavigator = new FieldPathNavigator();
 
   constructor(
     form: GroupNode<TForm>,
@@ -83,22 +85,14 @@ export class ValidationContextImpl<TForm extends Record<string, any> = any, TFie
 
   /**
    * Resolve вложенного пути (например, 'address.city')
+   *
+   * ✅ Делегирование FieldPathNavigator - устранение дублирования
+   *
    * @private
    */
   private resolveNestedPath(path: string): any {
-    // Используем getFieldByPath для правильного доступа к полям
-    // Это позволяет корректно обрабатывать поля с именами, конфликтующими с свойствами GroupNode
-    const field = this.form.getFieldByPath(path);
-
-    if (!field) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn(`[ValidationContext] Path '${path}' not found in form`);
-      }
-      return undefined;
-    }
-
-    // Используем type guard
-    return isFormNode(field) ? field.value.value : field;
+    // ✅ Используем FieldPathNavigator вместо ручной логики
+    return this.pathNavigator.getFormNodeValue(this.form, path);
   }
 
   /**
@@ -183,6 +177,7 @@ export class ValidationContextImpl<TForm extends Record<string, any> = any, TFie
  */
 export class TreeValidationContextImpl<TForm extends Record<string, any> = any> implements TreeValidationContext<TForm> {
   private form: GroupNode<TForm>
+  private readonly pathNavigator = new FieldPathNavigator();
 
   constructor(form: GroupNode<TForm>) {
     this.form = form
@@ -221,26 +216,17 @@ export class TreeValidationContextImpl<TForm extends Record<string, any> = any> 
   }
 
   /**
-   * Resolve вложенного пути (например, 'address.city')
+   * Resolve вложенного пути (например, 'address.city', 'items[0].title')
+   *
+   * ✅ Делегирование FieldPathNavigator - устранение дублирования
+   * ✅ Теперь поддерживает массивы (items[0].name)
+   *
    * @private
    */
   private resolveNestedPath(path: string): any {
-    const keys = path.split('.');
-    let current: any = this.form;
-
-    for (const key of keys) {
-      if (current && current[key]) {
-        current = current[key];
-      } else {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`[TreeValidationContext] Path '${path}' not found in form`);
-        }
-        return undefined;
-      }
-    }
-
-    // Используем type guard
-    return isFormNode(current) ? current.value.value : current;
+    // ✅ Используем FieldPathNavigator вместо ручной логики split('.')
+    // Теперь корректно обрабатывает массивы!
+    return this.pathNavigator.getFormNodeValue(this.form, path);
   }
 
   formValue(): TForm {

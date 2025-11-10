@@ -255,6 +255,77 @@ export class FieldPathNavigator {
   }
 
   /**
+   * Получить значение из FormNode по пути
+   *
+   * Автоматически извлекает значение из FormNode (через .value.value).
+   * Используется в ValidationContext и BehaviorContext для единообразного
+   * доступа к значениям полей формы.
+   *
+   * @param form Корневой узел формы (обычно GroupNode)
+   * @param path Путь к полю
+   * @returns Значение поля или undefined, если путь не найден
+   *
+   * @example
+   * ```typescript
+   * const form = new GroupNode({
+   *   email: { value: 'test@mail.com', component: Input },
+   *   address: {
+   *     city: { value: 'Moscow', component: Input }
+   *   },
+   *   items: [{ title: { value: 'Item 1', component: Input } }]
+   * });
+   *
+   * navigator.getFormNodeValue(form, 'email');
+   * // 'test@mail.com'
+   *
+   * navigator.getFormNodeValue(form, 'address.city');
+   * // 'Moscow'
+   *
+   * navigator.getFormNodeValue(form, 'items[0].title');
+   * // 'Item 1'
+   *
+   * navigator.getFormNodeValue(form, 'invalid.path');
+   * // undefined
+   * ```
+   */
+  getFormNodeValue(form: any, path: string): any {
+    const node = this.getNodeByPath(form, path);
+
+    if (node == null) {
+      return undefined;
+    }
+
+    // FormNode возвращает .value.value
+    if (this.isFormNode(node)) {
+      return node.value.value;
+    }
+
+    // Для обычных объектов возвращаем как есть
+    return node;
+  }
+
+  /**
+   * Type guard для проверки, является ли объект FormNode
+   *
+   * Проверяет наличие характерных свойств FormNode:
+   * - value (Signal)
+   * - value.value (значение Signal)
+   *
+   * @param obj Объект для проверки
+   * @returns true, если объект является FormNode
+   * @private
+   */
+  private isFormNode(obj: any): boolean {
+    return (
+      obj &&
+      typeof obj === 'object' &&
+      'value' in obj &&
+      typeof obj.value === 'object' &&
+      'value' in obj.value
+    );
+  }
+
+  /**
    * Получает узел формы по пути
    *
    * Навигирует по структуре FormNode (GroupNode/FieldNode/ArrayNode)

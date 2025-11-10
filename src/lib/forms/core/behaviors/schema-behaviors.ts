@@ -167,8 +167,10 @@ export function hideWhen<TForm extends Record<string, any>>(
  *
  * @param target - Поле для записи результата
  * @param sources - Массив полей-зависимостей
- * @param computeFn - Функция вычисления
+ * @param computeFn - Функция вычисления (принимает параметры напрямую)
  * @param options - Опции
+ *
+ * ✅ ОБНОВЛЕНО: computeFn теперь принимает параметры напрямую (type-safe)
  *
  * @example
  * ```typescript
@@ -177,8 +179,15 @@ export function hideWhen<TForm extends Record<string, any>>(
  *   computeFrom(
  *     path.initialPayment,
  *     [path.propertyValue],
- *     ({ propertyValue }) => propertyValue ? propertyValue * 0.2 : null,
+ *     (propertyValue) => propertyValue ? propertyValue * 0.2 : null, // ← Параметр напрямую
  *     { debounce: 300 }
+ *   );
+ *
+ *   // Общая стоимость = цена * количество
+ *   computeFrom(
+ *     path.total,
+ *     [path.price, path.quantity],
+ *     (price, quantity) => price * quantity // ← Параметры напрямую
  *   );
  * };
  * ```
@@ -186,23 +195,13 @@ export function hideWhen<TForm extends Record<string, any>>(
 export function computeFrom<TForm extends Record<string, any>, TTarget>(
   target: FieldPathNode<TForm, TTarget>,
   sources: FieldPathNode<TForm, any>[],
-  computeFn: (values: Record<string, any>) => TTarget,
+  computeFn: (...values: any[]) => TTarget,
   options?: ComputeFromOptions<TForm>
 ): void {
   const { debounce } = options || {};
 
-  // Обертка для computeFn, которая преобразует массив значений в объект
-  const wrappedComputeFn = (...values: any[]) => {
-    const valuesObj: Record<string, any> = {};
-    sources.forEach((source, index) => {
-      const fieldPath = source.__path;
-      const fieldName = fieldPath.split('.').pop() || fieldPath;
-      valuesObj[fieldName] = values[index];
-    });
-    return computeFn(valuesObj);
-  };
-
-  const handler = createComputeBehavior(target, sources, wrappedComputeFn, options);
+  // ✅ Передаем computeFn напрямую без обертки
+  const handler = createComputeBehavior(target, sources, computeFn, options);
   getCurrentBehaviorRegistry().register(handler, { debounce });
 }
 

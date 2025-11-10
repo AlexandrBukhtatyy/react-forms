@@ -44,9 +44,11 @@ export class NodeFactory {
   /**
    * Создает узел формы на основе конфигурации
    *
+   * ✅ ОБНОВЛЕНО: Теперь поддерживает массивы напрямую
+   *
    * Автоматически определяет тип узла:
    * - FieldNode: имеет value и component
-   * - ArrayNode: имеет schema (без value)
+   * - ArrayNode: массив [schema, ...items] или { schema, initialItems }
    * - GroupNode: объект без value, component, schema
    *
    * @param config Конфигурация узла
@@ -70,14 +72,26 @@ export class NodeFactory {
    *   password: { value: '', component: Input }
    * });
    *
-   * // ArrayNode
+   * // ArrayNode (объект)
    * const array = factory.createNode({
    *   schema: { title: { value: '', component: Input } },
    *   initialItems: [{ title: 'Item 1' }]
    * });
+   *
+   * // ArrayNode (массив) - новый формат
+   * const array2 = factory.createNode([
+   *   { title: { value: '', component: Input } }, // schema
+   *   { title: 'Item 1' }, // initial item 1
+   *   { title: 'Item 2' }  // initial item 2
+   * ]);
    * ```
    */
   createNode<T>(config: any): FormNode<T> {
+    // 0. ✅ НОВОЕ: Проверка массива (приоритет: специфический формат)
+    if (Array.isArray(config) && config.length >= 1) {
+      return this.createArrayNodeFromArray(config) as any;
+    }
+
     // 1. Проверка FieldConfig (приоритет: самый специфичный тип)
     if (this.isFieldConfig(config)) {
       return new FieldNode(config) as any;
@@ -99,6 +113,101 @@ export class NodeFactory {
         config
       )}`
     );
+  }
+
+  /**
+   * Создать ArrayNode из массива [schema, ...initialItems]
+   *
+   * ✅ НОВОЕ: Извлечено из GroupNode для централизации логики
+   *
+   * Формат: [itemSchema, ...initialItems]
+   * - Первый элемент - схема элемента массива
+   * - Остальные элементы - начальные значения
+   *
+   * @param config Массив с схемой и начальными элементами
+   * @returns ArrayNode
+   *
+   * @example
+   * ```typescript
+   * const factory = new NodeFactory();
+   *
+   * // Массив с начальными элементами
+   * const array = factory.createArrayNodeFromArray([
+   *   { title: { value: '', component: Input } }, // schema
+   *   { title: 'Item 1' }, // initial value
+   *   { title: 'Item 2' }  // initial value
+   * ]);
+   * ```
+   * @private
+   */
+  private createArrayNodeFromArray(config: any[]): ArrayNode<any> {
+    const [itemSchema, ...restItems] = config;
+
+    // Обработка начальных элементов:
+    // Если элемент - схема группы, извлечь значения
+    const initialItems = restItems.map(item => {
+      if (this.isGroupConfig(item)) {
+        return this.extractValues(item);
+      }
+      return item;
+    });
+
+    return new ArrayNode(itemSchema, initialItems);
+  }
+
+  /**
+   * Извлечь значения из схемы (рекурсивно)
+   *
+   * ✅ НОВОЕ: Извлечено из GroupNode для централизации логики
+   *
+   * Преобразует схему формы в объект со значениями:
+   * - { name: { value: 'John', component: Input } } → { name: 'John' }
+   * - Поддерживает вложенные группы
+   * - Поддерживает массивы
+   *
+   * @param schema Схема формы
+   * @returns Объект со значениями полей
+   *
+   * @example
+   * ```typescript
+   * const factory = new NodeFactory();
+   *
+   * const schema = {
+   *   name: { value: 'John', component: Input },
+   *   age: { value: 30, component: Input },
+   *   address: {
+   *     city: { value: 'Moscow', component: Input }
+   *   }
+   * };
+   *
+   * factory.extractValues(schema);
+   * // { name: 'John', age: 30, address: { city: 'Moscow' } }
+   * ```
+   */
+  extractValues(schema: any): any {
+    // 1. FieldConfig - вернуть value
+    if (this.isFieldConfig(schema)) {
+      return schema.value;
+    }
+
+    // 2. Массив - рекурсивно обработать элементы
+    if (Array.isArray(schema)) {
+      return schema.map(item => this.extractValues(item));
+    }
+
+    // 3. GroupConfig - рекурсивно извлечь значения всех полей
+    if (this.isGroupConfig(schema)) {
+      const result: any = {};
+
+      for (const [key, config] of Object.entries(schema)) {
+        result[key] = this.extractValues(config);
+      }
+
+      return result;
+    }
+
+    // 4. Примитивное значение - вернуть как есть
+    return schema;
   }
 
   /**

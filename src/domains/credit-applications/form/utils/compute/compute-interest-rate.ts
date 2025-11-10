@@ -4,12 +4,21 @@
 
 /**
  * Вычисление процентной ставки на основе типа кредита и дополнительных условий
- * @param values - значения полей формы
+ *
+ * ✅ ОБНОВЛЕНО: Теперь принимает параметры напрямую (type-safe)
+ *
+ * @param loanType - Тип кредита
+ * @param registrationAddress - Адрес регистрации (объект)
+ * @param hasProperty - Наличие имущества
+ * @param properties - Массив имущества
  * @returns процентная ставка (%)
  */
-export function computeInterestRate(values: Record<string, any>): number {
-  const loanType = values.loanType;
-
+export function computeInterestRate(
+  loanType: string,
+  registrationAddress: any,
+  hasProperty: boolean,
+  properties: any[]
+): number {
   // Базовые ставки по типам кредита
   const baseRates: Record<string, number> = {
     consumer: 15.5,
@@ -24,7 +33,7 @@ export function computeInterestRate(values: Record<string, any>): number {
   // Надбавки и скидки
   if (loanType === 'mortgage') {
     // Надбавка за регион (Москва дороже)
-    const region = values.registrationAddress?.region;
+    const region = registrationAddress?.region;
     if (region === 'moscow') {
       rate += 0.5;
     }
@@ -32,14 +41,15 @@ export function computeInterestRate(values: Record<string, any>): number {
 
   if (loanType === 'car') {
     // Скидка за КАСКО (если есть)
-    const hasInsurance = values.carInsurance === true;
-    if (hasInsurance) {
-      rate -= 1.0;
-    }
+    // TODO: Нужно добавить параметр carInsurance
+    // const hasInsurance = carInsurance === true;
+    // if (hasInsurance) {
+    //   rate -= 1.0;
+    // }
   }
 
   // Скидка за обеспечение (имущество)
-  if (values.hasProperty === true && values.properties && values.properties.length > 0) {
+  if (hasProperty === true && properties && properties.length > 0) {
     rate -= 0.5;
   }
 

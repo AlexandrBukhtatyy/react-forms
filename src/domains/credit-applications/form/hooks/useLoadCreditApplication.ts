@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import type { FormNodeControls, GroupNodeWithControls } from '@/lib/forms';
+import type { GroupNodeWithControls } from '@/lib/forms';
 import type { CreditApplicationForm } from '../types/credit-application';
 import {
   fetchCreditApplication,
