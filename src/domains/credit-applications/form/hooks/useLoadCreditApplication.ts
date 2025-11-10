@@ -8,13 +8,15 @@
  */
 
 import { useEffect, useState } from 'react';
-import type { GroupNodeWithControls } from '@/lib/forms';
+import type { FormNodeControls, GroupNodeWithControls } from '@/lib/forms';
 import type { CreditApplicationForm } from '../types/credit-application';
 import {
   fetchCreditApplication,
   fetchDictionaries,
   type DictionariesResponse,
 } from '../../api/mock-credit-application-api';
+import type { Property } from '../components/nested-forms/Property/PropertyForm';
+import type { ExistingLoan } from '../components/nested-forms/ExistingLoan/ExistingLoanForm';
 
 // ============================================================================
 // Типы
@@ -59,7 +61,7 @@ const patchFormValue = (
         // Обновляем опции типов имущества для всех элементов массива properties
         // properties - это ArrayNode<Property>
         // forEach возвращает GroupNode элементы, а не значения
-        form.properties?.forEach((propertyNode: any) => {
+        form.properties?.forEach((propertyNode: GroupNodeWithControls<Property>) => {
           propertyNode.type.updateComponentProps({
             options: dictionaries.propertyTypes
           });
@@ -68,7 +70,7 @@ const patchFormValue = (
         // Обновляем опции банков для всех элементов массива existingLoans
         // existingLoans - это ArrayNode<ExistingLoan>
         // forEach возвращает GroupNode элементы, а не значения
-        form.existingLoans?.forEach((loanNode: any) => {
+        form.existingLoans?.forEach((loanNode: GroupNodeWithControls<ExistingLoan>) => {
           loanNode.bank.updateComponentProps({
             options: dictionaries.banks
           });

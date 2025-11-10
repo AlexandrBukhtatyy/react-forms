@@ -1,5 +1,6 @@
 import type { StepIndicatorProps } from "@/lib/forms/components";
 
+
 export const STEPS: StepIndicatorProps['steps'] = [
   { number: 1, title: 'Кредит', icon: '💰' },
   { number: 2, title: 'Данные', icon: '👤' },
@@ -8,6 +9,8 @@ export const STEPS: StepIndicatorProps['steps'] = [
   { number: 5, title: 'Доп. инфо', icon: '📋' },
   { number: 6, title: 'Подтверждение', icon: '✓' },
 ];
+
+export const TOTAL_STEPS = STEPS.length;
 
 export const LOAN_TYPES = [
   { value: 'consumer', label: 'Потребительский кредит' },

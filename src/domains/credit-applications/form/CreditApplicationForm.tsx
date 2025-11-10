@@ -18,7 +18,7 @@ import { ContactInfoForm } from './components/steps/ContactInfo/ContactInfoForm'
 import { EmploymentForm } from './components/steps/Employment/EmploymentForm';
 import { AdditionalInfoForm } from './components/steps/AdditionalInfo/AdditionalInfoForm';
 import { ConfirmationForm } from './components/steps/Confirmation/ConfirmationForm';
-import { STEPS } from './constants/credit-application';
+import { STEPS, TOTAL_STEPS } from './constants/credit-application';
 import { NavigationButtons, StepIndicator } from '@/lib/forms/components';
 import creditApplicationValidation, { STEP_VALIDATIONS } from './schemas/credit-application-validation';
 import { useLoadCreditApplication } from './hooks/useLoadCreditApplication';
@@ -69,7 +69,6 @@ function CreditApplicationForm() {
   const submitApplication = async () => {
     const result = await submit(async (values) => {
       console.log('Отправка формы:', values);
-      // TODO: Отправка на сервер
       return values;
     });
 
@@ -162,7 +161,7 @@ function CreditApplicationForm() {
       {/* Кнопки навигации */}
       <NavigationButtons
         currentStep={currentStep}
-        totalSteps={6}
+        totalSteps={TOTAL_STEPS}
         isSubmitting={form.submitting.value}
         onNext={goToNextStep}
         onPrevious={goToPreviousStep}
@@ -171,15 +170,8 @@ function CreditApplicationForm() {
 
       {/* Информация о прогрессе */}
       <div className="mt-4 text-center text-sm text-gray-600">
-        Шаг {currentStep} из 6 • {Math.round((currentStep / 6) * 100)}% завершено
+        Шаг {currentStep} из {TOTAL_STEPS} • {Math.round((currentStep / TOTAL_STEPS) * 100)}% завершено
       </div>
-
-      {/* Значение формы */}
-      {/* 
-      <pre>
-        {JSON.stringify(form.value.value, null, '  ')}
-      </pre> 
-      */}
 
     </div>
   );

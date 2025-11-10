@@ -76,7 +76,6 @@ export const addressFormSchema: FormSchema<Address> = {
 }
 
 interface AddressFormProps {
-  // TODO: Убрать
   // GroupProxy для вложенной формы address (используем any для обхода ограничений TypeScript)
   control: GroupNodeWithControls<Address>;
 }
