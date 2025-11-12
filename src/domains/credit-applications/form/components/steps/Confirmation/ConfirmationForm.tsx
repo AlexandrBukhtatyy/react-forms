@@ -11,11 +11,36 @@ export function ConfirmationForm({ control }: ConfirmationFormProps) {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Подтверждение и согласия</h2>
+      <div className="space-y-4">
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <p className="text-sm text-blue-800">
+            Пожалуйста, внимательно ознакомьтесь с условиями и дайте необходимые согласия перед отправкой заявки.
+          </p>
+        </div>
 
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-        <p className="text-sm text-blue-800">
-          Пожалуйста, внимательно ознакомьтесь с условиями и дайте необходимые согласия перед отправкой заявки.
-        </p>
+        {
+          control.monthlyPayment.value > 30000 && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-800">
+                <b>Внимание!</b> Ежемесячный платеж превышает 30 000 Руб.
+              </p>
+            </div>
+          )
+        }
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Обязательные согласия</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div><b>Процентная ставка:</b> {control.interestRate.value}</div>
+            <span className="text-xs text-gray-500">зависит от типа кредита, региона, наличия имущества</span>
+          </div>
+          <div>
+            <div><b>Ежемесячный платеж:</b> {control.monthlyPayment.value}</div>
+            <span className="text-xs text-gray-500">вычисляется по формуле аннуитетного платежа</span>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-4">
