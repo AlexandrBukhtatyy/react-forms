@@ -8,8 +8,8 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: 'form2', path: '/form2', label: 'Credit Form', icon: '📋' },
-  { id: 'form', path: '/', label: 'User form', icon: '📝' },
+  { id: 'credit-form', path: '/credit-form', label: 'Credit Form', icon: '📋' },
+  { id: 'user-form', path: '/', label: 'User form', icon: '📝' },
   { id: 'table', path: '/table', label: 'Users Table', icon: '📊' },
 ];
 

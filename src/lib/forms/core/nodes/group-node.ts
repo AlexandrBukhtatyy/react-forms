@@ -174,10 +174,10 @@ export class GroupNode<T extends Record<string, any> = any> extends FormNode<T> 
     this._formErrors = signal<ValidationError[]>([]);
 
     // Определяем, что передано: schema или config
-    const isNewAPI = 'form' in schemaOrConfig;
-    const formSchema = isNewAPI ? (schemaOrConfig as GroupNodeConfig<T>).form : schemaOrConfig as FormSchema<T>;
-    const behaviorSchema = isNewAPI ? (schemaOrConfig as GroupNodeConfig<T>).behavior : undefined;
-    const validationSchema = isNewAPI ? (schemaOrConfig as GroupNodeConfig<T>).validation : undefined;
+    const isConfig = 'form' in schemaOrConfig;
+    const formSchema = isConfig ? (schemaOrConfig as GroupNodeConfig<T>).form : schemaOrConfig as FormSchema<T>;
+    const behaviorSchema = isConfig ? (schemaOrConfig as GroupNodeConfig<T>).behavior : undefined;
+    const validationSchema = isConfig ? (schemaOrConfig as GroupNodeConfig<T>).validation : undefined;
 
     // Создать поля из схемы с поддержкой вложенности
     for (const [key, config] of Object.entries(formSchema)) {

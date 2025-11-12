@@ -4,8 +4,8 @@ import "./index.css";
 import App from "./App.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import TablePage from "./pages/TablePage.tsx";
-import FormPage from "./pages/FormPage.tsx";
-import Form2Page from "./pages/Form2Page.tsx";
+import UserFormPage from "./pages/UserFormPage.tsx";
+import CreditFormPage from "./pages/CreditFormPage.tsx";
 
 export async function enableMocking() {
   console.log("import.meta.env.MOCK_API: ", import.meta.env.VITE_API_MOCK);
@@ -22,8 +22,8 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      { index: true, element: <FormPage /> },
-      { path: "form2", element: <Form2Page /> },
+      { index: true, element: <UserFormPage /> },
+      { path: "credit-form", element: <CreditFormPage /> },
       { path: "table", element: <TablePage /> },
     ],
   },
